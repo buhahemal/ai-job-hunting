@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Copy, Check, FileText, Code, Printer, Award, AlertCircle, Download } from 'lucide-react';
+import { Copy, Check, FileText, Code, Printer, Award, Download } from 'lucide-react';
+import { listJobResumes, type JobResumeVersion } from '../api/client';
 import { Job } from '../types';
 
 interface ResumePreviewProps {
@@ -50,11 +51,26 @@ export default function ResumePreview({
   const [editedCoverLetter, setEditedCoverLetter] = useState(job.tailoredCoverLetter || '');
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [resumeVersions, setResumeVersions] = useState<JobResumeVersion[]>([]);
 
   React.useEffect(() => {
     setEditedLaTeX(job.tailoredResumeLaTeX || '');
     setEditedCoverLetter(job.tailoredCoverLetter || '');
   }, [job]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void listJobResumes(job.id)
+      .then((items) => {
+        if (!cancelled) setResumeVersions(items);
+      })
+      .catch(() => {
+        if (!cancelled) setResumeVersions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [job.id, pdfUrl]);
 
   const handleCopy = () => {
     const textToCopy = activeTab === 'resume' ? editedLaTeX : editedCoverLetter;
@@ -232,6 +248,35 @@ export default function ResumePreview({
           </div>
         )}
       </div>
+
+      {resumeVersions.length > 0 ? (
+        <div className="border-b border-slate-100 bg-slate-50 px-4 py-2 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            Saved versions
+          </span>
+          {resumeVersions.map((entry) =>
+            entry.pdfUrl ? (
+              <a
+                key={entry.version}
+                href={entry.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] px-2 py-1 rounded-md border border-slate-200 bg-white text-indigo-700 hover:bg-indigo-50 font-medium"
+              >
+                {entry.version}
+                {entry.atsScore != null ? ` · ${entry.atsScore}% ATS` : ''}
+              </a>
+            ) : (
+              <span
+                key={entry.version}
+                className="text-[10px] px-2 py-1 rounded-md border border-slate-200 bg-white text-slate-500"
+              >
+                {entry.version}
+              </span>
+            ),
+          )}
+        </div>
+      ) : null}
 
       {/* Mode Switches */}
       <div className="border-b border-slate-100 bg-slate-50 p-2 flex flex-wrap items-center justify-between gap-2">

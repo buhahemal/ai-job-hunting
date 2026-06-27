@@ -23,7 +23,7 @@ last_updated: 2026-06-27
 
 ## Pending
 
-- [ ] Resume version list in Tailor tab (`listJobResumes` UI)
+- [x] Resume version list in Tailor tab (`listJobResumes` UI)
 - [ ] PDF resume upload import (Phase B — deferred)
 - [ ] WCAG 2.1 AA accessibility audit + remediation
 - [ ] E2E or integration tests for critical flows

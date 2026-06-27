@@ -140,7 +140,7 @@ export function flattenExperienceBullets(bullets: ExperienceBullet[] | undefined
   return (bullets ?? []).map(flattenExperienceBullet).filter(Boolean);
 }
 
-export interface ProfileCompletenessIssue {
+interface ProfileCompletenessIssue {
   field: string;
   message: string;
 }
