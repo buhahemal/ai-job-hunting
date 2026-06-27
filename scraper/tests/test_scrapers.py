@@ -19,14 +19,21 @@ class TestScraperEngine(unittest.TestCase):
         self.assertEqual(self.portal.name, 'Company Career Pages')
 
     def test_company_pages_discovery_and_normalization(self):
-        jobs = self.portal.discover_jobs(limit=2)
-        self.assertEqual(len(jobs), 2)
-
-        normalized = self.portal.normalize(jobs[0])
-        self.assertIn('id', normalized)
-        self.assertIn('title', normalized)
-        self.assertIn('company', normalized)
-        self.assertIn('location', normalized)
+        scanner = CompanyPagesScanner()
+        normalized = scanner.normalize(
+            {
+                '_target_company': 'Stripe',
+                '_target_source': 'Stripe Careers',
+                'job_id': '123',
+                'title': 'Backend Engineer',
+                'url': 'https://stripe.com/jobs/listing/123',
+                'location': 'Remote',
+                'remote_type': 'Remote',
+                'description': 'Payments infrastructure.',
+            }
+        )
+        self.assertEqual(normalized['company'], 'Stripe')
+        self.assertEqual(normalized['source'], 'Stripe Careers')
         self.assertEqual(normalized['status'], 'New')
 
     def test_database_read_write(self):

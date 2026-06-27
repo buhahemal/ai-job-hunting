@@ -1,77 +1,66 @@
-import random
-import time
+import re
 from typing import Dict, List
 
 from packages.scanner_sdk.python.base import BaseScanner
+from packages.scanner_sdk.python.http import fetch_ok
 from packages.scanner_sdk.python.normalize import build_canonical_job
-
-TARGET_COMPANIES = ['EPAM', 'Globant', 'Endava', 'Slalom', 'Perficient', 'Thoughtworks']
-TARGET_ROLES = [
-    'Senior Platform Engineer',
-    'SRE',
-    'DevOps Engineer',
-    'Cloud Infrastructure Engineer',
-    'Backend Go/Python Engineer',
-]
-LOCATIONS = [
-    'United States (Remote)',
-    'Bengaluru, India (Hybrid)',
-    'London, UK (Remote)',
-    'India (Remote)',
-    'Munich, Germany (On-site)',
-]
+from scanners.company_pages.targets import (
+    TARGET_COMPANY_NAMES,
+    TARGET_FETCHERS,
+    TARGET_HEALTH_URLS,
+)
 
 
 class CompanyPagesScanner(BaseScanner):
-    """Generates high-signal leads for configured target company career portals."""
+    """Discover jobs from curated company career portals (Google, Microsoft, EPAM, etc.)."""
 
     @property
     def name(self) -> str:
         return 'Company Career Pages'
 
-    def discover_jobs(self, limit: int = 5) -> List[Dict]:
-        raw_leads: List[Dict] = []
-        for _ in range(limit):
-            company = random.choice(TARGET_COMPANIES)
-            role = random.choice(TARGET_ROLES)
-            location = random.choice(LOCATIONS)
-            remote_type = (
-                'Remote'
-                if 'Remote' in location
-                else 'Hybrid'
-                if 'Hybrid' in location
-                else 'On-site'
-            )
-            slug_id = f'cp-{int(time.time())}-{random.randint(1000, 9999)}'
-            raw_leads.append(
-                {
-                    'source_id': slug_id,
-                    'title': role,
-                    'company_name': company,
-                    'location_str': location,
-                    'remote_category': remote_type,
-                    'source_label': f'{company} Careers',
-                    'apply_url': f'https://careers.{company.lower()}.com/jobs/{slug_id}',
-                    'job_details_raw': (
-                        f'We are searching for a high-performing {role} to join our agile '
-                        f'consulting operations at {company}. Experience with AWS, Kubernetes, '
-                        f'Terraform, and Python or Go is key.'
-                    ),
-                }
-            )
-        return raw_leads
+    @property
+    def target_companies(self) -> List[str]:
+        return list(TARGET_COMPANY_NAMES)
+
+    def discover_jobs(self, limit: int = 10) -> List[Dict]:
+        if limit <= 0:
+            return []
+
+        per_company = max(1, limit // len(TARGET_FETCHERS))
+        jobs: List[Dict] = []
+
+        for _, fetcher in TARGET_FETCHERS:
+            try:
+                jobs.extend(fetcher(per_company))
+            except Exception as exc:  # pragma: no cover - network/runtime guard
+                print(f'[CompanyPagesScanner] fetch error: {exc}')
+            if len(jobs) >= limit:
+                break
+
+        return jobs[:limit]
 
     def normalize(self, raw_job: Dict) -> Dict:
+        company = raw_job.get('_target_company', 'Unknown Company')
+        source = raw_job.get('_target_source', self.name)
+        job_id = raw_job.get('job_id', 'unknown')
+        slug = re_safe_id(f'{company}-{job_id}')
+
         return build_canonical_job(
-            id=raw_job.get('source_id', ''),
-            title=raw_job.get('title', ''),
-            company=raw_job.get('company_name', ''),
-            location=raw_job.get('location_str', ''),
-            remote_type=raw_job.get('remote_category', 'Remote'),
-            source=raw_job.get('source_label', self.name),
-            url=raw_job.get('apply_url', ''),
-            description=raw_job.get('job_details_raw', ''),
+            id=f'cp-{slug}',
+            title=raw_job.get('title', 'Unknown Role'),
+            company=company,
+            location=raw_job.get('location', 'Remote'),
+            remote_type=raw_job.get('remote_type', 'Hybrid'),
+            source=source,
+            url=raw_job.get('url', ''),
+            description=raw_job.get('description', ''),
         )
 
     def health_check(self) -> bool:
-        return True
+        return all(fetch_ok(url) for url in TARGET_HEALTH_URLS.values())
+
+
+def re_safe_id(value: str) -> str:
+    """Normalize an identifier for canonical job IDs."""
+    cleaned = re.sub(r'[^a-zA-Z0-9_-]+', '-', str(value)).strip('-').lower()
+    return cleaned or 'unknown'

@@ -13,7 +13,7 @@
   - Workable (`WORKABLE_ACCOUNT_SLUGS`)
   - RemoteOK (no config)
   - We Work Remotely RSS (no config)
-  - Company career pages (curated)
+  - Company career pages (Google, Microsoft, EPAM, Globant, Datadog, Stripe)
 - [x] Unit tests for normalize + registry
 - [x] `.env.example` and `scanners/README.md`
 

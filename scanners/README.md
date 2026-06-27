@@ -2,16 +2,16 @@
 
 Each scanner lives in its own folder and implements `discover_jobs()`, `normalize()`, and `health_check()` via `packages/scanner_sdk`.
 
-| Folder             | Source                   | Config (comma-separated)            | Subscription |
-| ------------------ | ------------------------ | ----------------------------------- | ------------ |
-| `greenhouse/`      | Greenhouse Job Board API | `GREENHOUSE_BOARD_TOKENS`           | None         |
-| `lever/`           | Lever postings API       | `LEVER_COMPANY_SITES`               | None         |
-| `smartrecruiters/` | SmartRecruiters API      | `SMARTRECRUITERS_COMPANIES`         | None         |
-| `teamtailor/`      | Teamtailor jobs.json     | `TEAMTAILOR_COMPANY_SLUGS`          | None         |
-| `workable/`        | Workable widget API      | `WORKABLE_ACCOUNT_SLUGS`            | None         |
-| `remoteok/`        | RemoteOK JSON API        | None                                | None         |
-| `weworkremotely/`  | We Work Remotely RSS     | None                                | None         |
-| `company_pages/`   | Company career pages     | None (curated high-signal listings) | None         |
+| Folder             | Source                   | Config (comma-separated)                                 | Subscription |
+| ------------------ | ------------------------ | -------------------------------------------------------- | ------------ |
+| `greenhouse/`      | Greenhouse Job Board API | `GREENHOUSE_BOARD_TOKENS`                                | None         |
+| `lever/`           | Lever postings API       | `LEVER_COMPANY_SITES`                                    | None         |
+| `smartrecruiters/` | SmartRecruiters API      | `SMARTRECRUITERS_COMPANIES`                              | None         |
+| `teamtailor/`      | Teamtailor jobs.json     | `TEAMTAILOR_COMPANY_SLUGS`                               | None         |
+| `workable/`        | Workable widget API      | `WORKABLE_ACCOUNT_SLUGS`                                 | None         |
+| `remoteok/`        | RemoteOK JSON API        | None                                                     | None         |
+| `weworkremotely/`  | We Work Remotely RSS     | None                                                     | None         |
+| `company_pages/`   | Company career pages     | None (Google, Microsoft, EPAM, Globant, Datadog, Stripe) | None         |
 
 Legacy: `GREENHOUSE_BOARD_TOKEN` (single board) is still supported.
 
