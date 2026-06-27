@@ -24,6 +24,11 @@ jobs:
       - name: Install Scraper Dependencies
         run: pip install -r scraper/requirements.txt
 
+      - name: Scanner preflight (imports + plugin health)
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/scanner_health.py
+
       - name: Rescore scan insights with current profile
         run: |
           PYTHONPATH=. python - <<'PY'

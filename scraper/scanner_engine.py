@@ -20,6 +20,20 @@ DEFAULT_MAX_EVALUATIONS = 3000
 DEFAULT_SCAN_INSIGHT_BATCH_SIZE = 10
 
 
+class JobStore(Protocol):
+    """Persistence backend for scanner pipeline."""
+
+    def get_profile(self) -> Dict: ...
+
+    def get_dedupe_indexes(self) -> Tuple[set, set]: ...
+
+    def get_scanned_keys(self) -> set: ...
+
+    def record_scanned_jobs(self, records: List[Dict]) -> None: ...
+
+    def persist_new_jobs(self, jobs: List[Dict]) -> None: ...
+
+
 class ScanInsightBuffer:
     """Buffer scanned job insight rows and flush to the store in fixed-size batches."""
 
@@ -44,20 +58,6 @@ class ScanInsightBuffer:
     @property
     def pending_count(self) -> int:
         return len(self._pending)
-
-
-class JobStore(Protocol):
-    """Persistence backend for scanner pipeline."""
-
-    def get_profile(self) -> Dict: ...
-
-    def get_dedupe_indexes(self) -> Tuple[set, set]: ...
-
-    def get_scanned_keys(self) -> set: ...
-
-    def record_scanned_jobs(self, records: List[Dict]) -> None: ...
-
-    def persist_new_jobs(self, jobs: List[Dict]) -> None: ...
 
 
 class JsonJobStore:

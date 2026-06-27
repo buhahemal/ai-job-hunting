@@ -38,6 +38,11 @@ jobs:
       - name: Install Scraper Dependencies
         run: pip install -r scraper/requirements.txt
 
+      - name: Scanner preflight (imports + plugin health)
+        env:
+          PYTHONPATH: .
+        run: python3 scripts/scanner_health.py
+
       - name: Configure storage backend
         run: |
           if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_KEY" ]; then
