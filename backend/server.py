@@ -4,6 +4,10 @@ import subprocess
 import json
 from datetime import datetime
 
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 # Automatic dynamic bootstrap of python dependencies for seamless container deployment
 def bootstrap_packages():
     required = ["flask", "flask-cors", "google-genai", "requests"]
@@ -35,13 +39,14 @@ bootstrap_packages()
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
-from scripts.ai_matcher import AIMatcher
-from scripts.scrapers.scanner_engine import ScannerEngine
+from backend.paths import DATA_FILE, FRONTEND_DIST
+from scraper.ai_matcher import AIMatcher
+from scraper.scrapers.scanner_engine import ScannerEngine
 
 app = Flask(__name__)
 CORS(app)
 
-DB_FILE = os.path.join(os.getcwd(), "data.json")
+DB_FILE = DATA_FILE
 PORT = 3000
 
 # Unified Model instances
@@ -419,7 +424,7 @@ def update_interview_status(int_id):
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_frontend(path):
-    dist_dir = os.path.join(os.getcwd(), "dist")
+    dist_dir = FRONTEND_DIST
     
     # Fail gracefully if Vite hasn't been compiled yet
     if not os.path.exists(dist_dir):

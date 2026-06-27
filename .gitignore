@@ -1,4 +1,9 @@
 node_modules/
+frontend/node_modules/
+frontend/dist/
+.venv/
+__pycache__/
+*.pyc
 build/
 dist/
 coverage/
@@ -6,3 +11,4 @@ coverage/
 *.log
 .env*
 !.env.example
+frontend/public/data/

@@ -1,6 +1,6 @@
 import requests
 from typing import List, Dict
-from scripts.scrapers.base import BaseScanner
+from scraper.scrapers.base import BaseScanner
 
 class ArbeitnowScanner(BaseScanner):
     """

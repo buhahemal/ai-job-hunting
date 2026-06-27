@@ -1,20 +1,77 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# AI Job Hunter
 
-# Run and deploy your AI Studio app
+Monorepo for a GitHub-hosted job hunting dashboard: React frontend on GitHub Pages, Python scraper via GitHub Actions, and a static JSON data store.
 
-This contains everything you need to run your app locally.
+## Repository layout
 
-View your app in AI Studio: https://ai.studio/apps/72aeedfe-233e-4858-a750-a8ff996c19df
+```
+frontend/   React + Vite dashboard (GitHub Pages)
+backend/    Local Flask API + data/data.json (source of truth for scraped jobs)
+scraper/    Scheduled job scan pipeline (GitHub Actions)
+```
 
-## Run Locally
+## GitHub hosting model
 
-**Prerequisites:**  Node.js
+| Component | Host | How it runs |
+|-----------|------|-------------|
+| Frontend | GitHub Pages | `deploy-pages.yml` builds `frontend/` on every push to `main` |
+| Data | GitHub repo | `backend/data/data.json` updated by the scraper workflow |
+| Scraper | GitHub Actions | `job-scan.yml` runs daily (and on manual dispatch) |
+| Backend API | Local only | Optional Flask server for full AI scan/tailor during development |
 
+On GitHub Pages, the app loads `data/data.json` and stores your edits (profile, statuses, notes) in browser `localStorage`. New jobs arrive when the scraper workflow commits updates.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Setup
+
+### Frontend (static / GitHub Pages mode)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173
+
+### Full local stack (Flask backend + AI features)
+
+Terminal 1:
+
+```bash
+pip install -r backend/requirements.txt
+PYTHONPATH=. python3 backend/server.py
+```
+
+Terminal 2:
+
+```bash
+cd frontend
+VITE_USE_BACKEND=true npm run dev
+```
+
+### Run scraper locally
+
+```bash
+pip install -r scraper/requirements.txt
+PYTHONPATH=. python3 -m scraper
+```
+
+### Tests
+
+```bash
+PYTHONPATH=. python3 -m unittest discover -s scraper/tests
+```
+
+## GitHub configuration
+
+1. **Pages**: Settings → Pages → Source = **GitHub Actions**
+2. **Secrets** (optional): Add `GEMINI_API_KEY` for AI scoring in the scraper workflow
+3. **Workflows**:
+   - `Deploy Frontend to GitHub Pages` — publishes the dashboard
+   - `Scheduled Job Scan & Score` — fetches and scores new jobs
+
+## Live URL
+
+After the first successful Pages deploy:
+
+`https://<your-username>.github.io/ai-job-hunting/`

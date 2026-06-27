@@ -4,6 +4,7 @@ import {
   Plus, Play, CheckCircle, RefreshCw, ChevronRight, X, Sparkles, 
   MapPin, DollarSign, Clock, FileCheck, HelpCircle, Save, Info, AlertTriangle, ArrowUpRight
 } from 'lucide-react';
+import * as api from './api/client';
 import { Profile, Job, Interview } from './types';
 import ResumePreview from './components/ResumePreview';
 import AnalyticsView from './components/AnalyticsView';
@@ -58,12 +59,9 @@ export default function App() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch('/api/profile');
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setProfileForm(data);
-      }
+      const data = await api.getProfile();
+      setProfile(data);
+      setProfileForm(data);
     } catch (e) {
       console.error('Failed to fetch profile', e);
     }
@@ -71,12 +69,9 @@ export default function App() {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch('/api/jobs');
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(data.jobs || []);
-        setInterviews(data.interviews || []);
-      }
+      const data = await api.getJobs();
+      setJobs(data.jobs || []);
+      setInterviews(data.interviews || []);
     } catch (e) {
       console.error('Failed to fetch jobs', e);
     }
@@ -87,17 +82,11 @@ export default function App() {
     setScanning(true);
     showNotif('Scanning active job boards and target consulting portals...', 'info');
     try {
-      const res = await fetch('/api/jobs/scan', { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        await fetchJobs();
-        showNotif(`Scan completed successfully! Discovered and scored ${data.addedCount} new matching leads.`, 'success');
-      } else {
-        const err = await res.json();
-        showNotif(err.error || 'Scan encountered an error.', 'error');
-      }
+      const data = await api.scanJobs();
+      await fetchJobs();
+      showNotif(`Scan completed successfully! Discovered and scored ${data.addedCount} new matching leads.`, 'success');
     } catch (e) {
-      showNotif('Server is booting up or offline. Retrying soon.', 'error');
+      showNotif(e instanceof Error ? e.message : 'Scan encountered an error.', 'error');
     } finally {
       setScanning(false);
     }
@@ -106,19 +95,12 @@ export default function App() {
   // 3. Update Status
   const handleUpdateStatus = async (jobId: string, status: Job['status']) => {
     try {
-      const res = await fetch(`/api/jobs/${jobId}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(prev => prev.map(j => j.id === jobId ? data.job : j));
-        if (selectedJob && selectedJob.id === jobId) {
-          setSelectedJob(data.job);
-        }
-        showNotif(`Application status updated to ${status}.`, 'success');
+      const job = await api.updateJobStatus(jobId, status);
+      setJobs(prev => prev.map(j => j.id === jobId ? job : j));
+      if (selectedJob && selectedJob.id === jobId) {
+        setSelectedJob(job);
       }
+      showNotif(`Application status updated to ${status}.`, 'success');
     } catch (e) {
       showNotif('Failed to update status.', 'error');
     }
@@ -127,16 +109,9 @@ export default function App() {
   // 4. Save notes
   const handleSaveNotes = async (jobId: string, notes: string) => {
     try {
-      const res = await fetch(`/api/jobs/${jobId}/notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(prev => prev.map(j => j.id === jobId ? data.job : j));
-        showNotif('Notes saved successfully.', 'success');
-      }
+      const job = await api.updateJobNotes(jobId, notes);
+      setJobs(prev => prev.map(j => j.id === jobId ? job : j));
+      showNotif('Notes saved successfully.', 'success');
     } catch (e) {
       showNotif('Failed to save notes.', 'error');
     }
@@ -147,19 +122,13 @@ export default function App() {
     setTailoringId(jobId);
     showNotif('Gemini AI is analyzing job keywords and rewriting LaTeX bullets...', 'info');
     try {
-      const res = await fetch(`/api/jobs/${jobId}/tailor`, { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(prev => prev.map(j => j.id === jobId ? data.job : j));
-        setSelectedJob(data.job);
-        setActiveTab('tailor');
-        showNotif('LaTeX Resume and Cover Letter compiled successfully! Check the Tailor Suite.', 'success');
-      } else {
-        const err = await res.json();
-        showNotif(err.error || 'Failed to tailor with AI.', 'error');
-      }
+      const job = await api.tailorJob(jobId);
+      setJobs(prev => prev.map(j => j.id === jobId ? job : j));
+      setSelectedJob(job);
+      setActiveTab('tailor');
+      showNotif('LaTeX Resume and Cover Letter compiled successfully! Check the Tailor Suite.', 'success');
     } catch (e) {
-      showNotif('Tailoring failed due to backend timeout.', 'error');
+      showNotif(e instanceof Error ? e.message : 'Failed to tailor with AI.', 'error');
     } finally {
       setTailoringId(null);
     }
@@ -169,17 +138,13 @@ export default function App() {
   const handleSaveTailored = async (latex: string, coverLetter: string) => {
     if (!selectedJob) return;
     try {
-      const res = await fetch(`/api/jobs/${selectedJob.id}/save-tailored`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tailoredResumeLaTeX: latex, tailoredCoverLetter: coverLetter })
+      const job = await api.saveTailoredJob(selectedJob.id, {
+        tailoredResumeLaTeX: latex,
+        tailoredCoverLetter: coverLetter,
       });
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(prev => prev.map(j => j.id === selectedJob.id ? data.job : j));
-        setSelectedJob(data.job);
-        showNotif('Tailored resume code modifications saved successfully.', 'success');
-      }
+      setJobs(prev => prev.map(j => j.id === selectedJob.id ? job : j));
+      setSelectedJob(job);
+      showNotif('Tailored resume code modifications saved successfully.', 'success');
     } catch (e) {
       showNotif('Failed to save tailored changes.', 'error');
     }
@@ -194,19 +159,12 @@ export default function App() {
     }
     showNotif('Importing job description & computing AI Match Score...', 'info');
     try {
-      const res = await fetch('/api/jobs/add-custom', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newManualJob)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        await fetchJobs();
-        setManualImportOpen(false);
-        setNewManualJob({ title: '', company: '', location: '', remoteType: 'Remote', url: '', description: '' });
-        showNotif(`Job import complete. Ranked with Match Score of ${data.job.score}%.`, 'success');
-        setSelectedJob(data.job);
-      }
+      const job = await api.addCustomJob(newManualJob);
+      await fetchJobs();
+      setManualImportOpen(false);
+      setNewManualJob({ title: '', company: '', location: '', remoteType: 'Remote', url: '', description: '' });
+      showNotif(`Job import complete. Ranked with Match Score of ${job.score}%.`, 'success');
+      setSelectedJob(job);
     } catch (e) {
       showNotif('Failed to manually import job.', 'error');
     }
@@ -215,15 +173,9 @@ export default function App() {
   // 8. Add Scheduled Interview
   const handleAddInterview = async (interviewData: Omit<Interview, 'id' | 'status'>) => {
     try {
-      const res = await fetch('/api/interviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(interviewData)
-      });
-      if (res.ok) {
-        await fetchJobs();
-        showNotif('Upcoming interview round booked successfully!', 'success');
-      }
+      await api.addInterview(interviewData);
+      await fetchJobs();
+      showNotif('Upcoming interview round booked successfully!', 'success');
     } catch (e) {
       showNotif('Failed to schedule interview.', 'error');
     }
@@ -232,15 +184,9 @@ export default function App() {
   // 9. Update Interview Status
   const handleUpdateInterviewStatus = async (id: string, status: Interview['status']) => {
     try {
-      const res = await fetch(`/api/interviews/${id}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      if (res.ok) {
-        await fetchJobs();
-        showNotif(`Interview round status transitioned to ${status}.`, 'success');
-      }
+      await api.updateInterviewStatus(id, status);
+      await fetchJobs();
+      showNotif(`Interview round status transitioned to ${status}.`, 'success');
     } catch (e) {
       showNotif('Failed to save interview status.', 'error');
     }
@@ -252,17 +198,10 @@ export default function App() {
     if (!profileForm) return;
     setSavingProfile(true);
     try {
-      const res = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileForm)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data.profile);
-        setProfileForm(data.profile);
-        showNotif('Master Profile and scoring parameters updated successfully.', 'success');
-      }
+      const saved = await api.saveProfile(profileForm);
+      setProfile(saved);
+      setProfileForm(saved);
+      showNotif('Master Profile and scoring parameters updated successfully.', 'success');
     } catch (e) {
       showNotif('Failed to save profile.', 'error');
     } finally {

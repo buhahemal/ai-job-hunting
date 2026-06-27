@@ -2,12 +2,14 @@ import os
 import json
 from datetime import datetime
 from typing import Dict, List
-from scripts.scrapers.base import BaseScanner
-from scripts.scrapers.arbeitnow import ArbeitnowScanner
-from scripts.scrapers.career_portal import CareerPortalScanner
-from scripts.ai_matcher import AIMatcher
 
-DB_FILE = os.path.join(os.getcwd(), "data.json")
+from scraper.ai_matcher import AIMatcher
+from scraper.paths import DATA_FILE
+from scraper.scrapers.arbeitnow import ArbeitnowScanner
+from scraper.scrapers.base import BaseScanner
+from scraper.scrapers.career_portal import CareerPortalScanner
+
+DB_FILE = DATA_FILE
 
 class ScannerEngine:
     """

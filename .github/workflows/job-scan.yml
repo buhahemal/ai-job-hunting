@@ -2,15 +2,14 @@ name: Scheduled Job Scan & Score
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day
     - cron: '0 0 * * *'
-  workflow_dispatch: # Allows manual trigger directly from GitHub actions tab
+  workflow_dispatch:
 
 jobs:
   scan-and-score:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Important to push commits back to the repo
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -21,20 +20,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Python Dependencies
-        run: pip install -r requirements.txt
+      - name: Install Scraper Dependencies
+        run: pip install -r scraper/requirements.txt
 
       - name: Run Job Scraper Pipeline
         env:
           PYTHONPATH: .
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python3 -m scripts.scraper
+        run: python3 -m scraper
 
       - name: Commit & Push Updated Leads
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data.json
+          git add backend/data/data.json
           if git diff --staged --quiet; then
             echo "No new jobs fetched in this interval."
           else
