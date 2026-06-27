@@ -50,7 +50,7 @@ The scanner only **persists jobs with match score above 75%** and tries to colle
 | `SCANNER_MAX_EVALUATIONS`      | No       | Max unique jobs to score per run (default `3000`)         |
 | `HF_TOKEN`                     | No       | Optional Hugging Face token for faster model downloads    |
 
-Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. GitHub Actions `scanner-cron` uses a **60-minute** timeout.
+Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. Jobs already evaluated in prior runs are skipped via a persistent `scannedJobKeys` registry (JSON) or `scanned_jobs` table (Supabase). GitHub Actions `scanner-cron` uses a **60-minute** timeout.
 
 Paths: `packages/config/python/paths.py`
 

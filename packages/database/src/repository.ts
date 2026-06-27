@@ -29,7 +29,7 @@ export class DashboardRepository {
   async listJobs(): Promise<JobRecord[]> {
     const { data, error } = await this.client
       .from('jobs')
-      .select('*')
+      .select('*, job_match_scores(*)')
       .order('posted_at', { ascending: false });
     if (error) throw error;
     return ((data ?? []) as JobRow[]).map(rowToJob);

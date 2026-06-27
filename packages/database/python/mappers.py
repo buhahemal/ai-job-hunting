@@ -5,9 +5,55 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 
+def match_insights_to_row(job_id: str, insights: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert nested matchInsights payload to job_match_scores row."""
+    return {
+        'job_id': job_id,
+        'overall_score': insights.get('overallScore', 0),
+        'skill_match_score': insights.get('skillMatchScore', 0),
+        'experience_match_score': insights.get('experienceMatchScore', 0),
+        'ats_score': insights.get('atsScore', 0),
+        'salary_match_score': insights.get('salaryMatchScore', 0),
+        'company_match_score': insights.get('companyMatchScore', 0),
+        'location_match_score': insights.get('locationMatchScore', 0),
+        'remote_match_score': insights.get('remoteMatchScore', 0),
+        'confidence_score': insights.get('confidenceScore', 0),
+        'matched_skills': insights.get('matchedSkills') or [],
+        'missing_skills': insights.get('missingSkills') or [],
+        'missing_keywords': insights.get('missingKeywords') or [],
+        'resume_suggestions': insights.get('resumeSuggestions') or [],
+        'match_explanation': insights.get('matchExplanation'),
+        'scorer': insights.get('scorer'),
+    }
+
+
+def row_to_match_insights(row: Dict[str, Any] | None) -> Dict[str, Any] | None:
+    """Convert job_match_scores row to camelCase insights dict."""
+    if not row:
+        return None
+    return {
+        'overallScore': row.get('overall_score', 0),
+        'skillMatchScore': row.get('skill_match_score', 0),
+        'experienceMatchScore': row.get('experience_match_score', 0),
+        'atsScore': row.get('ats_score', 0),
+        'salaryMatchScore': row.get('salary_match_score', 0),
+        'companyMatchScore': row.get('company_match_score', 0),
+        'locationMatchScore': row.get('location_match_score', 0),
+        'remoteMatchScore': row.get('remote_match_score', 0),
+        'confidenceScore': row.get('confidence_score', 0),
+        'matchedSkills': row.get('matched_skills') or [],
+        'missingSkills': row.get('missing_skills') or [],
+        'missingKeywords': row.get('missing_keywords') or [],
+        'resumeSuggestions': row.get('resume_suggestions') or [],
+        'matchExplanation': row.get('match_explanation') or '',
+        'scorer': row.get('scorer'),
+    }
+
+
 def job_to_row(job: Dict[str, Any]) -> Dict[str, Any]:
     """Convert canonical job dict (camelCase) to database row (snake_case)."""
-    external_id = job.get('external_id') or job.get('id', '')
+    external_id = job.get('externalId') or job.get('external_id') or job.get('id', '')
+    insights = job.get('matchInsights') or {}
     return {
         'id': job['id'],
         'source': job.get('source', 'Unknown'),
@@ -20,22 +66,37 @@ def job_to_row(job: Dict[str, Any]) -> Dict[str, Any]:
         'description': job.get('description'),
         'posted_at': job.get('postedAt'),
         'status': job.get('status', 'New'),
-        'score': job.get('score'),
-        'fit_explanation': job.get('fitExplanation'),
+        'score': job.get('score') or insights.get('overallScore'),
+        'fit_explanation': job.get('fitExplanation') or insights.get('matchExplanation'),
         'extracted_skills': job.get('extractedSkills') or [],
         'salary_estimate': job.get('salaryEstimate'),
         'seniority': job.get('seniority'),
         'notes': job.get('notes'),
         'tailored_resume_latex': job.get('tailoredResumeLaTeX'),
         'tailored_cover_letter': job.get('tailoredCoverLetter'),
-        'ats_score': job.get('atsScore'),
+        'ats_score': job.get('atsScore') or insights.get('atsScore'),
+        'employment_type': job.get('employmentType'),
+        'required_skills': job.get('requiredSkills') or [],
+        'preferred_skills': job.get('preferredSkills') or [],
+        'extracted_technologies': job.get('extractedTechnologies') or [],
+        'application_url': job.get('applicationUrl') or job.get('url'),
+        'source_posted_at': job.get('sourcePostedAt') or None,
+        'scanned_at': job.get('scannedAt'),
+        'canonical_role': job.get('canonicalRole'),
+        'primary_stack': job.get('primaryStack'),
+        'priority': job.get('priority'),
+        'is_duplicate': bool(job.get('isDuplicate')),
+        'duplicate_of': job.get('duplicateOf'),
+        'match_scorer': job.get('matchScorer') or insights.get('scorer'),
     }
 
 
-def row_to_job(row: Dict[str, Any]) -> Dict[str, Any]:
+def row_to_job(row: Dict[str, Any], match_row: Dict[str, Any] | None = None) -> Dict[str, Any]:
     """Convert database row to canonical job dict."""
+    insights = row_to_match_insights(match_row)
     return {
         'id': row['id'],
+        'externalId': row.get('external_id') or row['id'],
         'title': row.get('title', ''),
         'company': row.get('company', ''),
         'location': row.get('location') or '',
@@ -54,6 +115,20 @@ def row_to_job(row: Dict[str, Any]) -> Dict[str, Any]:
         'tailoredResumeLaTeX': row.get('tailored_resume_latex'),
         'tailoredCoverLetter': row.get('tailored_cover_letter'),
         'atsScore': row.get('ats_score'),
+        'employmentType': row.get('employment_type'),
+        'requiredSkills': row.get('required_skills') or [],
+        'preferredSkills': row.get('preferred_skills') or [],
+        'extractedTechnologies': row.get('extracted_technologies') or [],
+        'applicationUrl': row.get('application_url') or row.get('url') or '',
+        'sourcePostedAt': row.get('source_posted_at') or '',
+        'scannedAt': row.get('scanned_at') or '',
+        'canonicalRole': row.get('canonical_role'),
+        'primaryStack': row.get('primary_stack'),
+        'priority': row.get('priority'),
+        'isDuplicate': row.get('is_duplicate', False),
+        'duplicateOf': row.get('duplicate_of'),
+        'matchScorer': row.get('match_scorer'),
+        'matchInsights': insights,
     }
 
 

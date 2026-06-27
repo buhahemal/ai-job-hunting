@@ -5,8 +5,6 @@ import {
   BarChart2,
   User,
   FileText,
-  Search,
-  Filter,
   Plus,
   RefreshCw,
   ChevronRight,
@@ -17,7 +15,6 @@ import {
   FileCheck,
   Save,
   Info,
-  ArrowUpRight,
 } from 'lucide-react';
 import * as api from './api/client';
 import { getProfileInitials } from './api/defaultProfile';
@@ -25,6 +22,8 @@ import { Profile, Job, Interview } from './types';
 import ResumePreview from './components/ResumePreview';
 import AnalyticsView from './components/AnalyticsView';
 import InterviewTracker from './components/InterviewTracker';
+import JobDetailPanel from './components/JobDetailPanel';
+import JobFilters, { filterJobs, type JobFilterState } from './components/JobFilters';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
@@ -39,11 +38,17 @@ export default function App() {
   const [scanning, setScanning] = useState(false);
   const [tailoringId, setTailoringId] = useState<string | null>(null);
 
-  // Search & Filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [scoreFilter, setScoreFilter] = useState('All');
-  const [remoteFilter, setRemoteFilter] = useState('All');
+  const [filters, setFilters] = useState<JobFilterState>({
+    searchQuery: '',
+    statusFilter: 'All',
+    scoreFilter: 'All',
+    remoteFilter: 'All',
+    seniorityFilter: 'All',
+    sourceFilter: 'All',
+    roleFilter: 'All',
+    priorityFilter: 'All',
+    hideDuplicates: true,
+  });
 
   // Modals & Forms
   const [manualImportOpen, setManualImportOpen] = useState(false);
@@ -262,25 +267,11 @@ export default function App() {
     }
   };
 
-  // Filter & Search computation
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (job.extractedSkills &&
-        job.extractedSkills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase())));
-
-    const matchesStatus = statusFilter === 'All' ? true : job.status === statusFilter;
-
-    let matchesScore = true;
-    if (scoreFilter === 'Excellent') matchesScore = (job.score || 0) >= 85;
-    else if (scoreFilter === 'Good') matchesScore = (job.score || 0) >= 70 && (job.score || 0) < 85;
-    else if (scoreFilter === 'Fair') matchesScore = (job.score || 0) < 70;
-
-    const matchesRemote = remoteFilter === 'All' ? true : job.remoteType === remoteFilter;
-
-    return matchesSearch && matchesStatus && matchesScore && matchesRemote;
-  });
+  const filteredJobs = filterJobs(jobs, filters);
+  const sourceOptions = [...new Set(jobs.map((job) => job.source).filter(Boolean))].sort();
+  const roleOptions = [
+    ...new Set(jobs.map((job) => job.canonicalRole).filter(Boolean)),
+  ].sort() as string[];
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
@@ -412,8 +403,8 @@ export default function App() {
                     Career Leads & Discovery
                   </h2>
                   <p className="text-xs text-slate-500 mt-1">
-                    Discover high-priority engineering openings, analyze alignment using Gemini, and
-                    schedule auto-tailor pipelines.
+                    Discover high-priority engineering openings with enriched match insights, score
+                    breakdowns, and resume guidance.
                   </p>
                 </div>
 
@@ -436,62 +427,12 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Filtering Block */}
-              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-wrap gap-4 items-center justify-between">
-                <div className="flex-1 min-w-[240px] relative">
-                  <Search className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    placeholder="Search roles, companies, or key technologies (e.g. Terraform)..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 pl-9 pr-4 py-2 rounded-lg text-xs border border-slate-200/80 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <Filter className="h-3.5 w-3.5 text-slate-400" />
-                    <span className="text-[11px] font-bold text-slate-500 uppercase">Filters:</span>
-                  </div>
-
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  >
-                    <option value="All">All Statuses</option>
-                    <option value="New">New Leads</option>
-                    <option value="Shortlisted">Shortlisted</option>
-                    <option value="Applied">Applied</option>
-                    <option value="Interviewing">Interviewing</option>
-                    <option value="Offer">Offers Received</option>
-                    <option value="Rejected">Rejected</option>
-                  </select>
-
-                  <select
-                    value={scoreFilter}
-                    onChange={(e) => setScoreFilter(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  >
-                    <option value="All">All Match Levels</option>
-                    <option value="Excellent">Excellent (&gt;85%)</option>
-                    <option value="Good">Good (70-85%)</option>
-                    <option value="Fair">Fair (&lt;70%)</option>
-                  </select>
-
-                  <select
-                    value={remoteFilter}
-                    onChange={(e) => setRemoteFilter(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                  >
-                    <option value="All">All Settings</option>
-                    <option value="Remote">Remote</option>
-                    <option value="Hybrid">Hybrid</option>
-                    <option value="On-site">On-site</option>
-                  </select>
-                </div>
-              </div>
+              <JobFilters
+                filters={filters}
+                sources={sourceOptions}
+                roles={roleOptions}
+                onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+              />
 
               {/* Feed List Grid */}
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
@@ -540,6 +481,23 @@ export default function App() {
                             <p className="text-xs font-semibold text-slate-500 mt-0.5">
                               {job.company}
                             </p>
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {job.canonicalRole && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold uppercase">
+                                  {job.canonicalRole}
+                                </span>
+                              )}
+                              {job.priority && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-bold uppercase">
+                                  {job.priority}
+                                </span>
+                              )}
+                              {job.primaryStack && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-600 font-medium">
+                                  {job.primaryStack}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           {/* Fit Score Badge */}
@@ -655,146 +613,13 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Sliding details panel / right details view */}
-                <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6 space-y-6">
-                  {selectedJob ? (
-                    <>
-                      {/* Top Row Title */}
-                      <div className="flex justify-between items-start gap-3 border-b border-slate-50 pb-4">
-                        <div>
-                          <span className="text-[10px] font-mono font-bold uppercase text-slate-400">
-                            {selectedJob.source}
-                          </span>
-                          <h3 className="text-base font-bold text-slate-800 mt-1">
-                            {selectedJob.title}
-                          </h3>
-                          <p className="text-xs font-semibold text-slate-500 mt-0.5">
-                            {selectedJob.company} &bull; {selectedJob.location}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setSelectedJob(null)}
-                          className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      {/* AI Deep Insight Box */}
-                      <div className="bg-gradient-to-br from-indigo-50 to-sky-50/50 rounded-xl border border-indigo-100/30 p-4.5 space-y-3.5">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-800 uppercase tracking-wide">
-                          <Sparkles className="h-4 w-4 text-indigo-500" />
-                          <span>Gemini AI Profile Assessment</span>
-                        </div>
-
-                        {selectedJob.fitExplanation ? (
-                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                            {selectedJob.fitExplanation}
-                          </p>
-                        ) : (
-                          <div className="space-y-2">
-                            <p className="text-xs text-slate-600 italic">
-                              No AI match score has been computed for this custom job yet.
-                            </p>
-                            <button
-                              onClick={() => handleTailorJob(selectedJob.id)}
-                              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-md font-medium"
-                            >
-                              Analyze Alignment
-                            </button>
-                          </div>
-                        )}
-
-                        {selectedJob.score !== undefined && (
-                          <div className="flex items-center justify-between border-t border-indigo-100/40 pt-3 text-xs">
-                            <span className="text-slate-500 font-semibold uppercase text-[10px]">
-                              Suitability Index:
-                            </span>
-                            <span
-                              className={`font-black uppercase text-xs px-2.5 py-0.5 rounded-full ${
-                                selectedJob.score >= 85
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : selectedJob.score >= 70
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : 'bg-slate-200 text-slate-800'
-                              }`}
-                            >
-                              {selectedJob.score >= 85
-                                ? 'Highly Recommended'
-                                : selectedJob.score >= 70
-                                  ? 'Feasible Match'
-                                  : 'High Barrier'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action trigger banner */}
-                      <div className="space-y-2.5">
-                        <button
-                          onClick={() => handleTailorJob(selectedJob.id)}
-                          disabled={tailoringId === selectedJob.id}
-                          className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white text-xs py-2.5 rounded-lg font-semibold tracking-wide uppercase transition-all shadow-sm flex items-center justify-center gap-1.5"
-                        >
-                          {tailoringId === selectedJob.id ? (
-                            <>
-                              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                              <span>Tailoring LaTeX Template...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                              <span>Tailor Resume & Cover Letter</span>
-                            </>
-                          )}
-                        </button>
-
-                        {selectedJob.url && (
-                          <a
-                            href={selectedJob.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-white border border-slate-200 text-slate-700 text-xs py-2.5 rounded-lg font-semibold tracking-wide uppercase transition-all flex items-center justify-center gap-1 hover:bg-slate-50"
-                          >
-                            <span>Open Career Portal</span>
-                            <ArrowUpRight className="h-4 w-4" />
-                          </a>
-                        )}
-                      </div>
-
-                      {/* Notes Box */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                          My Tracking Notes
-                        </label>
-                        <textarea
-                          placeholder="Write down referral contacts, application login passwords, salary negotiations, or general updates..."
-                          defaultValue={selectedJob.notes || ''}
-                          onBlur={(e) => handleSaveNotes(selectedJob.id, e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none min-h-[80px]"
-                        />
-                      </div>
-
-                      {/* Full Job description scroll block */}
-                      <div className="space-y-2 border-t border-slate-50 pt-4">
-                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-                          Job Description Summary
-                        </h4>
-                        <div className="text-xs text-slate-600 leading-relaxed max-h-[300px] overflow-auto whitespace-pre-wrap pr-1 font-sans">
-                          {selectedJob.description}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-12 text-slate-400 space-y-3">
-                      <Info className="h-8 w-8 text-slate-300 mx-auto" />
-                      <p className="text-xs">
-                        Select a job lead from the list to view comprehensive Gemini AI assessments,
-                        study missing skills keywords, and compile tailored resumes instantly.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <JobDetailPanel
+                  job={selectedJob}
+                  tailoring={tailoringId === selectedJob?.id}
+                  onClose={() => setSelectedJob(null)}
+                  onTailor={handleTailorJob}
+                  onSaveNotes={handleSaveNotes}
+                />
               </div>
             </div>
           )}

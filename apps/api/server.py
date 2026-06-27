@@ -183,20 +183,11 @@ def add_custom_job():
         "status": "New"
     }
 
-    # Perform instant AI score
-    analysis = ai_matcher.score_job(new_job, db.get("profile", {}))
-    new_job.update({
-        "score": analysis.get("score", 70),
-        "extractedSkills": analysis.get("extractedSkills", []),
-        "seniority": analysis.get("seniority", "Mid-level"),
-        "remoteType": analysis.get("remoteType", new_job["remoteType"]),
-        "salaryEstimate": analysis.get("salaryEstimate", "Not Specified"),
-        "fitExplanation": analysis.get("fitExplanation", "")
-    })
-
-    db.setdefault("jobs", []).insert(0, new_job)
+    # Perform instant AI enrichment
+    enriched = ai_matcher.enrich_job(new_job, db.get("profile", {}), existing_jobs=db.get("jobs", []))
+    db.setdefault("jobs", []).insert(0, enriched)
     write_db(db)
-    return jsonify({"success": True, "job": new_job})
+    return jsonify({"success": True, "job": enriched})
 
 @app.route("/api/jobs/scan", methods=["POST"])
 def scan_jobs():

@@ -1,12 +1,12 @@
 import os
 import json
-from datetime import datetime
 from typing import Dict, List, Optional, Protocol, Tuple
 
 from apps.api.defaults import DEFAULT_PROFILE, normalize_profile
 from scraper.ai_matcher import AIMatcher
 from scraper.paths import DATA_FILE
 from packages.scanner_sdk.python.base import BaseScanner
+from packages.scanner_sdk.python.dedupe import job_dedupe_key, merge_scanned_keys, scanned_job_record
 from packages.scanner_sdk.python.registry import get_registered_scanners
 
 DB_FILE = DATA_FILE
@@ -25,6 +25,10 @@ class JobStore(Protocol):
     def get_profile(self) -> Dict: ...
 
     def get_dedupe_indexes(self) -> Tuple[set, set]: ...
+
+    def get_scanned_keys(self) -> set: ...
+
+    def record_scanned_jobs(self, records: List[Dict]) -> None: ...
 
     def persist_new_jobs(self, jobs: List[Dict]) -> None: ...
 
@@ -57,6 +61,24 @@ class JsonJobStore:
         signatures = {f"{j.get('title')}-{j.get('company')}".lower() for j in jobs}
         return urls, signatures
 
+    def get_scanned_keys(self) -> set:
+        db = self.read_db()
+        keys = db.get("scannedJobKeys", [])
+        return set(keys) if isinstance(keys, list) else set()
+
+    def record_scanned_jobs(self, records: List[Dict]) -> None:
+        if not records:
+            return
+        db = self.read_db()
+        existing = set(db.get("scannedJobKeys", []))
+        for record in records:
+            key = record.get("dedupe_key")
+            if key:
+                existing.add(key)
+        db["scannedJobKeys"] = sorted(existing)
+        with open(self._path, "w", encoding="utf-8") as handle:
+            json.dump(db, handle, indent=2)
+
     def persist_new_jobs(self, jobs: List[Dict]) -> None:
         db = self.read_db()
         db["jobs"] = jobs + db.get("jobs", [])
@@ -76,6 +98,14 @@ class SupabaseJobStore:
 
     def get_dedupe_indexes(self) -> Tuple[set, set]:
         return self._repo.get_dedupe_indexes()
+
+    def get_scanned_keys(self) -> set:
+        return self._repo.get_scanned_keys()
+
+    def record_scanned_jobs(self, records: List[Dict]) -> None:
+        count = self._repo.record_scanned_jobs(records)
+        if count:
+            print(f"[SupabaseJobStore] Recorded {count} scanned job key(s).")
 
     def persist_new_jobs(self, jobs: List[Dict]) -> None:
         count = self._repo.upsert_jobs(jobs)
@@ -179,13 +209,6 @@ class ScannerEngine:
             return DEFAULT_MAX_EVALUATIONS
 
     @staticmethod
-    def _job_dedupe_key(canonical: Dict) -> str:
-        url = (canonical.get("url") or "").strip()
-        if url:
-            return url
-        return f"{canonical.get('title')}-{canonical.get('company')}".lower()
-
-    @staticmethod
     def _evaluate_scraper_batch(
         scraper: BaseScanner,
         *,
@@ -193,10 +216,11 @@ class ScannerEngine:
         threshold: int,
         target_jobs: int,
         limit: int,
-        existing_urls: set,
-        existing_signatures: set,
+        scanned_at_start: set,
         evaluated_keys: set,
+        existing_jobs: List[Dict],
         added_jobs: List[Dict],
+        new_scan_records: List[Dict],
         stats: Dict[str, int],
         matcher: Optional[AIMatcher] = None,
     ) -> Tuple[int, int]:
@@ -218,64 +242,73 @@ class ScannerEngine:
                 break
 
             canonical = scraper.normalize(raw_job)
-            signature = f"{canonical.get('title')}-{canonical.get('company')}".lower()
-            dedupe_key = ScannerEngine._job_dedupe_key(canonical)
+            dedupe_key = job_dedupe_key(canonical)
 
             if dedupe_key in evaluated_keys:
-                stats["skipped_repeat"] += 1
-                continue
-            if canonical.get("url") in existing_urls or signature in existing_signatures:
-                stats["skipped_known"] += 1
+                if dedupe_key in scanned_at_start:
+                    stats["skipped_previously_scanned"] += 1
+                else:
+                    stats["skipped_repeat"] += 1
                 continue
 
             evaluated_keys.add(dedupe_key)
             stats["evaluated"] += 1
             newly_evaluated += 1
-            score = ScannerEngine._apply_match_analysis_static(canonical, profile, matcher)
+            enriched = ScannerEngine._enrich_job_static(
+                canonical, profile, matcher, existing_jobs + added_jobs
+            )
+            score = ScannerEngine._coerce_score({"score": enriched.get("score", 0)})
+            new_scan_records.append(scanned_job_record(enriched, score=score))
+
+            if enriched.get("isDuplicate"):
+                stats["skipped_duplicate"] += 1
+                print(
+                    f"[ScannerEngine] Skipped duplicate: "
+                    f"{enriched.get('title')} at {enriched.get('company')}"
+                )
+                continue
 
             if score <= threshold:
                 stats["ignored_low_score"] += 1
                 print(
                     f"[ScannerEngine] Ignored (match {score}% <= {threshold}%): "
-                    f"{canonical.get('title')} at {canonical.get('company')}"
+                    f"{enriched.get('title')} at {enriched.get('company')}"
                 )
                 continue
 
             print(
                 f"[ScannerEngine] Accepted (match {score}%): "
-                f"{canonical.get('title')} at {canonical.get('company')}"
+                f"{enriched.get('title')} at {enriched.get('company')} "
+                f"[{enriched.get('canonicalRole')} / {enriched.get('priority')}]"
             )
-            added_jobs.append(canonical)
-            existing_urls.add(canonical.get("url"))
-            existing_signatures.add(signature)
+            added_jobs.append(enriched)
             accepted += 1
 
         return accepted, newly_evaluated
 
     def _apply_match_analysis(self, canonical: Dict, profile: Dict) -> int:
         """Score a job and attach match metadata. Returns numeric match score."""
-        return self._apply_match_analysis_static(canonical, profile, self.ai_matcher)
+        enriched = self._enrich_job_static(canonical, profile, self.ai_matcher, [])
+        return int(enriched.get("score", 0))
+
+    @staticmethod
+    def _enrich_job_static(
+        canonical: Dict,
+        profile: Dict,
+        matcher: Optional[AIMatcher] = None,
+        existing_jobs: Optional[List[Dict]] = None,
+    ) -> Dict:
+        """Enrich a job using the provided matcher (or a fresh one for tests)."""
+        ai = matcher or AIMatcher()
+        return ai.enrich_job(canonical, profile, existing_jobs=existing_jobs or [])
 
     @staticmethod
     def _apply_match_analysis_static(
         canonical: Dict, profile: Dict, matcher: Optional[AIMatcher] = None
     ) -> int:
         """Score a job using the provided matcher (or a fresh one for tests)."""
-        ai = matcher or AIMatcher()
-        analysis = ai.score_job(canonical, profile)
-        score = ScannerEngine._coerce_score(analysis)
-        canonical.update(
-            {
-                "score": score,
-                "extractedSkills": analysis.get("extractedSkills", []),
-                "seniority": analysis.get("seniority", "Unknown"),
-                "remoteType": analysis.get("remoteType", canonical.get("remoteType")),
-                "salaryEstimate": analysis.get("salaryEstimate", "Not Specified"),
-                "fitExplanation": analysis.get("fitExplanation", ""),
-                "postedAt": datetime.utcnow().isoformat() + "Z",
-            }
-        )
-        return score
+        enriched = ScannerEngine._enrich_job_static(canonical, profile, matcher, [])
+        return ScannerEngine._coerce_score({"score": enriched.get("score", 0)})
 
     @staticmethod
     def _coerce_score(analysis: Dict) -> int:
@@ -315,16 +348,32 @@ class ScannerEngine:
         )
 
         profile = self.store.get_profile()
-        existing_urls, existing_signatures = self.store.get_dedupe_indexes()
+        scanned_registry = self.store.get_scanned_keys()
+        saved_jobs = (
+            self.read_db().get("jobs", [])
+            if isinstance(self.store, JsonJobStore)
+            else self.store._repo.list_jobs()
+            if isinstance(self.store, SupabaseJobStore)
+            else []
+        )
+        scanned_at_start = merge_scanned_keys(scanned_registry, saved_jobs)
+        evaluated_keys: set = set(scanned_at_start)
 
         added_jobs: List[Dict] = []
-        evaluated_keys: set = set()
+        new_scan_records: List[Dict] = []
         stats = {
             "evaluated": 0,
             "ignored_low_score": 0,
             "skipped_repeat": 0,
-            "skipped_known": 0,
+            "skipped_previously_scanned": 0,
+            "skipped_duplicate": 0,
         }
+
+        if scanned_at_start:
+            print(
+                f"[ScannerEngine] Skipping {len(scanned_at_start)} job(s) "
+                "already scanned in prior runs."
+            )
 
         current_limit = min(limit_per_source, max_limit)
         pass_num = 0
@@ -357,10 +406,11 @@ class ScannerEngine:
                     threshold=threshold,
                     target_jobs=target_jobs,
                     limit=current_limit,
-                    existing_urls=existing_urls,
-                    existing_signatures=existing_signatures,
+                    scanned_at_start=scanned_at_start,
                     evaluated_keys=evaluated_keys,
+                    existing_jobs=saved_jobs + added_jobs,
                     added_jobs=added_jobs,
+                    new_scan_records=new_scan_records,
                     stats=stats,
                     matcher=self.ai_matcher,
                 )
@@ -385,6 +435,9 @@ class ScannerEngine:
             if current_limit < max_limit:
                 current_limit = min(current_limit + step, max_limit)
 
+        if new_scan_records:
+            self.store.record_scanned_jobs(new_scan_records)
+
         if added_jobs:
             self.store.persist_new_jobs(added_jobs)
             target = "Supabase" if isinstance(self.store, SupabaseJobStore) else "data.json"
@@ -398,7 +451,9 @@ class ScannerEngine:
                 f"[ScannerEngine] Sync complete! No jobs exceeded the {threshold}% match threshold "
                 f"after {pass_num} pass(es) "
                 f"(evaluated {stats['evaluated']}, ignored {stats['ignored_low_score']}, "
-                f"skipped known {stats['skipped_known']}, skipped repeat {stats['skipped_repeat']})."
+                f"skipped previously scanned {stats['skipped_previously_scanned']}, "
+                f"skipped duplicate {stats['skipped_duplicate']}, "
+                f"skipped repeat {stats['skipped_repeat']})."
             )
 
         if len(added_jobs) < target_jobs:
