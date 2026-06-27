@@ -21,6 +21,7 @@ export interface JobMatchInsights {
   locationMatchScore: number;
   remoteMatchScore: number;
   confidenceScore: number;
+  skillMatchConfidence?: number;
   matchedSkills: string[];
   missingSkills: string[];
   missingKeywords: string[];
@@ -198,6 +199,10 @@ export interface ScannedJobRow {
   scorer: string | null;
   promoted_to_jobs: boolean;
   scan_run_id: string | null;
+  promotion_type?: string | null;
+  profile_hash?: string | null;
+  skill_match_confidence?: number | null;
+  rescored_at?: string | null;
 }
 
 export interface ScannedJobRecord {
@@ -227,6 +232,10 @@ export interface ScannedJobRecord {
   scorer?: string;
   promotedToJobs: boolean;
   scanRunId?: string;
+  promotionType?: string;
+  profileHash?: string;
+  skillMatchConfidence?: number;
+  rescoredAt?: string;
   scannedAt: string;
 }
 

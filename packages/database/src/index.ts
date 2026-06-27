@@ -1,10 +1,14 @@
 export { createBrowserClient, readSupabaseEnvFromImportMeta } from './client.js';
 export {
   buildScanSummary,
+  filterVerifiedGaps,
   jobToRow,
+  matchInsightsToRow,
+  normalizeSkillToken,
   rowToInterview,
   rowToJob,
   rowToScannedJob,
+  scannedJobRowToJob,
   interviewToRow,
 } from './mappers.js';
 export { DashboardRepository } from './repository.js';

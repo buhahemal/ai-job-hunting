@@ -15,6 +15,7 @@ from packages.database.python.mappers import (
     row_to_interview,
     row_to_job,
     row_to_scanned_job,
+    scanned_job_row_to_job,
     scanned_job_to_row,
 )
 
@@ -147,8 +148,45 @@ class JobRepository:
             'total': total,
         }
 
+    def list_scanned_job_rows(self, *, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Return raw scanned_jobs rows for rescan engine."""
+        query = self._client.table('scanned_jobs').select('*').order('scanned_at', desc=True)
+        if limit is not None:
+            query = query.limit(max(1, limit))
+        response = query.execute()
+        return response.data or []
+
+    def get_scanned_job_by_key(self, dedupe_key: str) -> Optional[Dict[str, Any]]:
+        """Fetch one scanned job row by dedupe key."""
+        response = (
+            self._client.table('scanned_jobs')
+            .select('*')
+            .eq('dedupe_key', dedupe_key)
+            .maybe_single()
+            .execute()
+        )
+        return response.data
+
+    def promote_scanned_job_to_lead(self, dedupe_key: str) -> Dict[str, Any]:
+        """Promote a scanned job into the Job Leads pipeline (manual override)."""
+        row = self.get_scanned_job_by_key(dedupe_key)
+        if not row:
+            raise ValueError(f'Scanned job not found: {dedupe_key}')
+
+        job = scanned_job_row_to_job(row)
+        self.upsert_jobs([job])
+
+        self._client.table('scanned_jobs').update(
+            {'promoted_to_jobs': True, 'promotion_type': 'manual'}
+        ).eq('dedupe_key', dedupe_key).execute()
+
+        return job
+
     def get_scan_summary(self, *, threshold: int = 75) -> Dict[str, Any]:
         """Aggregate scan insight statistics for dashboard summary header."""
+        from packages.ai_engine.python.skill_matcher import filter_verified_gaps
+
+        profile = self.get_profile()
         all_response = (
             self._client.table('scanned_jobs')
             .select(
@@ -190,6 +228,9 @@ class JobRepository:
                 latest_run_id = row.get('scan_run_id')
             for skill in row.get('missing_skills') or []:
                 skill_text = str(skill)
+                verified = filter_verified_gaps([skill_text], profile)
+                if not verified:
+                    continue
                 missing_counter[skill_text] += 1
                 missing_score_sum[skill_text] = missing_score_sum.get(skill_text, 0) + int(overall)
 

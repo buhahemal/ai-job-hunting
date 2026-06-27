@@ -78,6 +78,7 @@ def scanned_job_record(
         "scorer": insights.get("scorer") or job.get("matchScorer"),
         "promoted_to_jobs": promoted_to_jobs,
         "scan_run_id": run_id,
+        "skill_match_confidence": insights.get("skillMatchConfidence"),
     }
 
 

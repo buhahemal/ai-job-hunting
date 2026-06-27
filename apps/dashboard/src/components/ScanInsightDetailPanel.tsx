@@ -1,9 +1,12 @@
-import { ArrowUpRight, Search, X } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUpRight, Search, Sparkles, X } from 'lucide-react';
 import type { ScannedJobRecord } from '@ai-job-hunter/database';
+import * as api from '../api/client';
 
 interface ScanInsightDetailPanelProps {
   insight: ScannedJobRecord | null;
   onClose: () => void;
+  onPromoted?: (dedupeKey: string) => void;
 }
 
 function ScoreBar({ label, value }: { label: string; value?: number }) {
@@ -57,7 +60,15 @@ function ChipList({
   );
 }
 
-export default function ScanInsightDetailPanel({ insight, onClose }: ScanInsightDetailPanelProps) {
+export default function ScanInsightDetailPanel({
+  insight,
+  onClose,
+  onPromoted,
+}: ScanInsightDetailPanelProps) {
+  const [promoting, setPromoting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [promoteMessage, setPromoteMessage] = useState<string | null>(null);
+
   if (!insight) {
     return (
       <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6">
@@ -70,6 +81,21 @@ export default function ScanInsightDetailPanel({ insight, onClose }: ScanInsight
       </div>
     );
   }
+
+  const handlePromote = async () => {
+    setPromoting(true);
+    setPromoteMessage(null);
+    try {
+      await api.promoteScannedJob(insight.dedupeKey);
+      setShowConfirm(false);
+      setPromoteMessage('Added to Job Leads. Open the Job Leads tab to apply or tailor.');
+      onPromoted?.(insight.dedupeKey);
+    } catch (error) {
+      setPromoteMessage(error instanceof Error ? error.message : 'Promotion failed.');
+    } finally {
+      setPromoting(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6 space-y-6 max-h-[calc(100vh-8rem)] overflow-auto">
@@ -113,17 +139,27 @@ export default function ScanInsightDetailPanel({ insight, onClose }: ScanInsight
           <div className="text-[10px] font-bold uppercase tracking-wider">Overall Match</div>
           <div className="text-2xl font-extrabold">{insight.overallScore}%</div>
         </div>
-        {insight.scannedAt && (
-          <p className="text-[10px] text-slate-400 font-mono">
-            Scanned {new Date(insight.scannedAt).toLocaleString()}
-          </p>
-        )}
+        <div className="text-right space-y-1">
+          {insight.scannedAt && (
+            <p className="text-[10px] text-slate-400 font-mono">
+              Scanned {new Date(insight.scannedAt).toLocaleString()}
+            </p>
+          )}
+          {insight.rescoredAt && (
+            <p className="text-[10px] text-indigo-500 font-mono">
+              Rescored {new Date(insight.rescoredAt).toLocaleString()}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="space-y-3">
         <ScoreBar label="Skill Match" value={insight.skillMatchScore} />
         <ScoreBar label="Experience Match" value={insight.experienceMatchScore} />
         <ScoreBar label="ATS Readiness" value={insight.atsScore} />
+        {insight.skillMatchConfidence !== undefined && (
+          <ScoreBar label="Match Confidence" value={insight.skillMatchConfidence} />
+        )}
       </div>
 
       {insight.matchExplanation && (
@@ -134,8 +170,56 @@ export default function ScanInsightDetailPanel({ insight, onClose }: ScanInsight
       )}
 
       <ChipList title="Matched Skills" items={insight.matchedSkills} tone="good" />
-      <ChipList title="Missing Skills" items={insight.missingSkills} tone="warn" />
+      <ChipList
+        title="Missing Skills (job requirements)"
+        items={insight.missingSkills}
+        tone="warn"
+      />
       <ChipList title="Missing Keywords" items={insight.missingKeywords} tone="neutral" />
+
+      {!insight.promotedToJobs && (
+        <div className="space-y-2">
+          {showConfirm ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-3">
+              <p className="text-xs text-amber-900">
+                Add to your apply/tailor pipeline regardless of auto score?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handlePromote()}
+                  disabled={promoting}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-semibold disabled:opacity-50"
+                >
+                  {promoting ? 'Promoting…' : 'Confirm promote'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(false)}
+                  className="px-3 text-xs py-2 rounded-lg border border-slate-200 text-slate-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowConfirm(true)}
+              className="flex items-center justify-center gap-2 w-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs py-2.5 rounded-lg font-semibold transition-colors"
+            >
+              <Sparkles className="h-4 w-4" />
+              Promote to Job Leads
+            </button>
+          )}
+        </div>
+      )}
+
+      {promoteMessage && (
+        <p className="text-[10px] text-slate-600 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
+          {promoteMessage}
+        </p>
+      )}
 
       {insight.applicationUrl && (
         <a

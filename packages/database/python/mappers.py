@@ -192,6 +192,10 @@ def scanned_job_to_row(record: Dict[str, Any]) -> Dict[str, Any]:
         'scorer': record.get('scorer'),
         'promoted_to_jobs': bool(record.get('promoted_to_jobs')),
         'scan_run_id': record.get('scan_run_id'),
+        'promotion_type': record.get('promotion_type'),
+        'profile_hash': record.get('profile_hash'),
+        'skill_match_confidence': record.get('skill_match_confidence'),
+        'rescored_at': record.get('rescored_at'),
     }
 
 
@@ -225,5 +229,59 @@ def row_to_scanned_job(row: Dict[str, Any]) -> Dict[str, Any]:
         'scorer': row.get('scorer'),
         'promotedToJobs': bool(row.get('promoted_to_jobs')),
         'scanRunId': row.get('scan_run_id'),
+        'promotionType': row.get('promotion_type'),
+        'profileHash': row.get('profile_hash'),
+        'skillMatchConfidence': row.get('skill_match_confidence'),
+        'rescoredAt': row.get('rescored_at') or '',
         'scannedAt': row.get('scanned_at') or '',
+    }
+
+
+def scanned_job_row_to_job(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Map a scanned_jobs row to a canonical job dict for promotion to leads."""
+    overall = row.get('overall_score', row.get('score')) or 0
+    job_id = row.get('job_id') or row.get('dedupe_key')
+    insights = {
+        'overallScore': overall,
+        'skillMatchScore': row.get('skill_match_score') or 0,
+        'experienceMatchScore': row.get('experience_match_score') or 0,
+        'atsScore': row.get('ats_score') or 0,
+        'salaryMatchScore': 50,
+        'companyMatchScore': 50,
+        'locationMatchScore': 50,
+        'remoteMatchScore': 50,
+        'confidenceScore': row.get('skill_match_confidence') or 50,
+        'skillMatchConfidence': row.get('skill_match_confidence') or 50,
+        'matchedSkills': row.get('matched_skills') or [],
+        'missingSkills': row.get('missing_skills') or [],
+        'missingKeywords': row.get('missing_keywords') or [],
+        'resumeSuggestions': [],
+        'matchExplanation': row.get('match_explanation') or '',
+        'scorer': row.get('scorer') or 'rescan',
+    }
+    return {
+        'id': job_id,
+        'externalId': job_id,
+        'title': row.get('title') or 'Unknown Role',
+        'company': row.get('company') or 'Unknown Company',
+        'location': row.get('location') or '',
+        'remoteType': row.get('remote_type') or 'Remote',
+        'source': row.get('source') or 'Scan Insights',
+        'url': row.get('application_url') or '',
+        'applicationUrl': row.get('application_url') or '',
+        'description': '',
+        'postedAt': row.get('scanned_at') or '',
+        'status': 'New',
+        'score': overall,
+        'fitExplanation': row.get('match_explanation') or '',
+        'requiredSkills': row.get('required_skills') or [],
+        'preferredSkills': row.get('preferred_skills') or [],
+        'extractedTechnologies': row.get('extracted_technologies') or [],
+        'canonicalRole': row.get('canonical_role'),
+        'primaryStack': row.get('primary_stack'),
+        'seniority': row.get('seniority'),
+        'employmentType': row.get('employment_type'),
+        'scannedAt': row.get('scanned_at') or '',
+        'matchScorer': row.get('scorer'),
+        'matchInsights': insights,
     }

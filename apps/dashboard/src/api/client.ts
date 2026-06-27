@@ -416,5 +416,39 @@ export async function getScanSummary(threshold = 75): Promise<ScanSummary> {
     missing_skills: (raw.missing_skills as string[] | null) ?? [],
     scan_run_id: (raw.scan_run_id as string | null) ?? null,
   }));
-  return buildScanSummary(rows, threshold);
+  return buildScanSummary(rows, threshold, normalizeProfile(db.profile));
+}
+
+export async function rescanScanInsights(): Promise<{ rescoredCount: number }> {
+  if (USE_SUPABASE) {
+    try {
+      return await backendFetch<{ success: boolean; rescoredCount: number }>(
+        '/api/scan-insights/rescan',
+        { method: 'POST' },
+      ).then((data) => ({ rescoredCount: data.rescoredCount }));
+    } catch {
+      throw new Error(
+        'Rescan requires the Python API server (set VITE_USE_BACKEND=true) or the rescan-insights GitHub Action.',
+      );
+    }
+  }
+
+  const data = await backendFetch<{ success: boolean; rescoredCount: number }>(
+    '/api/scan-insights/rescan',
+    { method: 'POST' },
+  );
+  return { rescoredCount: data.rescoredCount };
+}
+
+export async function promoteScannedJob(dedupeKey: string): Promise<JobRecord> {
+  if (USE_SUPABASE) {
+    return getRepository().promoteScannedJobToLead(dedupeKey);
+  }
+
+  const encodedKey = encodeURIComponent(dedupeKey);
+  const data = await backendFetch<{ success: boolean; job: JobRecord }>(
+    `/api/scan-insights/${encodedKey}/promote`,
+    { method: 'POST' },
+  );
+  return data.job;
 }

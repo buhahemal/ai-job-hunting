@@ -8,7 +8,8 @@ from difflib import SequenceMatcher
 from typing import Dict, List, Optional, Tuple
 
 from packages.ai_engine.python import matcher
-from packages.ai_engine.python.text_builder import extract_matched_skills, infer_seniority
+from packages.ai_engine.python.skill_matcher import compute_skill_match, extract_job_requirements
+from packages.ai_engine.python.text_builder import infer_seniority
 
 CANONICAL_ROLES = (
     'Platform Engineer',
@@ -113,31 +114,16 @@ def extract_technologies(job: Dict) -> List[str]:
     return found
 
 
-def extract_required_skills(job: Dict, profile: Dict) -> List[str]:
-    """Heuristically extract required skills from the posting."""
-    text = _job_text(job)
-    required: List[str] = []
-    requirement_markers = ('required', 'must have', 'requirements', 'qualifications')
-    for skill in profile.get('skills') or []:
-        skill_text = str(skill).lower()
-        if skill_text in text:
-            required.append(str(skill))
-    if not required and any(marker in text for marker in requirement_markers):
-        required = extract_technologies(job)[:8]
-    return required[:12]
+def extract_required_skills(job: Dict, profile: Dict | None = None) -> List[str]:
+    """Extract required skills from the job posting (job-side only)."""
+    required, _preferred = extract_job_requirements(job)
+    return required
 
 
-def extract_preferred_skills(job: Dict, profile: Dict) -> List[str]:
-    """Heuristically extract preferred/nice-to-have skills."""
-    text = _job_text(job)
-    if 'nice to have' not in text and 'preferred' not in text and 'bonus' not in text:
-        return []
-    preferred: List[str] = []
-    for skill in profile.get('skills') or []:
-        skill_text = str(skill).lower()
-        if skill_text in text and skill_text not in {s.lower() for s in extract_required_skills(job, profile)}:
-            preferred.append(str(skill))
-    return preferred[:8]
+def extract_preferred_skills(job: Dict, profile: Dict | None = None) -> List[str]:
+    """Extract preferred/nice-to-have skills from the job posting."""
+    _required, preferred = extract_job_requirements(job)
+    return preferred
 
 
 def infer_primary_stack(technologies: List[str], title: str) -> str:
@@ -209,14 +195,6 @@ def detect_duplicate(
     return False, None
 
 
-def _compute_skill_match(job: Dict, profile: Dict) -> Tuple[int, List[str], List[str]]:
-    profile_skills = [str(skill) for skill in (profile.get('skills') or [])]
-    matched = extract_matched_skills(job, profile)
-    missing = [skill for skill in profile_skills if skill not in matched]
-    ratio = len(matched) / max(1, len(profile_skills))
-    return _clamp(ratio * 100), matched, missing
-
-
 def _compute_experience_match(job: Dict, profile: Dict) -> int:
     job_seniority = infer_seniority(job.get('title', ''))
     target_roles = [str(role).lower() for role in (profile.get('targetRoles') or [])]
@@ -286,10 +264,43 @@ def _compute_ats_score(job: Dict, matched_skills: List[str], missing_skills: Lis
     description = job.get('description') or ''
     title = job.get('title') or ''
     score = 40
-    score += min(30, len(matched_skills) * 4)
+    score += min(35, len(matched_skills) * 5)
     score += 10 if len(description) > 400 else 0
     score += 10 if any(token in title.lower() for token in ('engineer', 'developer', 'architect')) else 0
-    score -= min(20, len(missing_skills))
+    score -= min(25, len(missing_skills) * 5)
+    return _clamp(score)
+
+
+def _compute_overall_score(
+    *,
+    base_score: int,
+    skill_result,
+    experience_score: int,
+    remote_score: int,
+    company_score: int,
+    location_score: int,
+) -> int:
+    """Blend validated skill match with semantic base and sub-scores."""
+    preferred_coverage = skill_result.preferred_coverage
+    overall = _clamp(
+        base_score * 0.30
+        + skill_result.skill_match_score * 0.35
+        + experience_score * 0.15
+        + remote_score * 0.05
+        + company_score * 0.05
+        + location_score * 0.05
+        + preferred_coverage * 0.05
+    )
+    if skill_result.skill_match_confidence < 60:
+        overall = min(overall, 70)
+    return overall
+
+
+def _confidence_score(job: Dict, matched_skills: List[str], scorer: str, skill_match_confidence: int) -> int:
+    score = skill_match_confidence
+    score += min(15, len(matched_skills) * 2)
+    score += 5 if len(job.get('description') or '') > 250 else 0
+    score += 5 if scorer == 'embedding' else 0
     return _clamp(score)
 
 
@@ -328,14 +339,6 @@ def estimate_priority(overall_score: int, company_match: int, is_duplicate: bool
     return PRIORITY_LOW
 
 
-def _confidence_score(job: Dict, matched_skills: List[str], scorer: str) -> int:
-    score = 45
-    score += min(25, len(matched_skills) * 3)
-    score += 10 if len(job.get('description') or '') > 250 else 0
-    score += 10 if scorer == 'embedding' else 5
-    return _clamp(score)
-
-
 def enrich_job(
     job: Dict,
     profile: Dict,
@@ -352,14 +355,16 @@ def enrich_job(
     existing_jobs = existing_jobs or []
 
     technologies = extract_technologies(job)
-    required_skills = extract_required_skills(job, profile)
-    preferred_skills = extract_preferred_skills(job, profile)
+    required_skills, preferred_skills = extract_job_requirements(job)
     canonical_role = classify_canonical_role(job.get('title', ''), job.get('description', ''))
     primary_stack = infer_primary_stack(technologies, job.get('title', ''))
     employment_type = infer_employment_type(job.get('title', ''), job.get('description', ''))
     seniority = analysis.get('seniority') or infer_seniority(job.get('title', ''))
 
-    skill_score, matched_skills, missing_skills = _compute_skill_match(job, profile)
+    skill_result = compute_skill_match(job, profile)
+    skill_score = skill_result.skill_match_score
+    matched_skills = skill_result.matched_skills
+    missing_skills = skill_result.missing_skills
     experience_score = _compute_experience_match(job, profile)
     remote_score = _compute_remote_match(job, profile)
     company_score = _compute_company_match(job, profile)
@@ -367,18 +372,19 @@ def enrich_job(
     salary_score = _compute_salary_match(job)
     ats_score = _compute_ats_score(job, matched_skills, missing_skills)
 
-    overall_score = _clamp(
-        analysis.get('score', 0) * 0.45
-        + skill_score * 0.25
-        + experience_score * 0.15
-        + remote_score * 0.05
-        + company_score * 0.05
-        + location_score * 0.05
+    base_score = int(analysis.get('score', 0))
+    overall_score = _compute_overall_score(
+        base_score=base_score,
+        skill_result=skill_result,
+        experience_score=experience_score,
+        remote_score=remote_score,
+        company_score=company_score,
+        location_score=location_score,
     )
     missing_kw = _missing_keywords(job, profile, matched_skills)
     suggestions = _resume_suggestions(missing_skills, missing_kw, job)
     scorer = analysis.get('scorer', 'heuristic')
-    confidence = _confidence_score(job, matched_skills, scorer)
+    confidence = _confidence_score(job, matched_skills, scorer, skill_result.skill_match_confidence)
 
     is_duplicate, duplicate_of = detect_duplicate(job, existing_jobs)
     priority = estimate_priority(overall_score, company_score, is_duplicate)
@@ -424,6 +430,7 @@ def enrich_job(
             'locationMatchScore': location_score,
             'remoteMatchScore': remote_score,
             'confidenceScore': confidence,
+            'skillMatchConfidence': skill_result.skill_match_confidence,
             'matchedSkills': matched_skills,
             'missingSkills': missing_skills,
             'missingKeywords': missing_kw,

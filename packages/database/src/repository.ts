@@ -4,9 +4,11 @@ import {
   buildScanSummary,
   interviewToRow,
   jobToRow,
+  matchInsightsToRow,
   rowToInterview,
   rowToJob,
   rowToScannedJob,
+  scannedJobRowToJob,
 } from './mappers.js';
 import type {
   InterviewRecord,
@@ -169,12 +171,46 @@ export class DashboardRepository {
   }
 
   async getScanSummary(threshold = 75): Promise<ScanSummary> {
+    const profile = await this.getProfile();
     const { data, error } = await this.client
       .from('scanned_jobs')
       .select(
         'overall_score, score, source, scanned_at, promoted_to_jobs, missing_skills, scan_run_id',
       );
     if (error) throw error;
-    return buildScanSummary((data ?? []) as ScanSummaryRow[], threshold);
+    return buildScanSummary((data ?? []) as ScanSummaryRow[], threshold, profile);
+  }
+
+  async promoteScannedJobToLead(dedupeKey: string): Promise<JobRecord> {
+    const { data, error } = await this.client
+      .from('scanned_jobs')
+      .select('*')
+      .eq('dedupe_key', dedupeKey)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) {
+      throw new Error(`Scanned job not found: ${dedupeKey}`);
+    }
+
+    const job = scannedJobRowToJob(data as ScannedJobRow);
+    const { error: upsertError } = await this.client
+      .from('jobs')
+      .upsert(jobToRow(job), { onConflict: 'id' });
+    if (upsertError) throw upsertError;
+
+    if (job.matchInsights) {
+      const { error: scoreError } = await this.client
+        .from('job_match_scores')
+        .upsert(matchInsightsToRow(job.id, job.matchInsights), { onConflict: 'job_id' });
+      if (scoreError) throw scoreError;
+    }
+
+    const { error: flagError } = await this.client
+      .from('scanned_jobs')
+      .update({ promoted_to_jobs: true, promotion_type: 'manual' })
+      .eq('dedupe_key', dedupeKey);
+    if (flagError) throw flagError;
+
+    return job;
   }
 }

@@ -42,7 +42,8 @@ from flask_cors import CORS
 from apps.api.defaults import DEFAULT_PROFILE, normalize_profile
 from apps.api.paths import DATA_FILE, FRONTEND_DIST
 from scraper.ai_matcher import AIMatcher
-from scraper.scanner_engine import ScannerEngine
+from scraper.scanner_engine import ScannerEngine, create_job_store
+from scraper.rescan_engine import RescanEngine
 
 app = Flask(__name__)
 CORS(app)
@@ -199,6 +200,32 @@ def scan_jobs():
             "addedCount": len(added_jobs), 
             "addedJobs": added_jobs
         })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/scan-insights/rescan", methods=["POST"])
+def rescan_scan_insights():
+    """Re-score all stored scan insights against the current profile."""
+    try:
+        store = create_job_store()
+        engine = RescanEngine(store)
+        rescored_count = engine.run()
+        return jsonify({"success": True, "rescoredCount": rescored_count})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/scan-insights/<path:dedupe_key>/promote", methods=["POST"])
+def promote_scanned_job(dedupe_key):
+    """Manually promote a scanned job into Job Leads."""
+    try:
+        store = create_job_store()
+        if hasattr(store, "promote_scanned_job_to_lead"):
+            job = store.promote_scanned_job_to_lead(dedupe_key)
+        else:
+            return jsonify({"error": "Promotion is not supported for this store backend."}), 501
+        return jsonify({"success": True, "job": job})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

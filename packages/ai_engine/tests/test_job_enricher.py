@@ -71,7 +71,7 @@ class TestJobEnricher(unittest.TestCase):
             "remoteType": "Remote",
             "source": "Greenhouse",
             "url": "https://example.com/jobs/1",
-            "description": "Node.js Kubernetes Terraform platform engineering role",
+            "description": "Node.js Kubernetes Terraform AWS platform engineering role",
         }
 
         enriched = enrich_job(job, PROFILE)
@@ -80,7 +80,66 @@ class TestJobEnricher(unittest.TestCase):
         self.assertIn("matchInsights", enriched)
         self.assertEqual(enriched["matchInsights"]["overallScore"], enriched["score"])
         self.assertTrue(enriched["matchInsights"]["matchedSkills"])
-        self.assertIsInstance(enriched["matchInsights"]["missingSkills"], list)
+        for skill in ("Node.js", "Kubernetes", "Terraform", "AWS"):
+            self.assertNotIn(skill, enriched["matchInsights"]["missingSkills"], skill)
+        self.assertGreaterEqual(enriched["matchInsights"]["overallScore"], 75)
+
+    @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
+    def test_overall_score_reduced_for_true_gap(self, mock_score):
+        mock_score.return_value = {
+            "score": 70,
+            "extractedSkills": ["Rust"],
+            "fitExplanation": "Systems role",
+            "salaryEstimate": "Not Specified",
+            "seniority": "Senior",
+            "remoteType": "Remote",
+            "scorer": "heuristic",
+        }
+        job = {
+            "id": "rust-1",
+            "title": "Rust Systems Engineer",
+            "company": "Acme",
+            "location": "Remote",
+            "remoteType": "Remote",
+            "source": "Greenhouse",
+            "url": "https://example.com/jobs/rust",
+            "description": "Must have Rust and systems programming experience.",
+        }
+
+        enriched = enrich_job(job, PROFILE)
+        missing = enriched["matchInsights"]["missingSkills"]
+        self.assertTrue(any("rust" in skill.lower() for skill in missing))
+        self.assertLess(enriched["matchInsights"]["overallScore"], 75)
+
+    @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
+    def test_corpus_skill_absent_from_job_text_not_penalized(self, mock_score):
+        mock_score.return_value = {
+            "score": 80,
+            "extractedSkills": ["Node.js", "Kubernetes"],
+            "fitExplanation": "Backend fit",
+            "salaryEstimate": "Not Specified",
+            "seniority": "Senior",
+            "remoteType": "Remote",
+            "scorer": "heuristic",
+        }
+        profile = {
+            **PROFILE,
+            "skills": ["Node.js", "TypeScript", "Express.js", "Redis", "Kubernetes", "AWS"],
+        }
+        job = {
+            "id": "node-1",
+            "title": "Backend Engineer",
+            "company": "Acme",
+            "location": "Remote",
+            "remoteType": "Remote",
+            "source": "Greenhouse",
+            "url": "https://example.com/jobs/node",
+            "description": "Node.js and Kubernetes on AWS. No mention of Express or Redis in posting.",
+        }
+
+        enriched = enrich_job(job, profile)
+        for skill in ("Express.js", "Redis"):
+            self.assertNotIn(skill, enriched["matchInsights"]["missingSkills"], skill)
 
 
 if __name__ == "__main__":

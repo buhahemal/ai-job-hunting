@@ -131,6 +131,54 @@ class JsonJobStore:
         with open(self._path, "w", encoding="utf-8") as handle:
             json.dump(db, handle, indent=2)
 
+    def list_scanned_job_rows(self, *, limit: Optional[int] = None) -> List[Dict]:
+        """Return raw scanned job rows for rescan engine."""
+        rows = self.read_db().get("scannedJobs", [])
+        if not isinstance(rows, list):
+            return []
+        if limit is not None:
+            return rows[: max(1, limit)]
+        return rows
+
+    def promote_scanned_job_to_lead(self, dedupe_key: str) -> Dict:
+        """Promote a scanned job into Job Leads (JSON store)."""
+        from packages.database.python.mappers import scanned_job_row_to_job
+
+        db = self.read_db()
+        scanned_jobs = db.get("scannedJobs", [])
+        if not isinstance(scanned_jobs, list):
+            raise ValueError(f"Scanned job not found: {dedupe_key}")
+
+        row = next(
+            (
+                entry
+                for entry in scanned_jobs
+                if (entry.get("dedupe_key") or entry.get("dedupeKey")) == dedupe_key
+            ),
+            None,
+        )
+        if not row:
+            raise ValueError(f"Scanned job not found: {dedupe_key}")
+
+        job = scanned_job_row_to_job(row)
+        jobs = db.get("jobs", [])
+        if not isinstance(jobs, list):
+            jobs = []
+        jobs = [existing for existing in jobs if existing.get("id") != job.get("id")]
+        jobs.insert(0, job)
+        db["jobs"] = jobs
+
+        for entry in scanned_jobs:
+            key = entry.get("dedupe_key") or entry.get("dedupeKey")
+            if key == dedupe_key:
+                entry["promoted_to_jobs"] = True
+                entry["promotion_type"] = "manual"
+
+        db["scannedJobs"] = scanned_jobs
+        with open(self._path, "w", encoding="utf-8") as handle:
+            json.dump(db, handle, indent=2)
+        return job
+
     def persist_new_jobs(self, jobs: List[Dict]) -> None:
         db = self.read_db()
         db["jobs"] = jobs + db.get("jobs", [])
@@ -158,6 +206,12 @@ class SupabaseJobStore:
         count = self._repo.record_scanned_jobs(records)
         if count:
             print(f"[SupabaseJobStore] Recorded {count} scanned job insight(s).")
+
+    def list_scanned_job_rows(self, *, limit: Optional[int] = None) -> List[Dict]:
+        return self._repo.list_scanned_job_rows(limit=limit)
+
+    def promote_scanned_job_to_lead(self, dedupe_key: str) -> Dict:
+        return self._repo.promote_scanned_job_to_lead(dedupe_key)
 
     def persist_new_jobs(self, jobs: List[Dict]) -> None:
         count = self._repo.upsert_jobs(jobs)

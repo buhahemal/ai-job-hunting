@@ -1,0 +1,36 @@
+name: Rescan Insights
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rescan-insights:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Scraper Dependencies
+        run: pip install -r scraper/requirements.txt
+
+      - name: Rescore scan insights with current profile
+        run: |
+          PYTHONPATH=. python - <<'PY'
+          from scraper.rescan_engine import RescanEngine
+          from scraper.scanner_engine import create_job_store
+
+          store = create_job_store()
+          count = RescanEngine(store).run()
+          print(f"Rescored {count} scanned job row(s)")
+          PY

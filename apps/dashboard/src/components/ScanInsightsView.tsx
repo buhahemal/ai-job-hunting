@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Radar, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Radar, RefreshCw, TrendingUp } from 'lucide-react';
 import type { ScanSummary, ScannedJobRecord } from '@ai-job-hunter/database';
 import * as api from '../api/client';
 import ScanInsightDetailPanel from './ScanInsightDetailPanel';
@@ -16,6 +16,8 @@ export default function ScanInsightsView() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [rescanning, setRescanning] = useState(false);
+  const [rescanMessage, setRescanMessage] = useState<string | null>(null);
   const [selected, setSelected] = useState<ScannedJobRecord | null>(null);
   const [filters, setFilters] = useState<ScanInsightsFilterState>({
     scoreBand: 'All',
@@ -91,15 +93,64 @@ export default function ScanInsightsView() {
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const handleRescan = async () => {
+    setRescanning(true);
+    setRescanMessage(null);
+    try {
+      const { rescoredCount } = await api.rescanScanInsights();
+      setRescanMessage(
+        `Rescored ${rescoredCount} scanned job${rescoredCount === 1 ? '' : 's'} with your current profile.`,
+      );
+      await loadData();
+    } catch (error) {
+      setRescanMessage(error instanceof Error ? error.message : 'Rescan failed.');
+    } finally {
+      setRescanning(false);
+    }
+  };
+
+  const handlePromoted = (dedupeKey: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.dedupeKey === dedupeKey
+          ? { ...item, promotedToJobs: true, promotionType: 'manual' }
+          : item,
+      ),
+    );
+    setSelected((prev) =>
+      prev?.dedupeKey === dedupeKey
+        ? { ...prev, promotedToJobs: true, promotionType: 'manual' }
+        : prev,
+    );
+    void loadData();
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Scan Insights</h2>
-        <p className="text-xs text-slate-500 mt-1">
-          Every job evaluated by the scanner — including sub-threshold rejects — with match scores
-          and skill gaps. Separate from promoted Job Leads.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Scan Insights</h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Every job evaluated by the scanner — including sub-threshold rejects — with match scores
+            and verified skill gaps. Separate from promoted Job Leads.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => void handleRescan()}
+          disabled={rescanning || loading}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100 disabled:opacity-50 shrink-0"
+        >
+          <RefreshCw className={`h-4 w-4 ${rescanning ? 'animate-spin' : ''}`} />
+          {rescanning ? 'Rescanning…' : 'Rescan with current profile'}
+        </button>
       </div>
+
+      {rescanMessage && (
+        <div className="text-xs px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
+          {rescanMessage}
+        </div>
+      )}
 
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -151,9 +202,14 @@ export default function ScanInsightsView() {
 
       {summary && summary.topMissingSkills.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Top Skill Gaps
-          </h3>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Top Market Skill Gaps
+            </h3>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Skills demanded by scanned jobs that are not demonstrated in your profile or resume.
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {summary.topMissingSkills.map((entry) => (
               <div
@@ -289,7 +345,11 @@ export default function ScanInsightsView() {
           )}
         </div>
 
-        <ScanInsightDetailPanel insight={selected} onClose={() => setSelected(null)} />
+        <ScanInsightDetailPanel
+          insight={selected}
+          onClose={() => setSelected(null)}
+          onPromoted={handlePromoted}
+        />
       </div>
     </div>
   );

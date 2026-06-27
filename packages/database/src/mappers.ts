@@ -4,12 +4,187 @@ import type {
   JobMatchScoreRow,
   JobRecord,
   JobRow,
+  ProfileRecord,
   ScanSummary,
   ScanSummaryMissingSkill,
   ScanSummaryRow,
   ScannedJobRecord,
   ScannedJobRow,
 } from './types.js';
+
+const SKILL_ALIAS_GROUPS: readonly (readonly string[])[] = [
+  ['go', 'golang'],
+  ['node.js', 'nodejs', 'node', 'node js'],
+  ['express.js', 'express', 'expressjs'],
+  ['javascript', 'js'],
+  ['typescript', 'ts'],
+  ['kubernetes', 'k8s'],
+  ['amazon web services', 'aws'],
+  ['postgresql', 'postgres'],
+  ['mongodb', 'mongo'],
+  ['amazon lambda', 'aws lambda', 'lambda'],
+];
+
+/** Normalize a skill token for gap filtering (mirrors Python skill_matcher). */
+export function normalizeSkillToken(token: string): string {
+  const cleaned = token
+    .toLowerCase()
+    .replace(/[^\w\s./+#-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  for (const group of SKILL_ALIAS_GROUPS) {
+    if (group.includes(cleaned)) return group[0];
+  }
+  return cleaned;
+}
+
+function aliasVariants(normalized: string): Set<string> {
+  const variants = new Set<string>([normalized]);
+  for (const group of SKILL_ALIAS_GROUPS) {
+    if (group.includes(normalized)) {
+      group.forEach((item) => variants.add(item));
+    }
+  }
+  return variants;
+}
+
+function buildProfileCorpus(profile: ProfileRecord): { tokens: Set<string>; text: string } {
+  const tokens = new Set<string>();
+  const textParts: string[] = [];
+
+  for (const skill of profile.skills ?? []) {
+    const normalized = normalizeSkillToken(String(skill));
+    if (!normalized) continue;
+    aliasVariants(normalized).forEach((variant) => tokens.add(variant));
+    textParts.push(String(skill));
+  }
+
+  for (const keyword of profile.preferences?.skillsKeywords ?? []) {
+    const normalized = normalizeSkillToken(String(keyword));
+    if (!normalized) continue;
+    aliasVariants(normalized).forEach((variant) => tokens.add(variant));
+    textParts.push(String(keyword));
+  }
+
+  for (const exp of profile.experience ?? []) {
+    for (const bullet of exp.bullets ?? []) {
+      textParts.push(String(bullet));
+    }
+  }
+
+  for (const project of profile.projects ?? []) {
+    for (const tech of project.tech ?? []) {
+      const normalized = normalizeSkillToken(String(tech));
+      if (normalized) aliasVariants(normalized).forEach((variant) => tokens.add(variant));
+      textParts.push(String(tech));
+    }
+  }
+
+  if (profile.masterResumeLaTeX) {
+    textParts.push(profile.masterResumeLaTeX);
+  }
+
+  return { tokens, text: textParts.join('\n').toLowerCase() };
+}
+
+function skillInCorpus(skill: string, corpus: { tokens: Set<string>; text: string }): boolean {
+  const normalized = normalizeSkillToken(skill);
+  if (!normalized) return false;
+  for (const variant of aliasVariants(normalized)) {
+    if (corpus.tokens.has(variant)) return true;
+    if (corpus.text.includes(variant)) return true;
+  }
+  return false;
+}
+
+/** Remove skills from gap lists when confirmed in the live profile corpus. */
+export function filterVerifiedGaps(
+  missingSkills: string[],
+  profile?: ProfileRecord | null,
+): string[] {
+  if (!profile) return missingSkills;
+  const corpus = buildProfileCorpus(profile);
+  const profileLabels = new Set(
+    (profile.skills ?? []).map((skill) => normalizeSkillToken(String(skill))),
+  );
+  return missingSkills.filter((skill) => {
+    const norm = normalizeSkillToken(String(skill));
+    if (profileLabels.has(norm)) return false;
+    return !skillInCorpus(String(skill), corpus);
+  });
+}
+
+/** Map match insights to job_match_scores upsert row. */
+export function matchInsightsToRow(jobId: string, insights: JobMatchInsights): JobMatchScoreRow {
+  return {
+    job_id: jobId,
+    overall_score: insights.overallScore,
+    skill_match_score: insights.skillMatchScore,
+    experience_match_score: insights.experienceMatchScore,
+    ats_score: insights.atsScore,
+    salary_match_score: insights.salaryMatchScore,
+    company_match_score: insights.companyMatchScore,
+    location_match_score: insights.locationMatchScore,
+    remote_match_score: insights.remoteMatchScore,
+    confidence_score: insights.confidenceScore,
+    matched_skills: insights.matchedSkills,
+    missing_skills: insights.missingSkills,
+    missing_keywords: insights.missingKeywords,
+    resume_suggestions: insights.resumeSuggestions,
+    match_explanation: insights.matchExplanation,
+    scorer: insights.scorer ?? null,
+  };
+}
+
+/** Map a scanned_jobs row to a Job Leads record for manual promotion. */
+export function scannedJobRowToJob(row: ScannedJobRow): JobRecord {
+  const overall = row.overall_score ?? row.score ?? 0;
+  const jobId = row.job_id ?? row.dedupe_key;
+  const insights: JobMatchInsights = {
+    overallScore: overall,
+    skillMatchScore: row.skill_match_score ?? 0,
+    experienceMatchScore: row.experience_match_score ?? 0,
+    atsScore: row.ats_score ?? 0,
+    salaryMatchScore: 50,
+    companyMatchScore: 50,
+    locationMatchScore: 50,
+    remoteMatchScore: 50,
+    confidenceScore: row.skill_match_confidence ?? 50,
+    skillMatchConfidence: row.skill_match_confidence ?? 50,
+    matchedSkills: row.matched_skills ?? [],
+    missingSkills: row.missing_skills ?? [],
+    missingKeywords: row.missing_keywords ?? [],
+    resumeSuggestions: [],
+    matchExplanation: row.match_explanation ?? '',
+    scorer: row.scorer ?? 'rescan',
+  };
+  return {
+    id: jobId,
+    externalId: jobId,
+    title: row.title ?? 'Unknown Role',
+    company: row.company ?? 'Unknown Company',
+    location: row.location ?? '',
+    remoteType: row.remote_type ?? 'Remote',
+    source: row.source ?? 'Scan Insights',
+    url: row.application_url ?? '',
+    applicationUrl: row.application_url ?? '',
+    description: '',
+    postedAt: row.scanned_at ?? '',
+    status: 'New',
+    score: overall,
+    fitExplanation: row.match_explanation ?? '',
+    requiredSkills: row.required_skills ?? [],
+    preferredSkills: row.preferred_skills ?? [],
+    extractedTechnologies: row.extracted_technologies ?? [],
+    canonicalRole: row.canonical_role ?? undefined,
+    primaryStack: row.primary_stack ?? undefined,
+    seniority: row.seniority ?? undefined,
+    employmentType: row.employment_type ?? undefined,
+    scannedAt: row.scanned_at ?? '',
+    matchScorer: row.scorer ?? undefined,
+    matchInsights: insights,
+  };
+}
 
 function rowToMatchInsights(
   row: JobMatchScoreRow | null | undefined,
@@ -189,6 +364,10 @@ export function rowToScannedJob(row: ScannedJobRow): ScannedJobRecord {
     scorer: row.scorer ?? undefined,
     promotedToJobs: row.promoted_to_jobs ?? false,
     scanRunId: row.scan_run_id ?? undefined,
+    promotionType: row.promotion_type ?? undefined,
+    profileHash: row.profile_hash ?? undefined,
+    skillMatchConfidence: row.skill_match_confidence ?? undefined,
+    rescoredAt: row.rescored_at ?? undefined,
     scannedAt: row.scanned_at ?? '',
   };
 }
@@ -196,6 +375,7 @@ export function rowToScannedJob(row: ScannedJobRow): ScannedJobRecord {
 function aggregateMissingSkills(
   rows: ScanSummaryRow[],
   threshold: number,
+  profile?: ProfileRecord | null,
 ): ScanSummaryMissingSkill[] {
   const counts = new Map<string, number>();
   const scoreSum = new Map<string, number>();
@@ -203,7 +383,8 @@ function aggregateMissingSkills(
 
   for (const row of rows) {
     const overall = row.overall_score ?? row.score ?? 0;
-    for (const skill of row.missing_skills ?? []) {
+    const verifiedGaps = filterVerifiedGaps(row.missing_skills ?? [], profile);
+    for (const skill of verifiedGaps) {
       counts.set(skill, (counts.get(skill) ?? 0) + 1);
       scoreSum.set(skill, (scoreSum.get(skill) ?? 0) + overall);
       if (overall >= threshold - 10 && overall <= threshold) {
@@ -224,7 +405,11 @@ function aggregateMissingSkills(
 }
 
 /** Build scan summary aggregates from scanned job rows. */
-export function buildScanSummary(rows: ScanSummaryRow[], threshold = 75): ScanSummary {
+export function buildScanSummary(
+  rows: ScanSummaryRow[],
+  threshold = 75,
+  profile?: ProfileRecord | null,
+): ScanSummary {
   if (!rows.length) {
     return {
       totalScanned: 0,
@@ -268,6 +453,6 @@ export function buildScanSummary(rows: ScanSummaryRow[], threshold = 75): ScanSu
     topSource,
     lastScanAt,
     lastRunScanned,
-    topMissingSkills: aggregateMissingSkills(rows, threshold),
+    topMissingSkills: aggregateMissingSkills(rows, threshold, profile),
   };
 }
