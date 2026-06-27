@@ -1,4 +1,5 @@
 import type { Interview, Job, Profile } from '../types';
+import { normalizeProfile } from './defaultProfile';
 import { USE_BACKEND } from './config';
 import {
   heuristicScore,
@@ -21,7 +22,7 @@ export async function getProfile(): Promise<Profile> {
     return backendFetch<Profile>('/api/profile');
   }
   const db = await loadDatabase();
-  return db.profile;
+  return normalizeProfile(db.profile);
 }
 
 export async function saveProfile(profile: Profile): Promise<Profile> {

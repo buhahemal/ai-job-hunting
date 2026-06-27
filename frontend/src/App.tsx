@@ -5,6 +5,7 @@ import {
   MapPin, DollarSign, Clock, FileCheck, HelpCircle, Save, Info, AlertTriangle, ArrowUpRight
 } from 'lucide-react';
 import * as api from './api/client';
+import { getProfileInitials } from './api/defaultProfile';
 import { Profile, Job, Interview } from './types';
 import ResumePreview from './components/ResumePreview';
 import AnalyticsView from './components/AnalyticsView';
@@ -319,11 +320,11 @@ export default function App() {
         </div>
 
         {/* User profile Summary footer */}
-        {profile && (
+        {profile?.fullName && (
           <div className="p-4 border-t border-slate-800 bg-slate-950/40 m-4 rounded-xl">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 bg-indigo-500 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase">
-                {profile.fullName.split(' ').map(n => n[0]).join('')}
+                {getProfileInitials(profile.fullName)}
               </div>
               <div className="overflow-hidden">
                 <div className="text-xs font-bold truncate text-slate-200">{profile.fullName}</div>
@@ -812,7 +813,7 @@ export default function App() {
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 pt-2">
-                  {profileForm.skills.map(skill => (
+                  {profileForm.skills?.map(skill => (
                     <span key={skill} className="bg-slate-100 border border-slate-200 text-slate-700 text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
                       {skill}
                       <button

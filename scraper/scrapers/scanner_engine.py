@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from typing import Dict, List
 
+from backend.defaults import DEFAULT_PROFILE, normalize_profile
 from scraper.ai_matcher import AIMatcher
 from scraper.paths import DATA_FILE
 from scraper.scrapers.arbeitnow import ArbeitnowScanner
@@ -27,13 +28,15 @@ class ScannerEngine:
         """Reads flat data store with dynamic default profile fallback."""
         if not os.path.exists(DB_FILE):
             print("[ScannerEngine] Warning: Database file not found. Initializing.")
-            return {"profile": {}, "jobs": [], "interviews": []}
+            return {"profile": DEFAULT_PROFILE, "jobs": [], "interviews": []}
         try:
             with open(DB_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                data["profile"] = normalize_profile(data.get("profile"))
+                return data
         except Exception as e:
             print(f"[ScannerEngine] Error reading data.json: {e}")
-            return {"profile": {}, "jobs": [], "interviews": []}
+            return {"profile": DEFAULT_PROFILE, "jobs": [], "interviews": []}
 
     def write_db(self, data: Dict):
         """Saves current database state."""

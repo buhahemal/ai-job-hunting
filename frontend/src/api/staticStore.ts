@@ -1,4 +1,5 @@
 import type { Job, Profile } from '../types';
+import { normalizeProfile } from './defaultProfile';
 import { DATA_URL, STORAGE_KEY, type Database } from './config';
 
 function readLocalState(): Database | null {
@@ -38,6 +39,7 @@ export async function loadDatabase(): Promise<Database> {
   }
 
   const base = (await response.json()) as Database;
+  base.profile = normalizeProfile(base.profile);
   const local = readLocalState();
   if (!local) {
     writeLocalState(base);
@@ -45,7 +47,7 @@ export async function loadDatabase(): Promise<Database> {
   }
 
   const merged: Database = {
-    profile: Object.keys(local.profile || {}).length ? local.profile : base.profile,
+    profile: normalizeProfile(local.profile?.fullName ? local.profile : base.profile),
     jobs: mergeJobs(base.jobs || [], local.jobs || []),
     interviews: local.interviews?.length ? local.interviews : base.interviews || [],
   };
@@ -73,7 +75,7 @@ export function heuristicScore(job: Partial<Job>, profile: Profile): Pick<
     }
   }
 
-  score += Math.round((matchedSkills.length / Math.max(1, profile.skills.length)) * 30);
+  score += Math.round((matchedSkills.length / Math.max(1, (profile.skills ?? []).length)) * 30);
 
   const remotePreference = profile.preferences?.remotePreference ?? 'Any';
   const jobRemote = job.remoteType ?? 'Hybrid';
