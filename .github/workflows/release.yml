@@ -26,6 +26,7 @@ jobs:
       - name: Build dashboard artifact
         run: |
           npm ci
+          rm -rf apps/dashboard/node_modules
           npm run build --workspace=@ai-job-hunter/dashboard
 
       - name: Create GitHub Release

@@ -51,7 +51,7 @@ pip install -r apps/api/requirements.txt -r scraper/requirements.txt
 npm run dev
 ```
 
-Open http://localhost:5173
+Open <http://localhost:5173>
 
 ### Full local stack (Flask API + AI features)
 

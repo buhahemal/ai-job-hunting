@@ -25,7 +25,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install Node dependencies
-        run: npm ci
+        run: |
+          npm ci
+          rm -rf apps/dashboard/node_modules
 
       - name: Frontend tests
         run: |
