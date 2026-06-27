@@ -8,7 +8,7 @@ completed:
 
 ## Deliverables
 
-- [ ] Migrate `frontend/` → `apps/dashboard/` (or keep path with alias)
+- [x] Migrated to `apps/dashboard/` (Phase 2)
 - [ ] Supabase client — live data (replace static `data.json` + localStorage-only mode)
 - [ ] Jobs list: score, filters, status, apply links
 - [ ] Resume preview + download from Supabase Storage
@@ -20,7 +20,7 @@ completed:
 
 ## Current baseline
 
-Existing React/Vite dashboard at `frontend/` — migrate incrementally.
+Existing React/Vite dashboard at `apps/dashboard/` — extend for Supabase in Phase 9.
 
 ## Rules
 

@@ -30,13 +30,13 @@ completed: 2026-06-27
 
 ## Key decisions (from R&D)
 
-| Decision | Choice |
-|----------|--------|
-| Scheduler | GitHub Actions (public repo free tier) |
-| Database | Supabase PostgreSQL (free tier) |
-| Frontend host | GitHub Pages (not Vercel — stay in GitHub) |
-| AI | Hugging Face models on **runner**, not cloud LLM APIs |
-| Scanner pattern | Plugin SDK + per-source modules |
+| Decision        | Choice                                                |
+| --------------- | ----------------------------------------------------- |
+| Scheduler       | GitHub Actions (public repo free tier)                |
+| Database        | Supabase PostgreSQL (free tier)                       |
+| Frontend host   | GitHub Pages (not Vercel — stay in GitHub)            |
+| AI              | Hugging Face models on **runner**, not cloud LLM APIs |
+| Scanner pattern | Plugin SDK + per-source modules                       |
 
 ## Next phase
 

@@ -1,6 +1,5 @@
-# Phase 2 — Repository Setup + CI/CD + Standards
+# Phase 2 — Foundation + CI/CD
 
-**Status:** in_progress
+**Status:** done (completed 2026-06-27)
 
-Track deliverables in [STATUS.md](./STATUS.md).  
-Reference: [FOUNDATION.md](./FOUNDATION.md)
+Track deliverables in [STATUS.md](./STATUS.md).

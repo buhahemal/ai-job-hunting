@@ -13,9 +13,6 @@ jobs:
   frontend:
     name: Frontend Quality Gates
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -28,15 +25,23 @@ jobs:
         run: npm install
 
       - name: Type check
+        working-directory: apps/dashboard
         run: npm run typecheck
 
       - name: ESLint
+        working-directory: apps/dashboard
         run: npm run lint
 
+      - name: Prettier check
+        working-directory: apps/dashboard
+        run: npm run format:check
+
       - name: Unit tests
+        working-directory: apps/dashboard
         run: npm run test:coverage
 
       - name: Build
+        working-directory: apps/dashboard
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
@@ -55,7 +60,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r scraper/requirements.txt
-          pip install -r backend/requirements.txt
+          pip install -r apps/api/requirements.txt
 
       - name: Scraper unit tests
         env:
@@ -76,7 +81,7 @@ jobs:
 
       - uses: docker/setup-buildx-action@v3
 
-      - name: Build backend image
+      - name: Build API image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -99,9 +104,11 @@ jobs:
             docs/architecture/overview.md
             docs/phases/README.md
             docs/phases/RULES.md
-            frontend/README.md
-            backend/README.md
+            packages/config/README.md
+            apps/dashboard/README.md
+            apps/api/README.md
             scraper/README.md
+            scanners/README.md
           )
           for file in "${required_files[@]}"; do
             if [[ ! -f "$file" ]]; then
@@ -121,6 +128,23 @@ jobs:
       - uses: DavidAnson/markdownlint-cli2-action@v19
         with:
           config: .markdownlint.json
+
+  format:
+    name: Prettier (root)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Prettier check
+        run: npm run format:check
 
   secrets:
     name: Secret Scan

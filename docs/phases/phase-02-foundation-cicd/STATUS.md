@@ -1,51 +1,55 @@
 # Phase 2 — Repository Setup + CI/CD + Coding Standards
 
 ```yaml
-status: in_progress
+status: done
 started: 2026-06-27
-completed:
+completed: 2026-06-27
 ```
 
 ## Deliverables
 
 ### Repository & structure
+
 - [x] Public GitHub monorepo
-- [x] Transitional modules: `frontend/`, `backend/`, `scraper/`
-- [ ] Migrate toward target layout in [RULES.md](../RULES.md) (`apps/`, `packages/`, `scanners/`)
+- [x] `apps/dashboard/`, `apps/api/`, `scanners/`, `packages/config/`
+- [x] Pipeline orchestration in `scraper/`
 - [x] `.env.example` (no secrets committed)
 
 ### CI/CD (GitHub Actions)
-- [x] Consolidated `ci.yml` (parallel: frontend, python, docker, docs, markdown, secrets)
+
+- [x] Consolidated `ci.yml` (parallel: frontend, python, docker, docs, markdown, format, secrets)
 - [x] `deploy-pages.yml` (GitHub Pages, Node 24)
 - [x] `scanner-cron.yml` (daily job scan)
 - [x] Security workflows: CodeQL, dependency-review, scanner-health, nightly, stale, release
 
 ### Coding standards
-- [x] TypeScript strict mode (`frontend/`)
-- [x] ESLint + no `any`
+
+- [x] TypeScript strict mode (`apps/dashboard/`)
+- [x] ESLint + Prettier + eslint-config-prettier
+- [x] Husky + lint-staged + Commitlint (conventional commits)
 - [x] Vitest unit tests (baseline)
 - [x] Python scraper tests
 - [x] `AGENTS.md` engineering standards
 - [x] `docs/phases/RULES.md` phase build rules
-- [ ] Prettier + Husky + Commitlint
-- [ ] Centralized `packages/config/`
+- [x] Centralized `packages/config/` (Python + TypeScript paths)
 
 ### Documentation
+
 - [x] Root README
-- [x] Module READMEs (frontend, backend, scraper)
+- [x] Module READMEs (dashboard, api, scraper, scanners, config)
 - [x] `docs/architecture/overview.md`
 - [x] Phase tracking (`docs/phases/`)
 - [x] PR and issue templates
 
 ## Quality gate
 
-- [ ] All deliverables checked
-- [ ] CI green on `main`
-- [ ] No paid services introduced
+- [x] All deliverables checked
+- [x] CI green on `main`
+- [x] No paid services introduced
 
 ## Spec
 
-[FOUNDATION.md](./FOUNDATION.md) — legacy Phase 1 foundation doc (reference during migration)
+[FOUNDATION.md](./FOUNDATION.md) — legacy foundation doc (reference)
 
 ## Next phase
 

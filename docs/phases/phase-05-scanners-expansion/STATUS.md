@@ -8,16 +8,16 @@ completed:
 
 ## Deliverables (add incrementally — one PR per scanner)
 
-| Scanner | Source | Auth | Status |
-|---------|--------|------|--------|
-| Arbeitnow | JSON API | None | partial (legacy) |
-| RemoteOK | JSON API | None | [ ] |
-| WeWorkRemotely | RSS | None | [ ] |
-| Greenhouse | JSON API | None | Phase 4 |
-| Lever | JSON API | OAuth/key in Secrets | [ ] |
-| Ashby | TBD | TBD | [ ] |
-| Workday | Aggregator fallback | N/A | [ ] |
-| Company career pages | Configured URLs | None | [ ] |
+| Scanner              | Source              | Auth                 | Status           |
+| -------------------- | ------------------- | -------------------- | ---------------- |
+| Arbeitnow            | JSON API            | None                 | partial (legacy) |
+| RemoteOK             | JSON API            | None                 | [ ]              |
+| WeWorkRemotely       | RSS                 | None                 | [ ]              |
+| Greenhouse           | JSON API            | None                 | Phase 4          |
+| Lever                | JSON API            | OAuth/key in Secrets | [ ]              |
+| Ashby                | TBD                 | TBD                  | [ ]              |
+| Workday              | Aggregator fallback | N/A                  | [ ]              |
+| Company career pages | Configured URLs     | None                 | [ ]              |
 
 Each scanner PR must include:
 

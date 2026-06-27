@@ -7,6 +7,7 @@ This document establishes the architecture, design patterns, and operational blu
 ## 1. Executive Architecture Summary
 
 AI Job Hunter is a full-stack, automated career acceleration suite consisting of three core pillars:
+
 1. **The Scanner Engine**: An asynchronous, scheduled scheduler (operating via GitHub Actions and local cron triggers) to scrape, deduplicate, and normalize potential career leads.
 2. **The AI Matching Engine**: A server-side processing layer utilizing Google GenAI (`gemini-3.5-flash`) for structural parsing, multi-variable matching (skills, preferences, and company constraints), and auto-tailoring LaTeX resumes & cover letters.
 3. **The Secure Dashboard UI**: A modular dashboard displaying active status tracking, rich filtering, and real-time insights.
@@ -163,7 +164,7 @@ create policy "Users can manage interviews connected to their owned jobs."
   on public.interviews for all
   using (
     exists (
-      select 1 from public.jobs 
+      select 1 from public.jobs
       where jobs.id = interviews.job_id and jobs.profile_id = auth.uid()
     )
   );
@@ -176,20 +177,23 @@ create policy "Users can manage interviews connected to their owned jobs."
 The Express dashboard backend implements a fully modular REST endpoint structure mapped below:
 
 ### Profiles Endpoint
-* `GET /api/profile` - Fetches the current user profile.
-* `PUT /api/profile` - Updates profile configuration, skills, target roles, and targeting preferences.
+
+- `GET /api/profile` - Fetches the current user profile.
+- `PUT /api/profile` - Updates profile configuration, skills, target roles, and targeting preferences.
 
 ### Jobs Endpoint
-* `GET /api/jobs` - Retrieves the scored and synchronized career leads. Supports query filtering:
-  * `status`: e.g., `?status=Shortlisted`
-  * `search`: text match across title/company/description `?search=kubernetes`
-  * `minScore`: `?minScore=80`
-* `PUT /api/jobs/:id` - Updates job status (e.g., Shortlisted, Applied, Interviewing, Rejected) or reviews rating score.
-* `POST /api/jobs` - Manually adds a custom job lead.
-* `POST /api/jobs/sync` - Manually triggers the crawler/scraper pipeline directly from the dashboard.
+
+- `GET /api/jobs` - Retrieves the scored and synchronized career leads. Supports query filtering:
+  - `status`: e.g., `?status=Shortlisted`
+  - `search`: text match across title/company/description `?search=kubernetes`
+  - `minScore`: `?minScore=80`
+- `PUT /api/jobs/:id` - Updates job status (e.g., Shortlisted, Applied, Interviewing, Rejected) or reviews rating score.
+- `POST /api/jobs` - Manually adds a custom job lead.
+- `POST /api/jobs/sync` - Manually triggers the crawler/scraper pipeline directly from the dashboard.
 
 ### Resume & Cover Letter Tailoring Endpoint
-* `POST /api/jobs/:id/tailor` - Generates tailor-made materials using the `gemini-3.5-flash` engine. Returns:
+
+- `POST /api/jobs/:id/tailor` - Generates tailor-made materials using the `gemini-3.5-flash` engine. Returns:
   ```json
   {
     "success": true,
@@ -241,40 +245,41 @@ To ensure modularity and avoid file length cutoff boundaries, the monorepo struc
 
 ## 6. Technology Decisions & Trade-Offs
 
-| Technology | Selected Option | Considered Alternatives | Trade-Off Justification |
-| :--- | :--- | :--- | :--- |
-| **Model Selection** | `gemini-3.5-flash` | `gemini-2.5-pro`, `gpt-4o` | Highly cost-efficient, ultra-low latency, native JSON schema support, and robust handling of structured profile evaluations within a ₹0 budget limit. |
-| **State Storage** | Flat File JSON -> Supabase PostgreSQL | SQLite, MongoDB Atlas | Flat file `data.json` is selected for localized rapid prototyping. In production, Supabase provides complete PostgreSQL RLS protection and robust relational capability for ₹0. |
-| **Scraper Scheduling**| GitHub Actions (cron) | Server Cron Jobs, BullMQ | Standard, serverless execution requiring no active cloud footprint or monthly payment setups, avoiding operational costs completely (₹0 budget). |
+| Technology             | Selected Option                       | Considered Alternatives    | Trade-Off Justification                                                                                                                                                         |
+| :--------------------- | :------------------------------------ | :------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Model Selection**    | `gemini-3.5-flash`                    | `gemini-2.5-pro`, `gpt-4o` | Highly cost-efficient, ultra-low latency, native JSON schema support, and robust handling of structured profile evaluations within a ₹0 budget limit.                           |
+| **State Storage**      | Flat File JSON -> Supabase PostgreSQL | SQLite, MongoDB Atlas      | Flat file `data.json` is selected for localized rapid prototyping. In production, Supabase provides complete PostgreSQL RLS protection and robust relational capability for ₹0. |
+| **Scraper Scheduling** | GitHub Actions (cron)                 | Server Cron Jobs, BullMQ   | Standard, serverless execution requiring no active cloud footprint or monthly payment setups, avoiding operational costs completely (₹0 budget).                                |
 
 ---
 
 ## 7. Risk Analysis & Mitigation
 
 1. **API Rate Limiting (Gemini 503 Errors)**:
-   * *Risk*: High load peaks trigger standard API temporary unavailability or 429 quota exhaustion.
-   * *Mitigation*: Implemented `generateContentWithRetry` featuring **exponential backoff retry wrappers** in `/server.ts` and automated warning sanitization (`logSafeWarning`) to handle expected API constraints gracefully.
+   - _Risk_: High load peaks trigger standard API temporary unavailability or 429 quota exhaustion.
+   - _Mitigation_: Implemented `generateContentWithRetry` featuring **exponential backoff retry wrappers** in `/server.ts` and automated warning sanitization (`logSafeWarning`) to handle expected API constraints gracefully.
 2. **Scraper Portability & Environment Crash**:
-   * *Risk*: If running on serverless environments like GitHub Actions without preexisting file structures, data persistence pipelines fail.
-   * *Mitigation*: Integrated automatic fallback data seeding inside `/scripts/scraper.ts` to cleanly initialize structure profiles and records dynamically.
+   - _Risk_: If running on serverless environments like GitHub Actions without preexisting file structures, data persistence pipelines fail.
+   - _Mitigation_: Integrated automatic fallback data seeding inside `/scripts/scraper.ts` to cleanly initialize structure profiles and records dynamically.
 3. **Prompt Injection / Insecure LLM outputs**:
-   * *Risk*: External job descriptions containing hostile prompts might attempt to hijack model response structure.
-   * *Mitigation*: Strict JSON schemas enforced via Google GenAI's schema validations and localized heuristics error catch fallbacks.
+   - _Risk_: External job descriptions containing hostile prompts might attempt to hijack model response structure.
+   - _Mitigation_: Strict JSON schemas enforced via Google GenAI's schema validations and localized heuristics error catch fallbacks.
 
 ---
 
 ## 8. Dependency Analysis
 
-* `@google/genai`: Official Google Developer SDK for robust Gemini capabilities.
-* `express`: Ultra-fast, modular web service.
-* `tsx` / `esbuild`: Instantaneous execution and clean CommonJS bundling support.
-* `react` / `vite`: Modern reactive presentation view client.
-* `lucide-react`: Lightweight, standardized visual layout iconography.
-* `motion/react`: Hardware-accelerated fluid component layout animations.
+- `@google/genai`: Official Google Developer SDK for robust Gemini capabilities.
+- `express`: Ultra-fast, modular web service.
+- `tsx` / `esbuild`: Instantaneous execution and clean CommonJS bundling support.
+- `react` / `vite`: Modern reactive presentation view client.
+- `lucide-react`: Lightweight, standardized visual layout iconography.
+- `motion/react`: Hardware-accelerated fluid component layout animations.
 
 ---
 
 ### Phase 0 - Verification & Quality Gate
+
 ✓ No implementation files created or modified except document registers and config flags.
 ✓ Technology roadmap fully compatible with production cloud deployments.
 ✓ System dependencies strictly audited against ₹0 cost parameters.

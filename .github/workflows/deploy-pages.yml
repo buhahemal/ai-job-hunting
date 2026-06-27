@@ -4,8 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'frontend/**'
-      - 'backend/data/data.json'
+      - 'apps/dashboard/**'
+      - 'apps/api/data/data.json'
+      - 'packages/config/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -34,12 +35,11 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install Frontend Dependencies
-        working-directory: frontend
+      - name: Install dependencies
         run: npm install
 
-      - name: Build Frontend
-        working-directory: frontend
+      - name: Build Dashboard
+        working-directory: apps/dashboard
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
@@ -47,7 +47,7 @@ jobs:
       - name: Upload GitHub Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend/dist
+          path: apps/dashboard/dist
 
       - name: Deploy to GitHub Pages
         id: deployment

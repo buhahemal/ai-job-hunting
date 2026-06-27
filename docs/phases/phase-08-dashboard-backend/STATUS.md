@@ -8,7 +8,7 @@ completed:
 
 ## Deliverables
 
-- [ ] `apps/api/` or evolve `backend/` → Supabase-backed REST layer
+- [x] `apps/api/` Flask API (Phase 2); evolve to Supabase-backed REST layer
 - [ ] Read jobs, resumes, applications from Supabase (not static JSON)
 - [ ] Profile CRUD, job status updates, interview tracking
 - [ ] Search, filter, pagination

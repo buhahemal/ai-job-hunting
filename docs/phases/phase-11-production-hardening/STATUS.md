@@ -9,12 +9,14 @@ completed:
 ## Deliverables
 
 ### Performance
+
 - [ ] GitHub Actions minutes audit (stay within 2000 min/month public repo)
 - [ ] Model quantization / smaller HF models if OOM on runner
 - [ ] Supabase query indexes reviewed (EXPLAIN plans)
 - [ ] Frontend bundle size budget
 
 ### Security
+
 - [ ] Full OWASP review checklist
 - [ ] Secret rotation documented
 - [ ] RLS audit on all tables
@@ -22,6 +24,7 @@ completed:
 - [ ] Gitleaks clean
 
 ### Production
+
 - [ ] Runbooks: failed cron, Supabase outage, model download failure
 - [ ] Monitoring: Actions failure notifications
 - [ ] Backup: Supabase backup strategy (free tier limits documented)

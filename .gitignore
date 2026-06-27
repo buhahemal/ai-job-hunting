@@ -1,6 +1,6 @@
 node_modules/
-frontend/node_modules/
-frontend/dist/
+apps/dashboard/node_modules/
+apps/dashboard/dist/
 .venv/
 __pycache__/
 *.pyc
@@ -11,4 +11,4 @@ coverage/
 *.log
 .env*
 !.env.example
-frontend/public/data/
+apps/dashboard/public/data/

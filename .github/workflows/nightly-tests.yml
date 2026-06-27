@@ -19,17 +19,20 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install Node dependencies
+        run: npm install
+
       - name: Frontend tests
-        working-directory: frontend
+        working-directory: apps/dashboard
         run: |
-          npm install
           npm run typecheck
           npm run lint
+          npm run format:check
           npm run test:coverage
           npm run build
 
       - name: Python tests
         run: |
-          pip install -r scraper/requirements.txt -r backend/requirements.txt
+          pip install -r scraper/requirements.txt -r apps/api/requirements.txt
           PYTHONPATH=. python3 -m unittest discover -s scraper/tests
           PYTHONPATH=. python3 scripts/scanner_health.py

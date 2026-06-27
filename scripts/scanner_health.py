@@ -3,8 +3,8 @@
 
 import sys
 
-from scraper.scrapers.arbeitnow import ArbeitnowScanner
-from scraper.scrapers.career_portal import CareerPortalScanner
+from scanners.arbeitnow import ArbeitnowScanner
+from scanners.career_portal import CareerPortalScanner
 
 
 def main() -> int:

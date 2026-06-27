@@ -1,6 +1,8 @@
 # Scraper
 
-Python job scanner pipeline run locally or via GitHub Actions (`scanner-cron.yml`).
+Python job scan pipeline — orchestrates `scanners/` plugins and writes to `apps/api/data/data.json`.
+
+Run locally or via GitHub Actions (`scanner-cron.yml`).
 
 ## Commands
 
@@ -11,19 +13,25 @@ PYTHONPATH=. python3 -m unittest discover -s scraper/tests
 PYTHONPATH=. python3 scripts/scanner_health.py
 ```
 
-## Scanner Interface
+Or from repo root: `npm run scan`
+
+## Scanner plugins
+
+Individual sources live in [`../scanners/`](../scanners/). The pipeline engine is `scraper/scanner_engine.py`.
 
 Every plugin implements:
 
-- `discoverJobs(limit)`
+- `discover_jobs(limit)`
 - `normalize(raw_job)`
-- `healthCheck()`
+- `health_check()`
 
 ## Configuration
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GEMINI_API_KEY` | No | Enables AI scoring; falls back to heuristics |
+| Variable         | Required | Description                                             |
+| ---------------- | -------- | ------------------------------------------------------- |
+| `GEMINI_API_KEY` | No       | Enables AI scoring; replaced by Hugging Face in Phase 6 |
+
+Paths: `packages/config/python/paths.py`
 
 ## Changelog
 

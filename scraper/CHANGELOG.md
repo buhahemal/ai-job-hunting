@@ -4,4 +4,5 @@
 
 - Modular scanner plugins (Arbeitnow, Career Portal)
 - AI matcher with heuristic fallback
-- Writes to `backend/data/data.json`
+- Writes to `apps/api/data/data.json`
+- Scanner plugins moved to `scanners/`

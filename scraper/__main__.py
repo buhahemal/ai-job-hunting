@@ -1,6 +1,6 @@
 import sys
 
-from scraper.scrapers.scanner_engine import ScannerEngine
+from scraper.scanner_engine import ScannerEngine
 
 
 def main() -> None:

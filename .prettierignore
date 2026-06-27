@@ -1,0 +1,11 @@
+node_modules/
+**/node_modules/
+**/dist/
+**/coverage/
+.venv/
+__pycache__/
+*.pyc
+package-lock.json
+apps/dashboard/public/data/
+apps/api/data/data.json
+docs/deep-research-report.md

@@ -4,23 +4,23 @@ These rules apply to **every phase** of AI Job Hunter. They are derived from [AG
 
 ## Non‑negotiable constraints
 
-| Rule | Requirement |
-|------|-------------|
-| **Cost** | ₹0 / $0 — free tiers only (GitHub, Supabase, Hugging Face OSS models) |
-| **Hosting** | Public GitHub repo; frontend on **GitHub Pages**; automation on **GitHub Actions** |
-| **AI inference** | Run on **GitHub Actions runners** using **Hugging Face** models locally (`transformers`, `sentence-transformers`) — **no paid LLM APIs** (OpenAI, Gemini paid, Claude) |
-| **Data sources** | Official APIs, RSS, and public ATS feeds only — **no LinkedIn scraping**, no TOS violations |
-| **Master resume** | Read-only source; tailoring creates **new versions**, never overwrites master |
-| **Secrets** | GitHub Secrets only — never commit `.env`, keys, or tokens |
+| Rule              | Requirement                                                                                                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cost**          | ₹0 / $0 — free tiers only (GitHub, Supabase, Hugging Face OSS models)                                                                                                  |
+| **Hosting**       | Public GitHub repo; frontend on **GitHub Pages**; automation on **GitHub Actions**                                                                                     |
+| **AI inference**  | Run on **GitHub Actions runners** using **Hugging Face** models locally (`transformers`, `sentence-transformers`) — **no paid LLM APIs** (OpenAI, Gemini paid, Claude) |
+| **Data sources**  | Official APIs, RSS, and public ATS feeds only — **no LinkedIn scraping**, no TOS violations                                                                            |
+| **Master resume** | Read-only source; tailoring creates **new versions**, never overwrites master                                                                                          |
+| **Secrets**       | GitHub Secrets only — never commit `.env`, keys, or tokens                                                                                                             |
 
 ## Recommended AI stack (zero cost)
 
-| Use case | Model / library | Runs on |
-|----------|-----------------|---------|
-| Job–profile similarity | `sentence-transformers/all-MiniLM-L6-v2` | GH Actions runner |
-| Resume JSON draft | `nakamoto-yama/t5-resume-generation` | GH Actions runner |
-| Summarization (optional) | `facebook/bart-large-cnn` or `t5-small` | GH Actions runner |
-| Scoring fallback | Heuristic + embedding cosine similarity | GH Actions runner |
+| Use case                 | Model / library                          | Runs on           |
+| ------------------------ | ---------------------------------------- | ----------------- |
+| Job–profile similarity   | `sentence-transformers/all-MiniLM-L6-v2` | GH Actions runner |
+| Resume JSON draft        | `nakamoto-yama/t5-resume-generation`     | GH Actions runner |
+| Summarization (optional) | `facebook/bart-large-cnn` or `t5-small`  | GH Actions runner |
+| Scoring fallback         | Heuristic + embedding cosine similarity  | GH Actions runner |
 
 Use `HF_HOME` cache in Actions; prefer **small** models to fit runner RAM (~7GB usable).
 
@@ -61,7 +61,7 @@ docs/
   research/
 ```
 
-Current transitional layout (`frontend/`, `backend/`, `scraper/`) migrates into the above without breaking GitHub Pages.
+Phase 2 complete: `apps/`, `packages/config/`, and `scanners/` are the canonical layout. Pipeline orchestration remains in `scraper/`.
 
 ## Phase completion rules
 
@@ -79,13 +79,13 @@ A phase is **done** only when:
 
 ## GitHub Actions layout
 
-| Group | Workflows | Purpose |
-|-------|-----------|---------|
-| **CI** | `ci.yml` | Parallel jobs: frontend, python, docker, docs, markdown, secrets |
-| **Security** | `codeql.yml`, `dependency-review.yml` | PR security |
-| **Pipeline** | `scanner-cron.yml` (rename to `pipeline-cron.yml` in Phase 6) | Scheduled ingest + HF AI on runner |
-| **Deploy** | `deploy-pages.yml` | GitHub Pages |
-| **Ops** | `nightly-tests.yml`, `scanner-health.yml`, `stale.yml`, `release.yml` | Scheduled maintenance |
+| Group        | Workflows                                                             | Purpose                                                          |
+| ------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **CI**       | `ci.yml`                                                              | Parallel jobs: frontend, python, docker, docs, markdown, secrets |
+| **Security** | `codeql.yml`, `dependency-review.yml`                                 | PR security                                                      |
+| **Pipeline** | `scanner-cron.yml` (rename to `pipeline-cron.yml` in Phase 6)         | Scheduled ingest + HF AI on runner                               |
+| **Deploy**   | `deploy-pages.yml`                                                    | GitHub Pages                                                     |
+| **Ops**      | `nightly-tests.yml`, `scanner-health.yml`, `stale.yml`, `release.yml` | Scheduled maintenance                                            |
 
 ## Compliance
 

@@ -2,16 +2,33 @@
   "name": "ai-job-hunting",
   "private": true,
   "version": "0.0.0",
+  "workspaces": [
+    "apps/dashboard",
+    "packages/config"
+  ],
   "scripts": {
-    "dev": "npm run dev --prefix frontend",
-    "dev:backend": "PYTHONPATH=. python3 backend/server.py",
-    "dev:full": "VITE_USE_BACKEND=true npm run dev --prefix frontend",
-    "build": "npm run build --prefix frontend",
-    "typecheck": "npm run typecheck --prefix frontend",
-    "lint": "npm run lint --prefix frontend",
-    "test": "npm run test --prefix frontend && PYTHONPATH=. python3 -m unittest discover -s scraper/tests",
-    "test:coverage": "npm run test:coverage --prefix frontend",
+    "dev": "npm run dev --workspace=@ai-job-hunter/dashboard",
+    "dev:api": "PYTHONPATH=. python3 apps/api/server.py",
+    "dev:full": "VITE_USE_BACKEND=true npm run dev --workspace=@ai-job-hunter/dashboard",
+    "build": "npm run build --workspace=@ai-job-hunter/dashboard",
+    "typecheck": "npm run typecheck --workspace=@ai-job-hunter/dashboard",
+    "lint": "npm run lint --workspace=@ai-job-hunter/dashboard",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspace=@ai-job-hunter/dashboard && PYTHONPATH=. python3 -m unittest discover -s scraper/tests",
+    "test:coverage": "npm run test:coverage --workspace=@ai-job-hunter/dashboard",
     "scan": "PYTHONPATH=. python3 -m scraper",
-    "scanner:health": "PYTHONPATH=. python3 scripts/scanner_health.py"
+    "scanner:health": "PYTHONPATH=. python3 scripts/scanner_health.py",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md,yml,yaml}": "prettier --write"
   }
 }

@@ -1,9 +1,9 @@
 import os
 import unittest
 
-from scraper.scrapers.arbeitnow import ArbeitnowScanner
-from scraper.scrapers.career_portal import CareerPortalScanner
-from scraper.scrapers.scanner_engine import ScannerEngine
+from scanners.arbeitnow import ArbeitnowScanner
+from scanners.career_portal import CareerPortalScanner
+from scraper.scanner_engine import ScannerEngine
 
 
 class TestScraperEngine(unittest.TestCase):

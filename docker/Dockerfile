@@ -6,11 +6,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
-FROM base AS backend
-COPY backend/requirements.txt backend/requirements.txt
+FROM base AS api
+COPY apps/api/requirements.txt apps/api/requirements.txt
 COPY scraper/requirements.txt scraper/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt -r scraper/requirements.txt
-COPY backend/ backend/
+RUN pip install --no-cache-dir -r apps/api/requirements.txt -r scraper/requirements.txt
+COPY apps/ apps/
+COPY packages/ packages/
 COPY scraper/ scraper/
+COPY scanners/ scanners/
 EXPOSE 3000
-CMD ["python3", "backend/server.py"]
+CMD ["python3", "apps/api/server.py"]

@@ -1,4 +1,5 @@
-import os
+"""Re-exports centralized paths for the scraper pipeline."""
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_FILE = os.path.join(REPO_ROOT, "backend", "data", "data.json")
+from packages.config.python.paths import DATA_FILE, REPO_ROOT
+
+__all__ = ['DATA_FILE', 'REPO_ROOT']

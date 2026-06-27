@@ -15,7 +15,7 @@ completed:
 - [ ] Seed data for development
 - [ ] ER diagram in this folder
 - [ ] `packages/database/` — typed client + repository layer
-- [ ] Replace `backend/data/data.json` as source of truth (migrate scraper writes)
+- [ ] Replace `apps/api/data/data.json` as source of truth (migrate scraper writes)
 - [ ] Database integration tests
 - [ ] GitHub Secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 

@@ -21,11 +21,11 @@ completed:
 
 ## Models (from R&D)
 
-| Task | Model |
-|------|-------|
-| Similarity | `all-MiniLM-L6-v2` |
-| Resume JSON | `nakamoto-yama/t5-resume-generation` (Phase 7 uses output) |
-| Summarize JD | `facebook/bart-large-cnn` (optional) |
+| Task         | Model                                                      |
+| ------------ | ---------------------------------------------------------- |
+| Similarity   | `all-MiniLM-L6-v2`                                         |
+| Resume JSON  | `nakamoto-yama/t5-resume-generation` (Phase 7 uses output) |
+| Summarize JD | `facebook/bart-large-cnn` (optional)                       |
 
 ## Workflow
 
