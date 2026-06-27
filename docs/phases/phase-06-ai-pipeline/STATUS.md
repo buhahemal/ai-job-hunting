@@ -16,7 +16,7 @@ completed:
 - [ ] Remove/replace `google-genai` from resume tailoring (Phase 7)
 - [x] GitHub Actions runs inference on `ubuntu-latest` runner
 - [x] Model cache via Actions cache (`HF_HOME`)
-- [x] Scanner match gate: score > 75%, target 3 jobs per run
+- [x] Scanner match gate: score > 90%, target 3 jobs per run
 - [x] Fallback chain: embeddings → optional Gemini (secret) → heuristic
 
 ## Models (from R&D)

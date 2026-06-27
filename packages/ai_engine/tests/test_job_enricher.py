@@ -10,6 +10,7 @@ from packages.ai_engine.python.job_enricher import (
     estimate_priority,
     extract_technologies,
 )
+from packages.database.python.constants import MATCH_SCORE_THRESHOLD
 
 
 PROFILE = {
@@ -55,7 +56,7 @@ class TestJobEnricher(unittest.TestCase):
     @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
     def test_enrich_job_returns_match_insights(self, mock_score):
         mock_score.return_value = {
-            "score": 82,
+            "score": 95,
             "extractedSkills": ["Node.js", "Kubernetes"],
             "fitExplanation": "Strong platform fit",
             "salaryEstimate": "Not Specified",
@@ -82,7 +83,7 @@ class TestJobEnricher(unittest.TestCase):
         self.assertTrue(enriched["matchInsights"]["matchedSkills"])
         for skill in ("Node.js", "Kubernetes", "Terraform", "AWS"):
             self.assertNotIn(skill, enriched["matchInsights"]["missingSkills"], skill)
-        self.assertGreaterEqual(enriched["matchInsights"]["overallScore"], 75)
+        self.assertGreaterEqual(enriched["matchInsights"]["overallScore"], MATCH_SCORE_THRESHOLD)
 
     @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
     def test_overall_score_reduced_for_true_gap(self, mock_score):
@@ -109,7 +110,7 @@ class TestJobEnricher(unittest.TestCase):
         enriched = enrich_job(job, PROFILE)
         missing = enriched["matchInsights"]["missingSkills"]
         self.assertTrue(any("rust" in skill.lower() for skill in missing))
-        self.assertLess(enriched["matchInsights"]["overallScore"], 75)
+        self.assertLess(enriched["matchInsights"]["overallScore"], MATCH_SCORE_THRESHOLD)
 
     @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
     def test_corpus_skill_absent_from_job_text_not_penalized(self, mock_score):

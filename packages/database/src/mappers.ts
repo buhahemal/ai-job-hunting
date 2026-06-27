@@ -11,6 +11,7 @@ import type {
   ScannedJobRecord,
   ScannedJobRow,
 } from './types.js';
+import { MATCH_SCORE_NEAR_MISS_BAND, MATCH_SCORE_THRESHOLD } from './constants.js';
 
 const SKILL_ALIAS_GROUPS: readonly (readonly string[])[] = [
   ['go', 'golang'],
@@ -387,7 +388,7 @@ function aggregateMissingSkills(
     for (const skill of verifiedGaps) {
       counts.set(skill, (counts.get(skill) ?? 0) + 1);
       scoreSum.set(skill, (scoreSum.get(skill) ?? 0) + overall);
-      if (overall >= threshold - 10 && overall <= threshold) {
+      if (overall >= threshold - MATCH_SCORE_NEAR_MISS_BAND && overall <= threshold) {
         bandBoost.set(skill, (bandBoost.get(skill) ?? 0) + 1);
       }
     }
@@ -407,7 +408,7 @@ function aggregateMissingSkills(
 /** Build scan summary aggregates from scanned job rows. */
 export function buildScanSummary(
   rows: ScanSummaryRow[],
-  threshold = 75,
+  threshold = MATCH_SCORE_THRESHOLD,
   profile?: ProfileRecord | null,
 ): ScanSummary {
   if (!rows.length) {

@@ -3,6 +3,9 @@ import {
   buildScanSummary,
   createBrowserClient,
   DashboardRepository,
+  MATCH_SCORE_THRESHOLD,
+  SCAN_INSIGHTS_LIST_MAX,
+  SCAN_INSIGHTS_PAGE_SIZE,
   rowToScannedJob,
   type InterviewRecord,
   type JobRecord,
@@ -364,7 +367,7 @@ function filterScannedJobs(
   items: ScannedJobRecord[],
   params: ListScannedJobsParams,
 ): ScannedJobRecord[] {
-  const threshold = params.threshold ?? 75;
+  const threshold = params.threshold ?? MATCH_SCORE_THRESHOLD;
   return items.filter((item) => {
     if (params.minScore !== undefined && item.overallScore < params.minScore) return false;
     if (params.maxScore !== undefined && item.overallScore > params.maxScore) return false;
@@ -388,7 +391,10 @@ export async function listScannedJobs(
   const allItems = rawItems.map(mapJsonScannedJob);
   const filtered = filterScannedJobs(allItems, params);
   const page = Math.max(1, params.page ?? 1);
-  const limit = Math.max(1, Math.min(params.limit ?? 25, 100));
+  const limit = Math.max(
+    1,
+    Math.min(params.limit ?? SCAN_INSIGHTS_PAGE_SIZE, SCAN_INSIGHTS_LIST_MAX),
+  );
   const offset = (page - 1) * limit;
 
   return {
@@ -399,7 +405,7 @@ export async function listScannedJobs(
   };
 }
 
-export async function getScanSummary(threshold = 75): Promise<ScanSummary> {
+export async function getScanSummary(threshold = MATCH_SCORE_THRESHOLD): Promise<ScanSummary> {
   if (USE_SUPABASE) {
     return getRepository().getScanSummary(threshold);
   }

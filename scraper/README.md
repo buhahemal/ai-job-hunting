@@ -33,13 +33,17 @@ Scoring is handled by [`../packages/ai_engine/`](../packages/ai_engine/) with th
 2. Optional Gemini when `GEMINI_API_KEY` is set
 3. Deterministic heuristic scorer
 
-The scanner only **promotes jobs with match score above 75%** to the Job Leads pipeline (`jobs` table) and tries to collect **at least 3 qualifying jobs** per run by scanning multiple portals.
+## Policy constants (single source of truth)
+
+Default scanner and match thresholds live in **`packages/database/python/constants.py`** (TypeScript mirror: **`packages/database/src/constants.ts`**). Change values there first; env vars below override at runtime only.
+
+The scanner only **promotes jobs with match score above 90%** to the Job Leads pipeline (`jobs` table) and tries to collect **at least 3 qualifying jobs** per run by scanning multiple portals.
 
 Every evaluated job — including sub-threshold rejects — is persisted as a **Scan Insight** in `scanned_jobs` (Supabase) or `scannedJobs[]` (JSON). The dashboard **Scan Insights** tab surfaces these records for transparency and skill-gap analytics; **Job Leads** remains the actionable apply/tailor pipeline.
 
 | Layer         | Storage                     | Purpose                                             |
 | ------------- | --------------------------- | --------------------------------------------------- |
-| Job Leads     | `jobs` + `job_match_scores` | Score > 75% — apply, tailor, track                  |
+| Job Leads     | `jobs` + `job_match_scores` | Score > 90% — apply, tailor, track                  |
 | Scan Insights | `scanned_jobs`              | All evaluated jobs — market visibility + skill gaps |
 
 ## Configuration
@@ -49,7 +53,7 @@ Every evaluated job — including sub-threshold rejects — is persisted as a **
 | `HF_HOME`                         | No       | Hugging Face model cache (default `~/.cache/huggingface`) |
 | `AI_SCORER`                       | No       | `embedding` (default), `gemini`, or `heuristic`           |
 | `GEMINI_API_KEY`                  | No       | Optional Gemini fallback when embedding fails             |
-| `SCANNER_MIN_MATCH_SCORE`         | No       | Minimum match threshold (default `75`)                    |
+| `SCANNER_MIN_MATCH_SCORE`         | No       | Minimum match threshold (default `90`)                    |
 | `SCANNER_MIN_JOBS_PER_RUN`        | No       | Target jobs per scan (default `3`)                        |
 | `SCANNER_MAX_PASSES`              | No       | Pass safety cap; `0` = scan until exhausted (default `0`) |
 | `SCANNER_LIMIT_STEP`              | No       | Increase per-source fetch limit each pass (default `50`)  |

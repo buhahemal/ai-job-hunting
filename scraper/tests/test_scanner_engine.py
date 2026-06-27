@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from typing import Dict, List
 
+from packages.database.python.constants import MATCH_SCORE_THRESHOLD
 from packages.scanner_sdk.python.base import BaseScanner
 from scraper.scanner_engine import JsonJobStore, ScannerEngine
 
@@ -72,7 +73,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
                 **job,
                 "score": score,
                 "isDuplicate": False,
-                "canonicalRole": "Platform Engineer" if score > 75 else "Software Engineer",
+                "canonicalRole": "Platform Engineer" if score > MATCH_SCORE_THRESHOLD else "Software Engineer",
                 "priority": "High" if score > 85 else "Medium" if score > 70 else "Low",
                 "fitExplanation": analysis.get("fitExplanation", ""),
                 "extractedSkills": analysis.get("extractedSkills", []),
@@ -120,15 +121,15 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         engine = self._engine(scanners)
 
         def fake_score(job, profile):
-            score = 70 if job["id"] == "low-1" else 88
+            score = 70 if job["id"] == "low-1" else 92
             return {"score": score, "extractedSkills": [], "seniority": "Senior", "fitExplanation": "test"}
 
         self._bind_enrich(engine, fake_score)
-        added = engine.run(min_match_score=75, min_jobs=1, limit_per_source=5)
+        added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=1, limit_per_source=5)
 
         self.assertEqual(len(added), 1)
         self.assertEqual(added[0]["id"], "high-1")
-        self.assertGreater(added[0]["score"], 75)
+        self.assertGreater(added[0]["score"], MATCH_SCORE_THRESHOLD)
         self.assertIn("https://example.com/low-1", self.store.get_scanned_keys())
         self.assertIn("https://example.com/high-1", self.store.get_scanned_keys())
 
@@ -154,14 +155,14 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         engine = self._engine(scanners)
 
         def fake_score(job, profile):
-            score = 90 if job["id"].startswith("b-") else 60
+            score = 92 if job["id"].startswith("b-") else 60
             return {"score": score, "extractedSkills": [], "seniority": "Senior", "fitExplanation": "test"}
 
         self._bind_enrich(engine, fake_score)
-        added = engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
+        added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         self.assertEqual(len(added), 3)
-        self.assertTrue(all(job["score"] > 75 for job in added))
+        self.assertTrue(all(job["score"] > MATCH_SCORE_THRESHOLD for job in added))
 
     def test_persists_nothing_when_all_scores_too_low(self):
         scanners = [
@@ -181,7 +182,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
             },
         )
 
-        added = engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
+        added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         self.assertEqual(added, [])
         db = self.store.read_db()
@@ -224,7 +225,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
             },
         )
 
-        engine.run(min_match_score=75, min_jobs=3, limit_per_source=20)
+        engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=20)
 
         self.assertEqual(write_counts, [10, 3])
         self.assertEqual(len(self.store.get_scanned_keys()), 13)
@@ -250,14 +251,14 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         engine = self._engine([FakeScanner("SourceA", jobs)])
 
         def fake_score(job, profile):
-            score = 90 if job["id"].startswith("high-") else 50
+            score = 92 if job["id"].startswith("high-") else 50
             return {"score": score, "extractedSkills": [], "seniority": "Senior", "fitExplanation": "test"}
 
         self._bind_enrich(engine, fake_score)
-        added = engine.run(min_match_score=75, min_jobs=3, limit_per_source=2)
+        added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=2)
 
         self.assertEqual(len(added), 3)
-        self.assertTrue(all(job["score"] > 75 for job in added))
+        self.assertTrue(all(job["score"] > MATCH_SCORE_THRESHOLD for job in added))
 
     def test_evaluates_all_source_jobs_before_stopping(self):
         os.environ["SCANNER_MAX_PASSES"] = "0"
@@ -286,7 +287,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
             }
 
         self._bind_enrich(engine, fake_score)
-        added = engine.run(min_match_score=75, min_jobs=3, limit_per_source=3)
+        added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=3)
 
         self.assertEqual(added, [])
         self.assertEqual(len(evaluated_ids), 10)
@@ -329,7 +330,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
 
         engine = self._engine(scanners)
         self._bind_enrich(engine, tracking_score)
-        engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
+        engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         self.assertEqual(enrich_calls, ["new-1"])
         self.assertIn("https://example.com/seen-1", self.store.get_scanned_keys())
@@ -362,7 +363,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
 
         first_engine = self._engine(scanners)
         self._bind_enrich(first_engine, fake_score)
-        first_engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
+        first_engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         enrich_calls: List[str] = []
 
@@ -372,7 +373,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
 
         second_engine = self._engine(scanners)
         self._bind_enrich(second_engine, tracking_score)
-        second_engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
+        second_engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         self.assertEqual(enrich_calls, [])
 

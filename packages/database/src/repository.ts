@@ -1,6 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
+  MATCH_SCORE_THRESHOLD,
+  PROFILE_ID,
+  SCAN_INSIGHTS_LIST_MAX,
+  SCAN_INSIGHTS_PAGE_SIZE,
+} from './constants.js';
+import {
   buildScanSummary,
   interviewToRow,
   jobToRow,
@@ -22,8 +28,6 @@ import type {
   ScannedJobRow,
   ScannedJobsPage,
 } from './types.js';
-
-const PROFILE_ID = 'default';
 
 export class DashboardRepository {
   constructor(private readonly client: SupabaseClient) {}
@@ -131,8 +135,11 @@ export class DashboardRepository {
 
   async listScannedJobs(params: ListScannedJobsParams = {}): Promise<ScannedJobsPage> {
     const page = Math.max(1, params.page ?? 1);
-    const limit = Math.max(1, Math.min(params.limit ?? 25, 100));
-    const threshold = params.threshold ?? 75;
+    const limit = Math.max(
+      1,
+      Math.min(params.limit ?? SCAN_INSIGHTS_PAGE_SIZE, SCAN_INSIGHTS_LIST_MAX),
+    );
+    const threshold = params.threshold ?? MATCH_SCORE_THRESHOLD;
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -170,7 +177,7 @@ export class DashboardRepository {
     };
   }
 
-  async getScanSummary(threshold = 75): Promise<ScanSummary> {
+  async getScanSummary(threshold = MATCH_SCORE_THRESHOLD): Promise<ScanSummary> {
     const profile = await this.getProfile();
     const { data, error } = await this.client
       .from('scanned_jobs')

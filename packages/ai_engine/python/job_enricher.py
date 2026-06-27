@@ -10,6 +10,11 @@ from typing import Dict, List, Optional, Tuple
 from packages.ai_engine.python import matcher
 from packages.ai_engine.python.skill_matcher import compute_skill_match, extract_job_requirements
 from packages.ai_engine.python.text_builder import infer_seniority
+from packages.database.python.constants import (
+    FULL_MATCH_SKILL_SCORE_FLOOR,
+    LOW_CONFIDENCE_OVERALL_CAP,
+    SKILL_MATCH_CONFIDENCE_MIN,
+)
 
 CANONICAL_ROLES = (
     'Platform Engineer',
@@ -291,8 +296,8 @@ def _compute_overall_score(
         + location_score * 0.05
         + preferred_coverage * 0.05
     )
-    if skill_result.skill_match_confidence < 60:
-        overall = min(overall, 70)
+    if skill_result.skill_match_confidence < SKILL_MATCH_CONFIDENCE_MIN:
+        overall = min(overall, LOW_CONFIDENCE_OVERALL_CAP)
     return overall
 
 
@@ -332,7 +337,7 @@ def estimate_priority(overall_score: int, company_match: int, is_duplicate: bool
     """Estimate job priority from score signals."""
     if is_duplicate:
         return PRIORITY_LOW
-    if overall_score >= 80 and company_match >= 70:
+    if overall_score >= FULL_MATCH_SKILL_SCORE_FLOOR and company_match >= 70:
         return PRIORITY_HIGH
     if overall_score >= 65:
         return PRIORITY_MEDIUM

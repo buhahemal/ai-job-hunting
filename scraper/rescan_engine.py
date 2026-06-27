@@ -9,7 +9,8 @@ from typing import Dict, List, Optional, Protocol
 
 from packages.ai_engine.python.job_enricher import enrich_job
 from packages.scanner_sdk.python.dedupe import scanned_job_record
-from scraper.scanner_engine import ScanInsightBuffer
+from packages.database.python.constants import SCANNER_SCAN_INSIGHT_BATCH_SIZE
+from scraper.scanner_engine import ScanInsightBuffer, ScannerEngine
 
 
 def profile_hash(profile: Dict) -> str:
@@ -59,7 +60,7 @@ def scanned_row_to_job(row: Dict) -> Dict:
 class RescanEngine:
     """Re-enrich scanned job rows with the current profile and upsert insights."""
 
-    def __init__(self, store: RescanStore, *, batch_size: int = 10):
+    def __init__(self, store: RescanStore, *, batch_size: int = SCANNER_SCAN_INSIGHT_BATCH_SIZE):
         self._store = store
         self._batch_size = batch_size
 
@@ -74,7 +75,7 @@ class RescanEngine:
         p_hash = profile_hash(profile)
         rows = self._store.list_scanned_job_rows(limit=limit)
         buffer = ScanInsightBuffer(self._store, batch_size=self._batch_size)
-        threshold = 75
+        threshold = ScannerEngine.min_match_score()
         rescored = 0
 
         for row in rows:

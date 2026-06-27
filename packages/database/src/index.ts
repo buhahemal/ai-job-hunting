@@ -1,5 +1,22 @@
 export { createBrowserClient, readSupabaseEnvFromImportMeta } from './client.js';
-export { normalizeStoredProfile } from './profile.js';
+export {
+  FULL_MATCH_SKILL_SCORE_FLOOR,
+  LOW_CONFIDENCE_OVERALL_CAP,
+  MATCH_SCORE_NEAR_MISS,
+  MATCH_SCORE_NEAR_MISS_BAND,
+  MATCH_SCORE_THRESHOLD,
+  PROFILE_ID,
+  SCAN_INSIGHTS_LIST_MAX,
+  SCAN_INSIGHTS_PAGE_SIZE,
+  SCANNER_LIMIT_PER_SOURCE,
+  SCANNER_LIMIT_STEP,
+  SCANNER_MAX_EVALUATIONS,
+  SCANNER_MAX_LIMIT_PER_SOURCE,
+  SCANNER_MAX_PASSES,
+  SCANNER_MIN_JOBS_PER_RUN,
+  SCANNER_SCAN_INSIGHT_BATCH_SIZE,
+  SKILL_MATCH_CONFIDENCE_MIN,
+} from './constants.js';
 export {
   buildScanSummary,
   filterVerifiedGaps,
@@ -12,6 +29,7 @@ export {
   scannedJobRowToJob,
   interviewToRow,
 } from './mappers.js';
+export { normalizeStoredProfile } from './profile.js';
 export { DashboardRepository } from './repository.js';
 export type {
   InterviewRecord,

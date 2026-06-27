@@ -1,4 +1,5 @@
 import { Filter } from 'lucide-react';
+import { MATCH_SCORE_NEAR_MISS, MATCH_SCORE_THRESHOLD } from '@ai-job-hunter/database';
 
 export interface ScanInsightsFilterState {
   scoreBand: string;
@@ -39,8 +40,10 @@ export default function ScanInsightsFilters({
         <option value="All">All Score Bands</option>
         <option value="0-50">0–50%</option>
         <option value="50-65">50–65%</option>
-        <option value="65-75">65–75%</option>
-        <option value="75+">75%+</option>
+        <option value={`${MATCH_SCORE_NEAR_MISS}-${MATCH_SCORE_THRESHOLD}`}>
+          {MATCH_SCORE_NEAR_MISS}–{MATCH_SCORE_THRESHOLD}%
+        </option>
+        <option value={`${MATCH_SCORE_THRESHOLD}+`}>{MATCH_SCORE_THRESHOLD}%+</option>
       </select>
 
       <select
@@ -101,7 +104,7 @@ export default function ScanInsightsFilters({
           onChange={(e) => onChange({ belowThresholdOnly: e.target.checked })}
           className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
         />
-        Below 75% only
+        Below {MATCH_SCORE_THRESHOLD}% only
       </label>
     </div>
   );
@@ -113,10 +116,10 @@ export function scoreBandToRange(band: string): { minScore?: number; maxScore?: 
       return { minScore: 0, maxScore: 50 };
     case '50-65':
       return { minScore: 50, maxScore: 65 };
-    case '65-75':
-      return { minScore: 65, maxScore: 75 };
-    case '75+':
-      return { minScore: 75 };
+    case `${MATCH_SCORE_NEAR_MISS}-${MATCH_SCORE_THRESHOLD}`:
+      return { minScore: MATCH_SCORE_NEAR_MISS, maxScore: MATCH_SCORE_THRESHOLD };
+    case `${MATCH_SCORE_THRESHOLD}+`:
+      return { minScore: MATCH_SCORE_THRESHOLD };
     default:
       return {};
   }

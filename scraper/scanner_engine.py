@@ -9,15 +9,18 @@ from packages.scanner_sdk.python.base import BaseScanner
 from packages.scanner_sdk.python.dedupe import job_dedupe_key, merge_scanned_keys, scan_run_id, scanned_job_record
 from packages.scanner_sdk.python.registry import get_registered_scanners
 
+from packages.database.python.constants import (
+    MATCH_SCORE_THRESHOLD,
+    SCANNER_LIMIT_PER_SOURCE,
+    SCANNER_LIMIT_STEP,
+    SCANNER_MAX_EVALUATIONS,
+    SCANNER_MAX_LIMIT_PER_SOURCE,
+    SCANNER_MAX_PASSES,
+    SCANNER_MIN_JOBS_PER_RUN,
+    SCANNER_SCAN_INSIGHT_BATCH_SIZE,
+)
+
 DB_FILE = DATA_FILE
-DEFAULT_MIN_MATCH_SCORE = 75
-DEFAULT_MIN_JOBS_PER_RUN = 3
-DEFAULT_LIMIT_PER_SOURCE = 15
-DEFAULT_MAX_PASSES = 0
-DEFAULT_LIMIT_STEP = 50
-DEFAULT_MAX_LIMIT_PER_SOURCE = 2000
-DEFAULT_MAX_EVALUATIONS = 3000
-DEFAULT_SCAN_INSIGHT_BATCH_SIZE = 10
 
 
 class JobStore(Protocol):
@@ -37,7 +40,7 @@ class JobStore(Protocol):
 class ScanInsightBuffer:
     """Buffer scanned job insight rows and flush to the store in fixed-size batches."""
 
-    def __init__(self, store: JobStore, batch_size: int = DEFAULT_SCAN_INSIGHT_BATCH_SIZE):
+    def __init__(self, store: JobStore, batch_size: int = SCANNER_SCAN_INSIGHT_BATCH_SIZE):
         self._store = store
         self._batch_size = max(1, batch_size)
         self._pending: List[Dict] = []
@@ -263,68 +266,68 @@ class ScannerEngine:
     @staticmethod
     def min_match_score() -> int:
         """Minimum match score (exclusive) required to persist a discovered job."""
-        raw = os.environ.get("SCANNER_MIN_MATCH_SCORE", str(DEFAULT_MIN_MATCH_SCORE))
+        raw = os.environ.get("SCANNER_MIN_MATCH_SCORE", str(MATCH_SCORE_THRESHOLD))
         try:
             return int(raw)
         except ValueError:
-            return DEFAULT_MIN_MATCH_SCORE
+            return MATCH_SCORE_THRESHOLD
 
     @staticmethod
     def min_jobs_per_run() -> int:
         """Minimum qualifying jobs to collect before stopping a scan cycle."""
-        raw = os.environ.get("SCANNER_MIN_JOBS_PER_RUN", str(DEFAULT_MIN_JOBS_PER_RUN))
+        raw = os.environ.get("SCANNER_MIN_JOBS_PER_RUN", str(SCANNER_MIN_JOBS_PER_RUN))
         try:
             return max(1, int(raw))
         except ValueError:
-            return DEFAULT_MIN_JOBS_PER_RUN
+            return SCANNER_MIN_JOBS_PER_RUN
 
     @staticmethod
     def max_passes() -> int:
         """Maximum discovery passes (0 = unlimited until sources are exhausted)."""
-        raw = os.environ.get("SCANNER_MAX_PASSES", str(DEFAULT_MAX_PASSES))
+        raw = os.environ.get("SCANNER_MAX_PASSES", str(SCANNER_MAX_PASSES))
         try:
             return max(0, int(raw))
         except ValueError:
-            return DEFAULT_MAX_PASSES
+            return SCANNER_MAX_PASSES
 
     @staticmethod
     def limit_step() -> int:
         """Increase per-source fetch limit by this amount each pass."""
-        raw = os.environ.get("SCANNER_LIMIT_STEP", str(DEFAULT_LIMIT_STEP))
+        raw = os.environ.get("SCANNER_LIMIT_STEP", str(SCANNER_LIMIT_STEP))
         try:
             return max(1, int(raw))
         except ValueError:
-            return DEFAULT_LIMIT_STEP
+            return SCANNER_LIMIT_STEP
 
     @staticmethod
     def max_limit_per_source() -> int:
         """Cap per-source job fetch size during aggressive discovery."""
-        raw = os.environ.get("SCANNER_MAX_LIMIT_PER_SOURCE", str(DEFAULT_MAX_LIMIT_PER_SOURCE))
+        raw = os.environ.get("SCANNER_MAX_LIMIT_PER_SOURCE", str(SCANNER_MAX_LIMIT_PER_SOURCE))
         try:
             return max(1, int(raw))
         except ValueError:
-            return DEFAULT_MAX_LIMIT_PER_SOURCE
+            return SCANNER_MAX_LIMIT_PER_SOURCE
 
     @staticmethod
     def max_evaluations() -> int:
         """Maximum number of unique jobs to score in one run."""
-        raw = os.environ.get("SCANNER_MAX_EVALUATIONS", str(DEFAULT_MAX_EVALUATIONS))
+        raw = os.environ.get("SCANNER_MAX_EVALUATIONS", str(SCANNER_MAX_EVALUATIONS))
         try:
             return max(1, int(raw))
         except ValueError:
-            return DEFAULT_MAX_EVALUATIONS
+            return SCANNER_MAX_EVALUATIONS
 
     @staticmethod
     def scan_insight_batch_size() -> int:
         """Number of scanned job rows to buffer before upserting."""
         raw = os.environ.get(
             "SCANNER_SCAN_INSIGHT_BATCH_SIZE",
-            str(DEFAULT_SCAN_INSIGHT_BATCH_SIZE),
+            str(SCANNER_SCAN_INSIGHT_BATCH_SIZE),
         )
         try:
             return max(1, int(raw))
         except ValueError:
-            return DEFAULT_SCAN_INSIGHT_BATCH_SIZE
+            return SCANNER_SCAN_INSIGHT_BATCH_SIZE
 
     @staticmethod
     def _evaluate_scraper_batch(
@@ -450,7 +453,7 @@ class ScannerEngine:
 
     def run(
         self,
-        limit_per_source: int = DEFAULT_LIMIT_PER_SOURCE,
+        limit_per_source: int = SCANNER_LIMIT_PER_SOURCE,
         min_match_score: Optional[int] = None,
         min_jobs: Optional[int] = None,
     ) -> List[Dict]:

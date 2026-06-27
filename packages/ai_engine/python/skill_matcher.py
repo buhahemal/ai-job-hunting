@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Set, Tuple
 
+from packages.database.python.constants import FULL_MATCH_SKILL_SCORE_FLOOR
 from packages.ai_engine.python.text_builder import build_candidate_text
 
 # Shared technology list (mirrors job_enricher.TECHNOLOGY_KEYWORDS).
@@ -291,7 +292,7 @@ def compute_skill_match(job: Dict, profile: Dict) -> SkillMatchResult:
     skill_match_score = _clamp(requirement_coverage * 100)
 
     if not missing and matched:
-        skill_match_score = max(skill_match_score, 80)
+        skill_match_score = max(skill_match_score, FULL_MATCH_SKILL_SCORE_FLOOR)
 
     skill_penalty = min(20, len(missing) * 3)
     validated_skill_score = _clamp(skill_match_score - skill_penalty)

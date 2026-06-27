@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Radar, RefreshCw, TrendingUp } from 'lucide-react';
 import type { ScanSummary, ScannedJobRecord } from '@ai-job-hunter/database';
+import {
+  MATCH_SCORE_NEAR_MISS,
+  MATCH_SCORE_THRESHOLD,
+  SCAN_INSIGHTS_PAGE_SIZE,
+} from '@ai-job-hunter/database';
 import * as api from '../api/client';
 import ScanInsightDetailPanel from './ScanInsightDetailPanel';
 import ScanInsightsFilters, {
@@ -8,7 +13,7 @@ import ScanInsightsFilters, {
   type ScanInsightsFilterState,
 } from './ScanInsightsFilters';
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = SCAN_INSIGHTS_PAGE_SIZE;
 
 export default function ScanInsightsView() {
   const [summary, setSummary] = useState<ScanSummary | null>(null);
@@ -181,7 +186,9 @@ export default function ScanInsightsView() {
           <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="text-[10px] font-bold uppercase text-slate-400 mb-1">Promoted</div>
             <div className="text-2xl font-extrabold text-emerald-700">{summary.promotedCount}</div>
-            <p className="text-[10px] text-slate-400 mt-1">Score &gt; 75% → Job Leads</p>
+            <p className="text-[10px] text-slate-400 mt-1">
+              Score &gt; {MATCH_SCORE_THRESHOLD}% → Job Leads
+            </p>
           </div>
 
           <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
@@ -225,7 +232,7 @@ export default function ScanInsightsView() {
                 </div>
                 {entry.estimatedBandBoost > 0 && (
                   <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
-                    +{entry.estimatedBandBoost} near 75%
+                    +{entry.estimatedBandBoost} near {MATCH_SCORE_THRESHOLD}%
                   </span>
                 )}
               </div>
@@ -253,7 +260,8 @@ export default function ScanInsightsView() {
               <Radar className="h-10 w-10 text-slate-300 mx-auto" />
               <h4 className="text-sm font-bold text-slate-700">No scanned jobs match filters</h4>
               <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                Run a career board scan to populate insights. Jobs below 75% appear here only.
+                Run a career board scan to populate insights. Jobs below {MATCH_SCORE_THRESHOLD}%
+                appear here only.
               </p>
             </div>
           ) : (
@@ -289,9 +297,9 @@ export default function ScanInsightsView() {
                   </div>
                   <div
                     className={`shrink-0 px-3 py-1.5 rounded-lg text-center ${
-                      insight.overallScore >= 75
+                      insight.overallScore >= MATCH_SCORE_THRESHOLD
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                        : insight.overallScore >= 65
+                        : insight.overallScore >= MATCH_SCORE_NEAR_MISS
                           ? 'bg-amber-50 text-amber-700 border border-amber-100'
                           : 'bg-slate-100 text-slate-600'
                     }`}

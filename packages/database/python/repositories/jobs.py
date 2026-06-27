@@ -7,6 +7,11 @@ from typing import Any, Dict, List, Optional
 
 from supabase import Client
 
+from packages.database.python.constants import (
+    MATCH_SCORE_NEAR_MISS_BAND,
+    MATCH_SCORE_THRESHOLD,
+    PROFILE_ID,
+)
 from packages.database.python.mappers import (
     dedupe_indexes,
     job_to_row,
@@ -24,8 +29,6 @@ from packages.database.python.profile import normalize_stored_profile
 class JobRepository:
     """Read/write jobs, profile, and interviews in Supabase."""
 
-    PROFILE_ID = 'default'
-
     def __init__(self, client: Client):
         self._client = client
 
@@ -34,7 +37,7 @@ class JobRepository:
         response = (
             self._client.table('profiles')
             .select('data')
-            .eq('id', self.PROFILE_ID)
+            .eq('id', PROFILE_ID)
             .maybe_single()
             .execute()
         )
@@ -43,7 +46,7 @@ class JobRepository:
     def save_profile(self, profile: Dict[str, Any]) -> None:
         """Upsert profile JSON."""
         self._client.table('profiles').upsert(
-            {'id': self.PROFILE_ID, 'data': profile},
+            {'id': PROFILE_ID, 'data': profile},
             on_conflict='id',
         ).execute()
 
@@ -114,7 +117,7 @@ class JobRepository:
         role: Optional[str] = None,
         missing_skill: Optional[str] = None,
         below_threshold_only: bool = False,
-        threshold: int = 75,
+        threshold: int = MATCH_SCORE_THRESHOLD,
     ) -> Dict[str, Any]:
         """Return paginated scanned job insights with optional filters."""
         page = max(1, page)
@@ -183,7 +186,7 @@ class JobRepository:
 
         return job
 
-    def get_scan_summary(self, *, threshold: int = 75) -> Dict[str, Any]:
+    def get_scan_summary(self, *, threshold: int = MATCH_SCORE_THRESHOLD) -> Dict[str, Any]:
         """Aggregate scan insight statistics for dashboard summary header."""
         from packages.ai_engine.python.skill_matcher import filter_verified_gaps
 
@@ -248,7 +251,7 @@ class JobRepository:
                 1
                 for row in rows
                 if skill in (row.get('missing_skills') or [])
-                and threshold - 10 <= int(row.get('overall_score', row.get('score')) or 0) <= threshold
+                and threshold - MATCH_SCORE_NEAR_MISS_BAND <= int(row.get('overall_score', row.get('score')) or 0) <= threshold
             )
             top_missing.append({
                 'skill': skill,

@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from scraper.rescan_engine import RescanEngine, profile_hash, scanned_row_to_job
+from packages.database.python.constants import MATCH_SCORE_THRESHOLD
 from scraper.scanner_engine import JsonJobStore
 
 
@@ -80,7 +81,7 @@ class TestRescanEngine(unittest.TestCase):
     @patch('packages.ai_engine.python.job_enricher.matcher.score_job')
     def test_rescan_updates_stale_inverted_gaps(self, mock_score):
         mock_score.return_value = {
-            'score': 82,
+            'score': 95,
             'extractedSkills': ['Node.js', 'Kubernetes', 'AWS'],
             'fitExplanation': 'Strong platform fit',
             'salaryEstimate': 'Not Specified',
@@ -98,7 +99,7 @@ class TestRescanEngine(unittest.TestCase):
         self.assertIn('rescored_at', updated)
         for skill in ('Express.js', 'Redis', 'Golang'):
             self.assertNotIn(skill, updated.get('missing_skills') or [], skill)
-        self.assertGreaterEqual(int(updated.get('overall_score') or 0), 75)
+        self.assertGreaterEqual(int(updated.get('overall_score') or 0), MATCH_SCORE_THRESHOLD)
 
 
 if __name__ == '__main__':

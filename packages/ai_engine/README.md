@@ -31,14 +31,15 @@ Chosen for GitHub Actions `ubuntu-latest` because it is small, fast on CPU, and 
 
 ## Environment variables
 
-| Variable                   | Default                                  | Description                                 |
-| -------------------------- | ---------------------------------------- | ------------------------------------------- |
-| `HF_HOME`                  | `~/.cache/huggingface`                   | Hugging Face model cache directory          |
-| `AI_EMBEDDING_MODEL`       | `sentence-transformers/all-MiniLM-L6-v2` | Override embedding model                    |
-| `AI_SCORER`                | `embedding`                              | Force `embedding`, `gemini`, or `heuristic` |
-| `GEMINI_API_KEY`           | unset                                    | Optional Gemini fallback / resume tailoring |
-| `SCANNER_MIN_MATCH_SCORE`  | `75`                                     | Jobs must score above this to persist       |
-| `SCANNER_MIN_JOBS_PER_RUN` | `3`                                      | Target qualifying jobs per scan             |
+| Variable                   | Default                                               | Description                                 |
+| -------------------------- | ----------------------------------------------------- | ------------------------------------------- |
+| `HF_HOME`                  | `~/.cache/huggingface`                                | Hugging Face model cache directory          |
+| `AI_EMBEDDING_MODEL`       | `sentence-transformers/all-MiniLM-L6-v2`              | Override embedding model                    |
+| `AI_SCORER`                | `embedding`                                           | Force `embedding`, `gemini`, or `heuristic` |
+| `GEMINI_API_KEY`           | unset                                                 | Optional Gemini fallback / resume tailoring |
+| Variable                   | Default (see `packages/database/python/constants.py`) | Description                                 |
+| `SCANNER_MIN_MATCH_SCORE`  | `90`                                                  | Jobs must score above this to persist       |
+| `SCANNER_MIN_JOBS_PER_RUN` | `3`                                                   | Target qualifying jobs per scan             |
 
 ## Tests
 

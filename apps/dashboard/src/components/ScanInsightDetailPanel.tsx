@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowUpRight, Search, Sparkles, X } from 'lucide-react';
 import type { ScannedJobRecord } from '@ai-job-hunter/database';
+import { MATCH_SCORE_NEAR_MISS, MATCH_SCORE_THRESHOLD } from '@ai-job-hunter/database';
 import * as api from '../api/client';
 
 interface ScanInsightDetailPanelProps {
@@ -129,9 +130,9 @@ export default function ScanInsightDetailPanel({
       <div className="flex items-center justify-between">
         <div
           className={`px-4 py-2 rounded-lg text-center ${
-            insight.overallScore >= 75
+            insight.overallScore >= MATCH_SCORE_THRESHOLD
               ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-              : insight.overallScore >= 65
+              : insight.overallScore >= MATCH_SCORE_NEAR_MISS
                 ? 'bg-amber-50 text-amber-700 border border-amber-100'
                 : 'bg-slate-100 text-slate-600'
           }`}
