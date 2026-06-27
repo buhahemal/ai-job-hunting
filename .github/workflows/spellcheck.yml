@@ -1,0 +1,13 @@
+name: Spell Check
+
+on:
+  workflow_call:
+
+jobs:
+  cspell:
+    name: CSpell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run spellcheck

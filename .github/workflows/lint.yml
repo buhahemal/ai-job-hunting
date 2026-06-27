@@ -1,0 +1,17 @@
+name: Lint
+
+on:
+  workflow_call:
+
+jobs:
+  typescript-eslint:
+    name: TypeScript & ESLint
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check --workspace=@ai-job-hunter/dashboard

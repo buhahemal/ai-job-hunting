@@ -1,0 +1,40 @@
+name: Documentation Validation
+
+on:
+  workflow_call:
+
+jobs:
+  docs:
+    name: Required Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify required documentation exists
+        run: |
+          required_files=(
+            README.md
+            AGENTS.md
+            .ai/AGENTS.md
+            .ai/PROJECT.md
+            .ai/EXECUTION_PLAN.md
+            docs/architecture/overview.md
+            docs/phases/README.md
+            docs/phases/RULES.md
+            packages/config/README.md
+            packages/database/README.md
+            packages/scanner_sdk/README.md
+            supabase/README.md
+            supabase/migrations/0001_init_schema.sql
+            docs/phases/phase-03-database-supabase/SETUP.md
+            apps/dashboard/README.md
+            apps/api/README.md
+            scraper/README.md
+            scanners/README.md
+          )
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Missing required doc: $file"
+              exit 1
+            fi
+          done
+          echo "All required documentation files present."

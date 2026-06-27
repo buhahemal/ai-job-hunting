@@ -1,0 +1,14 @@
+name: Markdown Lint
+
+on:
+  workflow_call:
+
+jobs:
+  markdown:
+    name: Markdownlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          config: .markdownlint.json

@@ -1,0 +1,14 @@
+name: Semgrep
+
+on:
+  workflow_call:
+
+jobs:
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config .semgrep.yml --error

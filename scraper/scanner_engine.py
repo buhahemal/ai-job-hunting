@@ -6,9 +6,8 @@ from typing import Dict, List, Optional, Protocol, Tuple
 from apps.api.defaults import DEFAULT_PROFILE, normalize_profile
 from scraper.ai_matcher import AIMatcher
 from scraper.paths import DATA_FILE
-from scanners.arbeitnow import ArbeitnowScanner
-from scanners.base import BaseScanner
-from scanners.career_portal import CareerPortalScanner
+from packages.scanner_sdk.python.base import BaseScanner
+from packages.scanner_sdk.python.registry import get_registered_scanners
 
 DB_FILE = DATA_FILE
 
@@ -97,10 +96,7 @@ class ScannerEngine:
     """
 
     def __init__(self, store: Optional[JobStore] = None):
-        self.scrapers: List[BaseScanner] = [
-            ArbeitnowScanner(),
-            CareerPortalScanner(),
-        ]
+        self.scrapers: List[BaseScanner] = get_registered_scanners()
         self.ai_matcher = AIMatcher()
         self.store = store or create_job_store()
 

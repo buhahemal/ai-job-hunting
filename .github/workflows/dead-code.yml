@@ -1,0 +1,13 @@
+name: Dead Code
+
+on:
+  workflow_call:
+
+jobs:
+  knip:
+    name: Knip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run quality:dead-code

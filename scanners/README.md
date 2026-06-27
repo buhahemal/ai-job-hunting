@@ -1,10 +1,13 @@
-# Scanners
+# Per-source job discovery plugins
 
-Per-source job discovery plugins. Each scanner implements `discover_jobs()`, `normalize()`, and `health_check()`.
+Each scanner lives in its own folder and implements `discover_jobs()`, `normalize()`, and `health_check()` via `packages/scanner_sdk`.
 
-| Scanner            | Source                        |
-| ------------------ | ----------------------------- |
-| `arbeitnow.py`     | Arbeitnow JSON API            |
-| `career_portal.py` | Configured career portal URLs |
+| Folder           | Source                         | Config                            |
+| ---------------- | ------------------------------ | --------------------------------- |
+| `arbeitnow/`     | Arbeitnow JSON API             | None                              |
+| `company_pages/` | Target consultancy career URLs | None (synthetic high-signal data) |
+| `greenhouse/`    | Greenhouse Job Board API       | `GREENHOUSE_BOARD_TOKEN` env      |
 
-Orchestration lives in `scraper/scanner_engine.py`.
+Orchestration: `scraper/scanner_engine.py` via `get_registered_scanners()`.
+
+Health checks: `npm run scanner:health`

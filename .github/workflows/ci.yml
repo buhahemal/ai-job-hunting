@@ -1,9 +1,13 @@
 name: CI
 
+# Umbrella workflow — triggers all quality gates in parallel on PR/push.
+# Individual workflows also exist for granular visibility in Actions tab.
+
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -11,163 +15,34 @@ concurrency:
 
 env:
   HUSKY: 0
-  # Match GitHub Pages project-site URL (same as deploy-pages.yml)
   VITE_BASE_PATH: /${{ github.event.repository.name }}/
 
 jobs:
-  frontend:
-    name: Frontend Quality Gates
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-
-      - name: Install dependencies
-        run: |
-          npm ci
-          rm -rf apps/dashboard/node_modules
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: ESLint
-        run: npm run lint
-
-      - name: Prettier check (dashboard)
-        run: npm run format:check --workspace=@ai-job-hunter/dashboard
-
-      - name: Unit tests
-        run: npm run test:coverage
-
-      - name: Build (GitHub Pages)
-        run: npm run build
-
-  python:
-    name: Python Quality Gates
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install -r scraper/requirements.txt
-          pip install -r apps/api/requirements.txt
-
-      - name: Scraper unit tests
-        env:
-          PYTHONPATH: .
-          USE_JSON_STORE: 'true'
-        run: |
-          python3 -m unittest discover -s scraper/tests
-          python3 -m unittest discover -s packages/database/tests
-
-      - name: Scanner health checks
-        env:
-          PYTHONPATH: .
-        run: python3 scripts/scanner_health.py
-
+  lint:
+    uses: ./.github/workflows/lint.yml
+  tests:
+    uses: ./.github/workflows/tests.yml
+  build:
+    uses: ./.github/workflows/build.yml
   docker:
-    name: Docker Build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Build API image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: false
-          tags: ai-job-hunter:ci
-
+    uses: ./.github/workflows/docker.yml
   docs:
-    name: Documentation Validation
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Verify required documentation exists
-        run: |
-          required_files=(
-            README.md
-            AGENTS.md
-            docs/architecture/overview.md
-            docs/phases/README.md
-            docs/phases/RULES.md
-            packages/config/README.md
-            packages/database/README.md
-            supabase/README.md
-            supabase/migrations/0001_init_schema.sql
-            docs/phases/phase-03-database-supabase/SETUP.md
-            apps/dashboard/README.md
-            apps/api/README.md
-            scraper/README.md
-            scanners/README.md
-          )
-          for file in "${required_files[@]}"; do
-            if [[ ! -f "$file" ]]; then
-              echo "Missing required doc: $file"
-              exit 1
-            fi
-          done
-          echo "All required documentation files present."
-
+    uses: ./.github/workflows/docs.yml
   markdown:
-    name: Markdown Lint
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: DavidAnson/markdownlint-cli2-action@v19
-        with:
-          config: .markdownlint.json
-
+    uses: ./.github/workflows/markdown.yml
   format:
-    name: Prettier (root)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-
-      - name: Install dependencies
-        run: |
-          npm ci
-          rm -rf apps/dashboard/node_modules
-        env:
-          HUSKY: 0
-
-      - name: Prettier check
-        run: npm run format:check
-
-  secrets:
-    name: Secret Scan
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/format.yml
+  gitleaks:
+    uses: ./.github/workflows/gitleaks.yml
+  duplicate-code:
+    uses: ./.github/workflows/duplicate-code.yml
+  dead-code:
+    uses: ./.github/workflows/dead-code.yml
+  architecture:
+    uses: ./.github/workflows/architecture.yml
+  semgrep:
+    uses: ./.github/workflows/semgrep.yml
+  spellcheck:
+    uses: ./.github/workflows/spellcheck.yml
+  actionlint:
+    uses: ./.github/workflows/actionlint.yml

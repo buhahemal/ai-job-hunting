@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { jobToRow, rowToInterview, rowToJob } from './mappers.js';
+import { interviewToRow, jobToRow, rowToInterview, rowToJob } from './mappers.js';
 import type { InterviewRecord, JobRecord, JobRow, ProfileRecord } from './types.js';
 
 const PROFILE_ID = 'default';
@@ -101,16 +101,7 @@ export class DashboardRepository {
       status: InterviewRecord['status'];
     },
   ): Promise<void> {
-    const { error } = await this.client.from('interviews').insert({
-      id: interview.id,
-      job_id: interview.jobId,
-      role: interview.role,
-      company: interview.company,
-      interview_date: interview.date,
-      interview_type: interview.type,
-      notes: interview.notes,
-      status: interview.status,
-    });
+    const { error } = await this.client.from('interviews').insert(interviewToRow(interview));
     if (error) throw error;
   }
 

@@ -1,0 +1,12 @@
+rules:
+  - id: python-requests-no-verify-false
+    pattern: verify=False
+    message: Do not disable TLS verification
+    languages: [python]
+    severity: ERROR
+
+  - id: no-eval
+    pattern: eval(...)
+    message: Avoid eval()
+    languages: [javascript, typescript]
+    severity: ERROR

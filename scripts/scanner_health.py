@@ -3,15 +3,13 @@
 
 import sys
 
-from scanners.arbeitnow import ArbeitnowScanner
-from scanners.career_portal import CareerPortalScanner
+from packages.scanner_sdk.python.registry import get_registered_scanners
 
 
 def main() -> int:
-    scanners = [ArbeitnowScanner(), CareerPortalScanner()]
     failed = []
 
-    for scanner in scanners:
+    for scanner in get_registered_scanners():
         healthy = scanner.health_check()
         status = 'OK' if healthy else 'FAIL'
         print(f'[{status}] {scanner.name}')

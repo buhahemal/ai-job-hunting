@@ -5,17 +5,21 @@ Monorepo for a GitHub-hosted job hunting dashboard: React on GitHub Pages, Pytho
 ## Repository layout
 
 ```text
+.ai/             AI operating system — start here for agents
 apps/
   dashboard/     React + Vite → GitHub Pages
   api/           Local Flask API + data/data.json (dev / fallback)
 packages/
   config/        Shared path configuration (TS + Python)
   database/      Supabase clients (TS + Python)
-scanners/        Per-source job discovery plugins
+  scanner_sdk/   Scanner plugin SDK (Python)
+scanners/        Per-source plugins (arbeitnow, company_pages, greenhouse)
 scraper/         Scan pipeline orchestration (GitHub Actions)
 supabase/        SQL migrations + RLS
 docs/            Architecture and phase planning
 ```
+
+AI agents: read [`.ai/AGENTS.md`](.ai/AGENTS.md) first. Quality pipeline: `npm run quality && npm test`.
 
 ## Development phases
 

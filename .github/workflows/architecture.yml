@@ -1,0 +1,25 @@
+name: Architecture
+
+on:
+  workflow_call:
+
+jobs:
+  dependency-cruiser:
+    name: Dependency Cruiser
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run arch:depcruise
+
+  madge:
+    name: Circular Dependencies
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run arch:madge

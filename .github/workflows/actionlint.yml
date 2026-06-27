@@ -1,0 +1,14 @@
+name: Actionlint
+
+on:
+  workflow_call:
+
+jobs:
+  actionlint:
+    name: Workflow Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rhysd/actionlint@v1
+        with:
+          args: -color

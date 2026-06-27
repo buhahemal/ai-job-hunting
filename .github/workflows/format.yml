@@ -1,0 +1,15 @@
+name: Format
+
+on:
+  workflow_call:
+
+jobs:
+  prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run format:check

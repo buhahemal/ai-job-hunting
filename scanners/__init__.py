@@ -1,7 +1,8 @@
 """Job source scanner plugins."""
 
 from scanners.arbeitnow import ArbeitnowScanner
-from scanners.base import BaseScanner
-from scanners.career_portal import CareerPortalScanner
+from scanners.company_pages import CompanyPagesScanner
+from scanners.greenhouse import GreenhouseScanner
+from packages.scanner_sdk.python.base import BaseScanner
 
-__all__ = ['ArbeitnowScanner', 'BaseScanner', 'CareerPortalScanner']
+__all__ = ['ArbeitnowScanner', 'CompanyPagesScanner', 'GreenhouseScanner', 'BaseScanner']

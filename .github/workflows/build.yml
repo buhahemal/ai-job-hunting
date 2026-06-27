@@ -1,0 +1,16 @@
+name: Build
+
+on:
+  workflow_call:
+
+jobs:
+  dashboard:
+    name: Dashboard Build
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+      VITE_BASE_PATH: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: npm run build

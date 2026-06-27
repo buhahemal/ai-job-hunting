@@ -1,0 +1,14 @@
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: npm
+    - name: Install dependencies
+      shell: bash
+      run: |
+        npm ci
+        rm -rf apps/dashboard/node_modules
+      env:
+        HUSKY: '0'
