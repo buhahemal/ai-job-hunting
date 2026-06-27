@@ -7,19 +7,19 @@ Incremental, production-ready delivery for **AI Job Hunter** — 100% free, GitH
 
 **Status:** `done` | `in_progress` | `pending`
 
-| Phase | Name                                  | Status      | Folder                                                                |
-| ----: | ------------------------------------- | ----------- | --------------------------------------------------------------------- |
-|     1 | Research & Architecture               | done        | [phase-01-research-architecture](./phase-01-research-architecture/)   |
-|     2 | Repository Setup + CI/CD + Standards  | done        | [phase-02-foundation-cicd](./phase-02-foundation-cicd/)               |
-|     3 | Database + Supabase Schema            | done        | [phase-03-database-supabase](./phase-03-database-supabase/)           |
-|     4 | Scanner SDK + Greenhouse              | in_progress | [phase-04-scanner-sdk-greenhouse](./phase-04-scanner-sdk-greenhouse/) |
-|     5 | Remaining Scanners (one by one)       | pending     | [phase-05-scanners-expansion](./phase-05-scanners-expansion/)         |
-|     6 | AI Processing Pipeline (Hugging Face) | pending     | [phase-06-ai-pipeline](./phase-06-ai-pipeline/)                       |
-|     7 | Resume Engine (LaTeX → PDF)           | pending     | [phase-07-resume-engine](./phase-07-resume-engine/)                   |
-|     8 | Dashboard Backend                     | pending     | [phase-08-dashboard-backend](./phase-08-dashboard-backend/)           |
-|     9 | Dashboard Frontend (GitHub Pages)     | pending     | [phase-09-dashboard-frontend](./phase-09-dashboard-frontend/)         |
-|    10 | Learning Engine + Analytics           | pending     | [phase-10-learning-analytics](./phase-10-learning-analytics/)         |
-|    11 | Performance, Security, Production     | pending     | [phase-11-production-hardening](./phase-11-production-hardening/)     |
+| Phase | Name                                  | Status  | Folder                                                                |
+| ----: | ------------------------------------- | ------- | --------------------------------------------------------------------- |
+|     1 | Research & Architecture               | done    | [phase-01-research-architecture](./phase-01-research-architecture/)   |
+|     2 | Repository Setup + CI/CD + Standards  | done    | [phase-02-foundation-cicd](./phase-02-foundation-cicd/)               |
+|     3 | Database + Supabase Schema            | done    | [phase-03-database-supabase](./phase-03-database-supabase/)           |
+|     4 | Scanner SDK + Greenhouse              | done    | [phase-04-scanner-sdk-greenhouse](./phase-04-scanner-sdk-greenhouse/) |
+|     5 | Remaining Scanners (one by one)       | done    | [phase-05-scanners-expansion](./phase-05-scanners-expansion/)         |
+|     6 | AI Processing Pipeline (Hugging Face) | pending | [phase-06-ai-pipeline](./phase-06-ai-pipeline/)                       |
+|     7 | Resume Engine (LaTeX → PDF)           | pending | [phase-07-resume-engine](./phase-07-resume-engine/)                   |
+|     8 | Dashboard Backend                     | pending | [phase-08-dashboard-backend](./phase-08-dashboard-backend/)           |
+|     9 | Dashboard Frontend (GitHub Pages)     | pending | [phase-09-dashboard-frontend](./phase-09-dashboard-frontend/)         |
+|    10 | Learning Engine + Analytics           | pending | [phase-10-learning-analytics](./phase-10-learning-analytics/)         |
+|    11 | Performance, Security, Production     | pending | [phase-11-production-hardening](./phase-11-production-hardening/)     |
 
 ## Build order (dependency chain)
 

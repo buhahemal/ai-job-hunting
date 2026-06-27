@@ -359,6 +359,19 @@ export default function ScanInsightsView() {
           onPromoted={handlePromoted}
         />
       </div>
+
+      <p className="mt-6 text-[11px] text-slate-400 text-center">
+        Job listings may include data from{' '}
+        <a
+          href="https://remoteok.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-slate-600"
+        >
+          RemoteOK
+        </a>
+        . RemoteOK requires attribution when displaying their listings.
+      </p>
     </div>
   );
 }

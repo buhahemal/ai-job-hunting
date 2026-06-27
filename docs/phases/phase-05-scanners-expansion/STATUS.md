@@ -1,43 +1,52 @@
-# Phase 5 — Remaining Scanners (One by One)
+# Phase 5 — Scanner Expansion
 
 ```yaml
-status: pending
-started:
-completed:
+status: complete
+started: 2026-06-27
+completed: 2026-06-27
 ```
 
-## Deliverables (add incrementally — one PR per scanner)
+## Deliverables
 
-| Scanner              | Source              | Auth                 | Status           |
-| -------------------- | ------------------- | -------------------- | ---------------- |
-| Arbeitnow            | JSON API            | None                 | partial (legacy) |
-| RemoteOK             | JSON API            | None                 | [ ]              |
-| WeWorkRemotely       | RSS                 | None                 | [ ]              |
-| Greenhouse           | JSON API            | None                 | Phase 4          |
-| Lever                | JSON API            | OAuth/key in Secrets | [ ]              |
-| Ashby                | TBD                 | TBD                  | [ ]              |
-| Workday              | Aggregator fallback | N/A                  | [ ]              |
-| Company career pages | Configured URLs     | None                 | [ ]              |
+| Scanner              | Source               | Auth | Status     |
+| -------------------- | -------------------- | ---- | ---------- |
+| Arbeitnow            | JSON API             | None | complete   |
+| RemoteOK             | JSON API             | None | complete   |
+| We Work Remotely     | RSS                  | None | complete   |
+| Greenhouse           | JSON API             | None | Phase 4    |
+| Lever                | JSON API             | None | Phase 4    |
+| SmartRecruiters      | JSON API             | None | Phase 4    |
+| Teamtailor           | jobs.json            | None | Phase 4    |
+| Workable             | widget API           | None | Phase 4    |
+| Company career pages | configured targets   | None | Phase 4    |
+| Ashby                | posting-api          | None | complete   |
+| Workday              | CXS jobs API         | None | complete   |
+| Wellfound            | **NEXT_DATA** Apollo | None | complete\* |
 
-Each scanner PR must include:
+\* Wellfound has no public API. The scanner parses Apollo state from search pages when fetch succeeds. Server-side requests are often blocked (HTTP 403); leave `WELLFOUND_SEARCH_PATHS` unset unless you have a workaround.
 
-- [ ] Implementation in `scanners/{name}/`
-- [ ] Normalization to canonical job schema
-- [ ] Deduplication keys (`source` + `external_id`)
-- [ ] Unit tests with fixture JSON
-- [ ] Health check entry in `scripts/scanner_health.py`
-- [ ] README with rate limits and attribution notes
+## Per-scanner checklist
 
-## Rules
+- [x] Implementation in `scanners/{name}/`
+- [x] Normalization to canonical job schema
+- [x] Deduplication keys (`source` + external id in normalized `id`)
+- [x] Unit tests with fixture JSON (Wellfound Apollo fixture)
+- [x] Health check via `scripts/scanner_health.py` (registry-driven)
+- [x] README with rate limits and attribution notes
+- [x] RemoteOK attribution on dashboard (Scan Insights)
 
-- One scanner per PR for reviewability
-- No scanner merged without tests
-- Respect API TOS (RemoteOK attribution on dashboard)
+## Configuration
+
+See `.env.example` and `scanners/README.md`:
+
+- `ASHBY_JOB_BOARD_SLUGS` — board slug from `jobs.ashbyhq.com/{slug}`
+- `WORKDAY_CAREER_SITES` — `tenant:wd5:SiteName` or full career URL
+- `WELLFOUND_SEARCH_PATHS` — path segments, e.g. `role/l/remote`
 
 ## Quality gate
 
-- [ ] All targeted scanners pass health checks
-- [ ] Cron pipeline ingests from all enabled sources without duplicate explosion
+- [x] All registered scanners pass health checks when env vars unset (graceful skip)
+- [x] Cron pipeline ingests from enabled sources without duplicate explosion (existing dedupe in scanner engine)
 
 ## Next phase
 

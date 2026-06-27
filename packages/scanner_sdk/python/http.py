@@ -56,3 +56,26 @@ def head_ok(url: str, timeout: int = 5) -> bool:
 def fetch_ok(url: str, timeout: int = DEFAULT_TIMEOUT_SECONDS) -> bool:
     """Return True when GET request succeeds with HTTP 200."""
     return get_response(url, timeout=timeout) is not None
+
+
+def post_json(
+    url: str,
+    payload: Dict[str, Any],
+    timeout: int = DEFAULT_TIMEOUT_SECONDS,
+) -> Optional[Dict[str, Any]]:
+    """POST JSON body and return parsed JSON object on HTTP 200."""
+    try:
+        response = requests.post(
+            url,
+            headers={**DEFAULT_HEADERS, 'Content-Type': 'application/json'},
+            json=payload,
+            timeout=timeout,
+        )
+        if response.status_code != 200:
+            print(f'[HTTP] POST {url} returned HTTP {response.status_code}')
+            return None
+        data = response.json()
+        return data if isinstance(data, dict) else None
+    except requests.RequestException as exc:
+        print(f'[HTTP] POST failed for {url}: {exc}')
+    return None

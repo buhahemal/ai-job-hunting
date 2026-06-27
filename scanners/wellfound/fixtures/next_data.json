@@ -1,0 +1,32 @@
+{
+  "props": {
+    "pageProps": {
+      "apolloState": {
+        "data": {
+          "JobListingSearchResult:job-1": {
+            "__typename": "JobListingSearchResult",
+            "id": "job-1",
+            "title": "Senior Backend Engineer",
+            "slug": "senior-backend-engineer",
+            "primaryRoleTitle": "Backend Engineer",
+            "remote": true,
+            "locationNames": {
+              "type": "json",
+              "json": ["Remote"]
+            },
+            "descriptionSnippet": "<p>Build scalable APIs with Python.</p>",
+            "startup": {
+              "__ref": "StartupResult:startup-1"
+            }
+          },
+          "StartupResult:startup-1": {
+            "__typename": "StartupResult",
+            "id": "startup-1",
+            "name": "Acme Startup",
+            "slug": "acme-startup"
+          }
+        }
+      }
+    }
+  }
+}

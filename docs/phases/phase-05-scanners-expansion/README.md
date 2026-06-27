@@ -1,5 +1,5 @@
 # Phase 5 — Scanner Expansion
 
-**Status:** pending
+**Status:** complete
 
-Add scanners one at a time. Track in [STATUS.md](./STATUS.md).
+All targeted scanners are registered in `packages/scanner_sdk/python/registry.py`. Track details in [STATUS.md](./STATUS.md).
