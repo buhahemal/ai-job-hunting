@@ -22,12 +22,13 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python Dependencies
-        run: pip install requests google-genai
+        run: pip install -r requirements.txt
 
       - name: Run Job Scraper Pipeline
         env:
+          PYTHONPATH: .
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python3 scripts/scraper.py
+        run: python3 -m scripts.scraper
 
       - name: Commit & Push Updated Leads
         run: |
