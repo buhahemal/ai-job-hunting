@@ -19,6 +19,7 @@ from packages.database.python.constants import (
     SCANNER_MIN_JOBS_PER_RUN,
     SCANNER_SCAN_INSIGHT_BATCH_SIZE,
 )
+from packages.database.python.profile_helpers import resolve_min_match_score
 
 DB_FILE = DATA_FILE
 
@@ -469,7 +470,12 @@ class ScannerEngine:
         min_jobs: Optional[int] = None,
     ) -> List[Dict]:
         """Run pipeline across scanners until target met or all sources exhausted."""
-        threshold = self.min_match_score() if min_match_score is None else min_match_score
+        profile = self.store.get_profile()
+        threshold = (
+            min_match_score
+            if min_match_score is not None
+            else resolve_min_match_score(profile)
+        )
         target_jobs = self.min_jobs_per_run() if min_jobs is None else max(1, min_jobs)
         max_passes = self.max_passes()
         max_limit = self.max_limit_per_source()
@@ -487,7 +493,6 @@ class ScannerEngine:
             f"max {self.max_evaluations()} evaluations."
         )
 
-        profile = self.store.get_profile()
         scanned_registry = self.store.get_scanned_keys()
         saved_jobs = (
             self.read_db().get("jobs", [])

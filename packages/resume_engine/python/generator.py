@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional
 from packages.config.python.paths import MASTER_RESUME_JSON, RESUME_GENERATED_DIR, RESUME_TEMPLATE_TEX
 from packages.resume_engine.python.ats import estimate_ats_score
 from packages.resume_engine.python.cover_letter import generate_cover_letter
-from packages.resume_engine.python.master import load_master_resume
+from packages.resume_engine.python.master import load_master_resume, load_master_resume_from_profile
 from packages.resume_engine.python.renderer import render_resume_latex
 from packages.resume_engine.python.tailor import tailor_resume_json
 
@@ -28,17 +28,22 @@ class TailoredResumeResult:
 
 def render_master_latex(
     *,
+    profile: Dict[str, Any] | None = None,
     master_path: str | Path | None = None,
     template_path: str | Path | None = None,
 ) -> str:
     """Render the unmodified master resume JSON to LaTeX."""
-    master = load_master_resume(master_path)
+    if profile:
+        master = load_master_resume_from_profile(profile)
+    else:
+        master = load_master_resume(master_path)
     return render_resume_latex(master, template_path=template_path or RESUME_TEMPLATE_TEX)
 
 
 def generate_tailored_resume(
     job: Dict[str, Any],
     *,
+    profile: Dict[str, Any] | None = None,
     master_path: str | Path | None = None,
     template_path: str | Path | None = None,
 ) -> TailoredResumeResult:
@@ -48,7 +53,10 @@ def generate_tailored_resume(
     Pipeline:
         master JSON → tailor copy → render LaTeX → cover letter + ATS score
     """
-    master = load_master_resume(master_path)
+    if profile:
+        master = load_master_resume_from_profile(profile)
+    else:
+        master = load_master_resume(master_path)
     tailored = tailor_resume_json(master, job)
     latex = render_resume_latex(tailored, template_path=template_path or RESUME_TEMPLATE_TEX)
     cover_letter = generate_cover_letter(tailored, job)

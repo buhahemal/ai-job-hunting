@@ -13,12 +13,13 @@ import {
   MapPin,
   DollarSign,
   FileCheck,
-  Save,
   Info,
   Radar,
 } from 'lucide-react';
 import * as api from './api/client';
 import { getProfileInitials } from './api/defaultProfile';
+import ProfileView from './components/profile/ProfileView';
+import { isProfileCompleteForMatching } from '@ai-job-hunter/database';
 import { Profile, Job, Interview } from './types';
 import ResumePreview from './components/ResumePreview';
 import AnalyticsView from './components/AnalyticsView';
@@ -65,8 +66,10 @@ export default function App() {
 
   // Profile Form States
   const [profileForm, setProfileForm] = useState<Profile | null>(null);
-  const [newSkill, setNewSkill] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [tailoredResumeMeta, setTailoredResumeMeta] = useState<
+    api.TailorJobResult['resume'] | null
+  >(null);
 
   // General Notification Log
   const [notif, setNotif] = useState<{
@@ -150,19 +153,27 @@ export default function App() {
 
   // 5. Tailor Resume/Cover Letter with AI
   const handleTailorJob = async (jobId: string) => {
+    if (profile && !isProfileCompleteForMatching(profile)) {
+      showNotif('Complete your profile before tailoring (Profile tab).', 'error');
+      setActiveTab('profile');
+      return;
+    }
     setTailoringId(jobId);
     showNotif('Tailoring resume: reordering skills and bullets for this job...', 'info');
     try {
-      const job = await api.tailorJob(jobId);
-      setJobs((prev) => prev.map((j) => (j.id === jobId ? job : j)));
-      setSelectedJob(job);
+      const result = await api.tailorJob(jobId);
+      setJobs((prev) => prev.map((j) => (j.id === jobId ? result.job : j)));
+      setSelectedJob(result.job);
+      setTailoredResumeMeta(result.resume ?? null);
       setActiveTab('tailor');
       showNotif(
-        'LaTeX Resume and Cover Letter compiled successfully! Check the Tailor Suite.',
+        result.resume?.pdfUrl
+          ? 'Resume tailored and PDF compiled. Preview or download in the Tailor tab.'
+          : 'Resume tailored. LaTeX preview is ready in the Tailor tab.',
         'success',
       );
     } catch (e) {
-      showNotif(e instanceof Error ? e.message : 'Failed to tailor with AI.', 'error');
+      showNotif(e instanceof Error ? e.message : 'Failed to tailor resume.', 'error');
     } finally {
       setTailoringId(null);
     }
@@ -233,39 +244,33 @@ export default function App() {
     }
   };
 
-  // 10. Save Profile Settings
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveProfile = async (options?: { rescan?: boolean }) => {
     if (!profileForm) return;
     setSavingProfile(true);
     try {
-      const saved = await api.saveProfile(profileForm);
+      const saved = await api.saveProfile(profileForm, options);
       setProfile(saved);
       setProfileForm(saved);
-      showNotif('Master Profile and scoring parameters updated successfully.', 'success');
-    } catch (_e) {
-      showNotif('Failed to save profile.', 'error');
+      const rescanNote = options?.rescan ? ' Scan insights re-score was requested.' : '';
+      showNotif(`Profile saved and master resume regenerated.${rescanNote}`, 'success');
+    } catch (e) {
+      showNotif(e instanceof Error ? e.message : 'Failed to save profile.', 'error');
     } finally {
       setSavingProfile(false);
     }
   };
 
-  const handleAddSkill = () => {
-    if (newSkill && profileForm && !profileForm.skills.includes(newSkill)) {
-      setProfileForm({
-        ...profileForm,
-        skills: [...profileForm.skills, newSkill],
-      });
-      setNewSkill('');
-    }
-  };
-
-  const handleRemoveSkill = (skill: string) => {
-    if (profileForm) {
-      setProfileForm({
-        ...profileForm,
-        skills: profileForm.skills.filter((s) => s !== skill),
-      });
+  const handleImportProfile = async (payload: Partial<Profile>) => {
+    setSavingProfile(true);
+    try {
+      const imported = await api.importProfile(payload);
+      setProfile(imported);
+      setProfileForm(imported);
+      showNotif('Profile imported successfully. Review fields and save.', 'success');
+    } catch (e) {
+      showNotif(e instanceof Error ? e.message : 'Failed to import profile.', 'error');
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -630,6 +635,7 @@ export default function App() {
                 <JobDetailPanel
                   job={selectedJob}
                   tailoring={tailoringId === selectedJob?.id}
+                  profileComplete={profile ? isProfileCompleteForMatching(profile) : false}
                   onClose={() => setSelectedJob(null)}
                   onTailor={handleTailorJob}
                   onSaveNotes={handleSaveNotes}
@@ -652,10 +658,8 @@ export default function App() {
                     No tailored workspace loaded
                   </h3>
                   <p className="text-xs text-slate-500">
-                    To tailor your resume, select a high-priority job lead from the **Job Leads**
-                    tab, and click **"Tailor Resume & Cover Letter"**. The resume engine will
-                    reorder skills and projects to match the job requirements without changing your
-                    employment history.
+                    Step 1: Complete your profile. Step 2: Select a job lead and click Tailor. Step
+                    3: Preview the tailored resume here and download the PDF when available.
                   </p>
                   <button
                     onClick={() => setActiveTab('dashboard')}
@@ -668,6 +672,7 @@ export default function App() {
                 <div className="flex-1 overflow-hidden">
                   <ResumePreview
                     job={selectedJob}
+                    pdfUrl={tailoredResumeMeta?.pdfUrl ?? undefined}
                     onSaveTailored={handleSaveTailored}
                     onApplyDirectly={() => {
                       if (selectedJob.url) {
@@ -695,162 +700,13 @@ export default function App() {
 
           {/* TAB 5: Profile & Settings */}
           {activeTab === 'profile' && profileForm && (
-            <form onSubmit={handleSaveProfile} className="space-y-6 max-w-4xl">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Profile & Scoring Parameters</h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Configure your master engineering qualifications, list targeted tech keywords, and
-                  customize the foundational LaTeX resume template.
-                </p>
-              </div>
-
-              {/* Master Credentials */}
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Master Personal Information
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={profileForm.fullName}
-                      onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
-                      required
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={profileForm.email}
-                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                      required
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">
-                      Phone Number
-                    </label>
-                    <input
-                      type="text"
-                      value={profileForm.phone}
-                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">
-                      Geographical Location
-                    </label>
-                    <input
-                      type="text"
-                      value={profileForm.location}
-                      onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Skills Tags Setup — persisted in Supabase profiles.data.skills */}
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
-                    Profile Skills Inventory
-                  </h3>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    Loaded from your saved profile and used for scan matching and gap analysis.
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="e.g. Terraform, Kubernetes, Go..."
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none flex-1 max-w-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddSkill}
-                    className="bg-slate-900 text-white text-xs px-4 py-2 rounded-lg font-semibold hover:bg-slate-850"
-                  >
-                    Add Skill
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 pt-2">
-                  {profileForm.skills?.map((skill) => (
-                    <span
-                      key={skill}
-                      className="bg-slate-100 border border-slate-200 text-slate-700 text-xs px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium"
-                    >
-                      {skill}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSkill(skill)}
-                        className="text-slate-400 hover:text-slate-600 font-bold"
-                      >
-                        &times;
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Master Resume LaTeX Editor */}
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Master LaTeX Template Source
-                  </h3>
-                  <span className="text-[10px] text-indigo-600 font-mono font-bold">
-                    Standard starting code template
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-500">
-                  This LaTeX code is rendered from your master resume JSON. When you tailor for a
-                  target job, the engine reorders bullets and skill emphasis while keeping personal
-                  history facts strictly identical.
-                </p>
-
-                <div className="border border-slate-200 rounded-lg overflow-hidden">
-                  <textarea
-                    value={profileForm.masterResumeLaTeX}
-                    onChange={(e) =>
-                      setProfileForm({ ...profileForm, masterResumeLaTeX: e.target.value })
-                    }
-                    rows={12}
-                    className="w-full bg-slate-950 text-slate-200 font-mono text-xs p-4 focus:ring-0 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Save profile submit */}
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={savingProfile}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {savingProfile ? 'Saving Config...' : 'Save Profile & Settings'}
-                </button>
-              </div>
-            </form>
+            <ProfileView
+              profile={profileForm}
+              saving={savingProfile}
+              onChange={setProfileForm}
+              onSave={handleSaveProfile}
+              onImport={handleImportProfile}
+            />
           )}
         </div>
       </main>

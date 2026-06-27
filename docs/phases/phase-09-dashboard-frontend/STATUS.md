@@ -11,8 +11,8 @@ completed:
 - [x] Migrated to `apps/dashboard/` (Phase 2)
 - [ ] Supabase client — live data (replace static `data.json` + localStorage-only mode)
 - [ ] Jobs list: score, filters, status, apply links
-- [ ] Resume preview + download from Supabase Storage
-- [ ] Profile & settings editor
+- [x] Profile & settings editor (full ProfileView, import JSON, match preferences)
+- [x] Resume preview + PDF download link when backend compiles PDF
 - [ ] Interview tracker + analytics views
 - [ ] Responsive + accessibility (WCAG 2.1 AA target)
 - [ ] Deploy via `deploy-pages.yml` to GitHub Pages

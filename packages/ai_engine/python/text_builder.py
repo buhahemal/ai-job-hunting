@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Dict, List
 
+from packages.database.python.profile_helpers import flatten_experience_bullet
+
 
 def build_candidate_text(profile: Dict) -> str:
     """Serialize candidate profile into a single embedding input string."""
@@ -16,6 +18,10 @@ def build_candidate_text(profile: Dict) -> str:
     location = profile.get('location', '').strip()
     if location:
         sections.append(f'Location: {location}')
+
+    summary = profile.get('summary', '').strip()
+    if summary:
+        sections.append(f'Summary: {summary}')
 
     target_roles = profile.get('targetRoles') or []
     if target_roles:
@@ -30,7 +36,7 @@ def build_candidate_text(profile: Dict) -> str:
         company = exp.get('company', 'Company')
         sections.append(f'Experience: {role} at {company}')
         for bullet in exp.get('bullets') or []:
-            sections.append(str(bullet))
+            sections.append(flatten_experience_bullet(bullet))
 
     for project in profile.get('projects') or []:
         title = project.get('title', 'Project')

@@ -7,6 +7,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app
 
 FROM base AS api
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    texlive-latex-base \
+    texlive-latex-recommended \
+    texlive-latex-extra \
+  && rm -rf /var/lib/apt/lists/*
 COPY apps/api/requirements.txt apps/api/requirements.txt
 COPY scraper/requirements.txt scraper/requirements.txt
 COPY packages/ai_engine/requirements.txt packages/ai_engine/requirements.txt

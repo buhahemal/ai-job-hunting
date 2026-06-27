@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, Set, Tuple
 
 from packages.database.python.constants import FULL_MATCH_SKILL_SCORE_FLOOR
+from packages.database.python.profile_helpers import flatten_experience_bullet
 from packages.ai_engine.python.text_builder import build_candidate_text
 
 # Shared technology list (mirrors job_enricher.TECHNOLOGY_KEYWORDS).
@@ -137,8 +138,9 @@ def build_candidate_skill_corpus(profile: Dict) -> Tuple[Set[str], str]:
 
     for exp in profile.get('experience') or []:
         for bullet in exp.get('bullets') or []:
+            bullet_text = flatten_experience_bullet(bullet)
             for tech in TECHNOLOGY_KEYWORDS:
-                if tech.lower() in str(bullet).lower():
+                if tech.lower() in bullet_text.lower():
                     norm = normalize_skill(tech)
                     tokens.add(norm)
                     tokens.update(_alias_variants(norm))

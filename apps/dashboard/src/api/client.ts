@@ -72,12 +72,15 @@ export async function getProfile(): Promise<Profile> {
   throwDataNotFound();
 }
 
-export async function saveProfile(profile: Profile): Promise<Profile> {
+export async function saveProfile(
+  profile: Profile,
+  options?: { rescan?: boolean },
+): Promise<Profile> {
   if (USE_BACKEND) {
-    const data = await backendFetch<{ profile: Profile }>('/api/profile', {
+    const data = await backendFetch<{ profile: Profile; rescoredCount?: number }>('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile),
+      body: JSON.stringify({ profile, rescan: options?.rescan ?? false }),
     });
     return data.profile;
   }
@@ -86,6 +89,42 @@ export async function saveProfile(profile: Profile): Promise<Profile> {
     return profile;
   }
   throwDataNotFound();
+}
+
+export async function importProfile(payload: Partial<Profile>): Promise<Profile> {
+  if (USE_BACKEND) {
+    const data = await backendFetch<{ profile: Profile }>('/api/profile/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile: payload }),
+    });
+    return data.profile;
+  }
+  throw new Error('Profile import requires the Python API server (set VITE_USE_BACKEND=true).');
+}
+
+export interface TailorJobResult {
+  job: Job;
+  resume?: {
+    version: string;
+    pdfUrl?: string | null;
+    pdfCompiled?: boolean;
+  };
+}
+
+export interface JobResumeVersion {
+  version: string;
+  pdfUrl?: string | null;
+  atsScore?: number | null;
+  createdAt?: string | null;
+}
+
+export async function listJobResumes(jobId: string): Promise<JobResumeVersion[]> {
+  if (USE_BACKEND) {
+    const data = await backendFetch<{ items: JobResumeVersion[] }>(`/api/jobs/${jobId}/resumes`);
+    return data.items;
+  }
+  return [];
 }
 
 export async function getJobs(): Promise<{ jobs: Job[]; interviews: Interview[] }> {
@@ -142,10 +181,12 @@ export async function updateJobNotes(jobId: string, notes: string): Promise<Job>
   throwDataNotFound();
 }
 
-export async function tailorJob(jobId: string): Promise<Job> {
+export async function tailorJob(jobId: string): Promise<TailorJobResult> {
   if (USE_BACKEND) {
-    const data = await backendFetch<{ job: Job }>(`/api/jobs/${jobId}/tailor`, { method: 'POST' });
-    return data.job;
+    const data = await backendFetch<TailorJobResult>(`/api/jobs/${jobId}/tailor`, {
+      method: 'POST',
+    });
+    return data;
   }
 
   const profile = await getProfile();
@@ -156,7 +197,7 @@ export async function tailorJob(jobId: string): Promise<Job> {
     const job = jobs.find((entry) => entry.id === jobId);
     if (!job) throw new Error('Job not found');
     const tailored = { ...job, ...tailorFallback(job as Job, profile) };
-    return asJob(await repo.upsertJob(tailored));
+    return { job: asJob(await repo.upsertJob(tailored)) };
   }
   throwDataNotFound();
 }

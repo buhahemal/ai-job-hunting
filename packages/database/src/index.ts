@@ -29,9 +29,17 @@ export {
   scannedJobRowToJob,
   interviewToRow,
 } from './mappers.js';
-export { normalizeStoredProfile } from './profile.js';
+export {
+  flattenExperienceBullet,
+  flattenExperienceBullets,
+  getProfileCompletenessIssues,
+  isProfileCompleteForMatching,
+  normalizeStoredProfile,
+  resolveMinMatchScore,
+} from './profile.js';
 export { DashboardRepository } from './repository.js';
 export type {
+  ExperienceBullet,
   InterviewRecord,
   InterviewRecord as Interview,
   JobRecord,
@@ -39,6 +47,8 @@ export type {
   JobRow,
   JobStatus,
   ListScannedJobsParams,
+  ProfileMatchSettings,
+  ProfileProjectEntry,
   ProfileRecord,
   ProfileRecord as Profile,
   RemoteType,

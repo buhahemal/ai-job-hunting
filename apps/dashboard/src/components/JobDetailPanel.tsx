@@ -4,6 +4,7 @@ import { Job } from '../types';
 interface JobDetailPanelProps {
   job: Job | null;
   tailoring: boolean;
+  profileComplete: boolean;
   onClose: () => void;
   onTailor: (jobId: string) => void;
   onSaveNotes: (jobId: string, notes: string) => void;
@@ -63,6 +64,7 @@ function ChipList({
 export default function JobDetailPanel({
   job,
   tailoring,
+  profileComplete,
   onClose,
   onTailor,
   onSaveNotes,
@@ -205,9 +207,14 @@ export default function JobDetailPanel({
       ) : null}
 
       <div className="space-y-2.5">
+        {!profileComplete ? (
+          <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-2">
+            Complete your profile (roles, skills, summary, match keywords) before tailoring.
+          </p>
+        ) : null}
         <button
           onClick={() => onTailor(job.id)}
-          disabled={tailoring}
+          disabled={tailoring || !profileComplete}
           className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white text-xs py-2.5 rounded-lg font-semibold uppercase flex items-center justify-center gap-1.5"
         >
           {tailoring ? (

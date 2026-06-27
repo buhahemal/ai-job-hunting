@@ -109,9 +109,48 @@ def get_profile():
 
 @app.route("/api/profile", methods=["POST"])
 def update_profile():
-    profile = request.json
+    body = request.json or {}
+    rescan = bool(body.get("rescan"))
+    raw_profile = body.get("profile") if isinstance(body.get("profile"), dict) else body
+
+    try:
+        from apps.api.profile_service import prepare_profile_for_save
+
+        profile = prepare_profile_for_save(raw_profile)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     get_repository().save_profile(profile)
-    return jsonify({"success": True, "profile": profile})
+
+    rescored_count = 0
+    if rescan:
+        try:
+            store = create_job_store()
+            engine = RescanEngine(store)
+            rescored_count = engine.run()
+        except Exception:
+            print("[Server] Profile saved but rescan failed")
+
+    return jsonify({"success": True, "profile": profile, "rescoredCount": rescored_count})
+
+
+@app.route("/api/profile/import", methods=["POST"])
+def import_profile():
+    body = request.json or {}
+    imported = body.get("profile") if isinstance(body.get("profile"), dict) else body
+    if not isinstance(imported, dict) or not imported:
+        return jsonify({"error": "profile JSON payload is required"}), 400
+
+    try:
+        from apps.api.profile_service import import_profile_payload
+
+        existing = get_repository().get_profile()
+        profile, summary = import_profile_payload(existing, imported)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    get_repository().save_profile(profile)
+    return jsonify({"success": True, "profile": profile, "import": summary})
 
 @app.route("/api/jobs", methods=["GET"])
 def get_jobs():
@@ -206,7 +245,7 @@ def tailor_resume(job_id):
         from packages.resume_engine.python.generator import generate_tailored_resume
         from packages.resume_engine.python.publisher import publish_tailored_resume
 
-        result = generate_tailored_resume(target_job)
+        result = generate_tailored_resume(target_job, profile=profile)
         published = publish_tailored_resume(
             result,
             job_id=job_id,
