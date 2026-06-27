@@ -11,8 +11,8 @@ export function createBrowserClient(env: SupabaseEnv): SupabaseClient {
 }
 
 export function readSupabaseEnvFromImportMeta(meta: ImportMeta): SupabaseEnv | null {
-  const url = meta.env.VITE_SUPABASE_URL as string | undefined;
-  const anonKey = meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  const url = meta.env?.VITE_SUPABASE_URL as string | undefined;
+  const anonKey = meta.env?.VITE_SUPABASE_ANON_KEY as string | undefined;
   if (!url || !anonKey) return null;
   return { url, anonKey };
 }

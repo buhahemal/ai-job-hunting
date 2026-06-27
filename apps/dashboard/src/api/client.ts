@@ -2,25 +2,25 @@ import type { Interview, Job, Profile } from '../types';
 import {
   createBrowserClient,
   DashboardRepository,
-  readSupabaseEnvFromImportMeta,
   type InterviewRecord,
   type JobRecord,
 } from '@ai-job-hunter/database';
 import { normalizeProfile } from './defaultProfile';
-import { USE_BACKEND, USE_SUPABASE } from './config';
+import { SUPABASE_ANON_KEY, SUPABASE_URL, USE_BACKEND, USE_SUPABASE } from './config';
 import { heuristicScore, loadDatabase, saveDatabase, tailorFallback } from './staticStore';
 
 let repository: DashboardRepository | null = null;
 
 function getRepository(): DashboardRepository {
   if (!repository) {
-    const env = readSupabaseEnvFromImportMeta(import.meta);
-    if (!env) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       throw new Error(
         'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
       );
     }
-    repository = new DashboardRepository(createBrowserClient(env));
+    repository = new DashboardRepository(
+      createBrowserClient({ url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY }),
+    );
   }
   return repository;
 }
