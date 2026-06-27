@@ -1,3 +1,6 @@
+name: Setup Node workspace
+description: Install Node.js 24, run npm ci, and remove nested dashboard node_modules for CI.
+
 runs:
   using: composite
   steps:

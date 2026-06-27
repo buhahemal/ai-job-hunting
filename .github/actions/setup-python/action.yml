@@ -1,3 +1,6 @@
+name: Setup Python workspace
+description: Install Python 3.11 and pip dependencies for scraper and API packages.
+
 runs:
   using: composite
   steps:
