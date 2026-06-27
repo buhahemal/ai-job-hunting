@@ -232,6 +232,53 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         self.assertTrue(all(job["score"] > 75 for job in added))
         mock_persist.assert_called_once()
 
+    @patch.object(JsonJobStore, "get_profile")
+    @patch.object(JsonJobStore, "get_dedupe_indexes", return_value=(set(), set()))
+    @patch.object(JsonJobStore, "persist_new_jobs")
+    @patch.dict(
+        os.environ,
+        {
+            "SCANNER_MAX_PASSES": "0",
+            "SCANNER_MAX_LIMIT_PER_SOURCE": "10",
+            "SCANNER_LIMIT_STEP": "5",
+            "SCANNER_MAX_EVALUATIONS": "100",
+        },
+        clear=False,
+    )
+    def test_evaluates_all_source_jobs_before_stopping(
+        self, mock_persist, _mock_dedupe, mock_profile
+    ):
+        mock_profile.return_value = self.profile
+        jobs = [
+            {
+                "id": f"job-{index}",
+                "title": f"Role {index}",
+                "company": "Acme",
+                "url": f"https://example.com/job-{index}",
+            }
+            for index in range(10)
+        ]
+        scanners = [FakeScanner("SourceA", jobs)]
+        engine = self._engine(scanners)
+        evaluated_ids: List[str] = []
+
+        def fake_score(job, profile):
+            evaluated_ids.append(job["id"])
+            return {
+                "score": 50,
+                "extractedSkills": [],
+                "seniority": "Mid-level",
+                "fitExplanation": "weak fit",
+            }
+
+        engine.ai_matcher.score_job = fake_score  # type: ignore[method-assign]
+
+        added = engine.run(min_match_score=75, min_jobs=3, limit_per_source=3)
+
+        self.assertEqual(added, [])
+        self.assertEqual(len(evaluated_ids), 10)
+        mock_persist.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

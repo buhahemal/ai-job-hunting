@@ -44,12 +44,13 @@ The scanner only **persists jobs with match score above 75%** and tries to colle
 | `GEMINI_API_KEY`               | No       | Optional Gemini fallback when embedding fails             |
 | `SCANNER_MIN_MATCH_SCORE`      | No       | Minimum match threshold (default `75`)                    |
 | `SCANNER_MIN_JOBS_PER_RUN`     | No       | Target jobs per scan (default `3`)                        |
-| `SCANNER_MAX_PASSES`           | No       | Discovery passes across all sources (default `5`)         |
-| `SCANNER_LIMIT_STEP`           | No       | Increase per-source fetch limit each pass (default `20`)  |
-| `SCANNER_MAX_LIMIT_PER_SOURCE` | No       | Cap jobs fetched per source per pass (default `100`)      |
-| `SCANNER_MAX_EVALUATIONS`      | No       | Max unique jobs to score per run (default `500`)          |
+| `SCANNER_MAX_PASSES`           | No       | Pass safety cap; `0` = scan until exhausted (default `0`) |
+| `SCANNER_LIMIT_STEP`           | No       | Increase per-source fetch limit each pass (default `50`)  |
+| `SCANNER_MAX_LIMIT_PER_SOURCE` | No       | Cap jobs fetched per source per pass (default `2000`)     |
+| `SCANNER_MAX_EVALUATIONS`      | No       | Max unique jobs to score per run (default `3000`)         |
+| `HF_TOKEN`                     | No       | Optional Hugging Face token for faster model downloads    |
 
-GitHub Actions `scanner-cron` job uses a **60-minute** timeout and runs multi-pass discovery until the target is met or limits are exhausted.
+Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. GitHub Actions `scanner-cron` uses a **60-minute** timeout.
 
 Paths: `packages/config/python/paths.py`
 

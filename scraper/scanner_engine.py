@@ -13,10 +13,10 @@ DB_FILE = DATA_FILE
 DEFAULT_MIN_MATCH_SCORE = 75
 DEFAULT_MIN_JOBS_PER_RUN = 3
 DEFAULT_LIMIT_PER_SOURCE = 15
-DEFAULT_MAX_PASSES = 5
-DEFAULT_LIMIT_STEP = 20
-DEFAULT_MAX_LIMIT_PER_SOURCE = 100
-DEFAULT_MAX_EVALUATIONS = 500
+DEFAULT_MAX_PASSES = 0
+DEFAULT_LIMIT_STEP = 50
+DEFAULT_MAX_LIMIT_PER_SOURCE = 2000
+DEFAULT_MAX_EVALUATIONS = 3000
 
 
 class JobStore(Protocol):
@@ -144,10 +144,10 @@ class ScannerEngine:
 
     @staticmethod
     def max_passes() -> int:
-        """Maximum discovery passes across all sources before giving up."""
+        """Maximum discovery passes (0 = unlimited until sources are exhausted)."""
         raw = os.environ.get("SCANNER_MAX_PASSES", str(DEFAULT_MAX_PASSES))
         try:
-            return max(1, int(raw))
+            return max(0, int(raw))
         except ValueError:
             return DEFAULT_MAX_PASSES
 
@@ -199,15 +199,16 @@ class ScannerEngine:
         added_jobs: List[Dict],
         stats: Dict[str, int],
         matcher: Optional[AIMatcher] = None,
-    ) -> int:
-        """Score jobs from one scanner batch. Returns count accepted in this batch."""
+    ) -> Tuple[int, int]:
+        """Score jobs from one scanner batch. Returns (accepted, newly_evaluated)."""
         if not scraper.health_check():
             print(f"[ScannerEngine] Health Check failed for {scraper.name}. Skipping.")
-            return 0
+            return 0, 0
 
         print(f"[ScannerEngine] Invoking: {scraper.name} (fetch up to {limit} jobs)...")
         raw_jobs = scraper.discover_jobs(limit=limit)
         accepted = 0
+        newly_evaluated = 0
 
         for raw_job in raw_jobs:
             if len(added_jobs) >= target_jobs:
@@ -229,6 +230,7 @@ class ScannerEngine:
 
             evaluated_keys.add(dedupe_key)
             stats["evaluated"] += 1
+            newly_evaluated += 1
             score = ScannerEngine._apply_match_analysis_static(canonical, profile, matcher)
 
             if score <= threshold:
@@ -248,7 +250,7 @@ class ScannerEngine:
             existing_signatures.add(signature)
             accepted += 1
 
-        return accepted
+        return accepted, newly_evaluated
 
     def _apply_match_analysis(self, canonical: Dict, profile: Dict) -> int:
         """Score a job and attach match metadata. Returns numeric match score."""
@@ -293,12 +295,13 @@ class ScannerEngine:
         min_match_score: Optional[int] = None,
         min_jobs: Optional[int] = None,
     ) -> List[Dict]:
-        """Run pipeline across scanners with multi-pass discovery until target is met."""
+        """Run pipeline across scanners until target met or all sources exhausted."""
         threshold = self.min_match_score() if min_match_score is None else min_match_score
         target_jobs = self.min_jobs_per_run() if min_jobs is None else max(1, min_jobs)
         max_passes = self.max_passes()
         max_limit = self.max_limit_per_source()
         step = self.limit_step()
+        pass_cap = f"{max_passes}" if max_passes > 0 else "unlimited"
 
         print("=== AI Job Hunter: Starting Automated Scraper Pipeline ===")
         print(
@@ -306,7 +309,7 @@ class ScannerEngine:
             f"(target {target_jobs} job(s) per scan)."
         )
         print(
-            f"[ScannerEngine] Discovery: up to {max_passes} pass(es), "
+            f"[ScannerEngine] Discovery: {pass_cap} pass(es) or until exhausted, "
             f"limit {limit_per_source}→{max_limit} (+{step}/pass), "
             f"max {self.max_evaluations()} evaluations."
         )
@@ -326,11 +329,19 @@ class ScannerEngine:
         current_limit = min(limit_per_source, max_limit)
         pass_num = 0
 
-        while len(added_jobs) < target_jobs and pass_num < max_passes:
+        while len(added_jobs) < target_jobs:
+            if max_passes > 0 and pass_num >= max_passes:
+                print(f"[ScannerEngine] Reached pass safety cap ({max_passes}).")
+                break
+            if stats["evaluated"] >= self.max_evaluations():
+                print("[ScannerEngine] Evaluation budget exhausted; stopping discovery.")
+                break
+
             pass_num += 1
-            pass_accepted = 0
+            pass_new_evaluations = 0
+            pass_label = f"{pass_num}/{pass_cap}" if max_passes > 0 else str(pass_num)
             print(
-                f"[ScannerEngine] --- Discovery pass {pass_num}/{max_passes} "
+                f"[ScannerEngine] --- Discovery pass {pass_label} "
                 f"(fetch up to {current_limit} jobs per source) ---"
             )
 
@@ -340,7 +351,7 @@ class ScannerEngine:
                 if stats["evaluated"] >= self.max_evaluations():
                     break
 
-                pass_accepted += self._evaluate_scraper_batch(
+                _accepted, new_evals = self._evaluate_scraper_batch(
                     scraper,
                     profile=profile,
                     threshold=threshold,
@@ -353,6 +364,7 @@ class ScannerEngine:
                     stats=stats,
                     matcher=self.ai_matcher,
                 )
+                pass_new_evaluations += new_evals
 
             if len(added_jobs) >= target_jobs:
                 print(
@@ -362,21 +374,16 @@ class ScannerEngine:
                 break
 
             if stats["evaluated"] >= self.max_evaluations():
-                print("[ScannerEngine] Evaluation budget exhausted; stopping discovery.")
                 break
 
-            if pass_num >= max_passes:
-                break
-
-            next_limit = min(current_limit + step, max_limit)
-            if next_limit == current_limit and pass_accepted == 0:
+            if pass_new_evaluations == 0:
                 print(
-                    "[ScannerEngine] No new candidates at max per-source limit; "
-                    "ending discovery early."
+                    "[ScannerEngine] All sources exhausted — no new jobs to evaluate this pass."
                 )
                 break
 
-            current_limit = next_limit
+            if current_limit < max_limit:
+                current_limit = min(current_limit + step, max_limit)
 
         if added_jobs:
             self.store.persist_new_jobs(added_jobs)
