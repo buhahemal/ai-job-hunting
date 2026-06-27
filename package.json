@@ -20,6 +20,7 @@
     "test:coverage": "npm run test:coverage --workspace=@ai-job-hunter/dashboard",
     "scan": "PYTHONPATH=. python3 -m scraper",
     "scanner:health": "PYTHONPATH=. python3 scripts/scanner_health.py",
+    "sync:profile": "PYTHONPATH=. python3 scripts/sync_profile_to_supabase.py",
     "quality:duplicates": "jscpd --config .jscpd.json",
     "quality:dead-code": "knip",
     "arch:depcruise": "depcruise apps/dashboard/src packages --config .dependency-cruiser.cjs --output-type err",

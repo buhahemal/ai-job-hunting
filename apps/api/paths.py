@@ -1,8 +1,8 @@
 """Re-exports centralized paths for the API module."""
 
-from packages.config.python.paths import DASHBOARD_DIST, DATA_DIR, DATA_FILE, REPO_ROOT
+from packages.config.python.paths import DASHBOARD_DIST, DATA_DIR, DATA_FILE, MASTER_RESUME_TEX, PROFILE_JSON, REPO_ROOT
 
-__all__ = ['DASHBOARD_DIST', 'DATA_DIR', 'DATA_FILE', 'REPO_ROOT']
+__all__ = ['DASHBOARD_DIST', 'DATA_DIR', 'DATA_FILE', 'MASTER_RESUME_TEX', 'PROFILE_JSON', 'REPO_ROOT']
 
 # Legacy alias used by server static file serving
 FRONTEND_DIST = DASHBOARD_DIST

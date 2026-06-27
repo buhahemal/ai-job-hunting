@@ -1,0 +1,121 @@
+{
+  "fullName": "Hemal Buha",
+  "email": "buhahemal10@gmail.com",
+  "phone": "+91-7359943259",
+  "website": "https://github.com/buhahemal",
+  "github": "https://github.com/buhahemal",
+  "linkedin": "https://www.linkedin.com/in/hemalbuha/",
+  "location": "Bangalore, India (Open to Remote / Global)",
+  "targetRoles": [
+    "Senior Backend Engineer",
+    "Senior Platform Engineer",
+    "Node.js Architect",
+    "Backend Engineer",
+    "Platform Engineer"
+  ],
+  "skills": [
+    "Node.js",
+    "TypeScript",
+    "JavaScript",
+    "Python",
+    "Golang",
+    "PHP",
+    "Express.js",
+    "Microservices",
+    "REST APIs",
+    "WebSockets",
+    "AWS",
+    "Lambda",
+    "EC2",
+    "S3",
+    "SES",
+    "SQS",
+    "CloudFront",
+    "CloudWatch",
+    "RDS",
+    "Docker",
+    "Kubernetes",
+    "Jenkins",
+    "GitHub Actions",
+    "Terraform",
+    "CI/CD",
+    "MySQL",
+    "PostgreSQL",
+    "Redis",
+    "MongoDB",
+    "System Design",
+    "Event-Driven Architecture",
+    "LangChain",
+    "Socket.io"
+  ],
+  "experience": [
+    {
+      "role": "Senior Platform Engineer - Backend",
+      "company": "Edmingle",
+      "period": "July 2021 -- Present",
+      "bullets": [
+        "Scaled Edmingle from thousands to over 30M+ records using microservices, optimized MySQL queries, and event-driven architecture; improved performance by 65% and boosted revenue by 15%.",
+        "Achieved 99.99% uptime through multi-AZ failovers, load-balanced services, and real-time monitoring with zero-downtime deployments during academic peaks.",
+        "Migrated notification services from Mailgun to Amazon SES, cutting email costs by 70%; deployed serverless functions and auto-scaling EC2, reducing idle compute costs by 40%.",
+        "Built an interactive calendar and class scheduling module with 300ms API response times; adopted by 40% of platform users.",
+        "Revamped multi-gateway payment integrations (Razorpay, Stripe, PayU) into a modular marketplace model, reducing integration time from 2 weeks to 3 days.",
+        "Designed a secure webhook system with event deduplication, signature validation, and retries for real-time external integrations.",
+        "Developed the official Edmingle SDK and integrated Single Sign-On for white-label client onboarding.",
+        "Implemented multi-currency pricing and regional configurations for global expansion.",
+        "Engineered CI/CD and deployment automation via Jenkins and Docker, reducing release times by 2x."
+      ]
+    },
+    {
+      "role": "Software Engineer",
+      "company": "Rovae Inc.",
+      "period": "July 2020 -- July 2021",
+      "bullets": [
+        "Engineered a high-performance web application using PHP and Laravel that exceeded efficiency benchmarks by 80%.",
+        "Integrated multiple third-party REST APIs to deliver diverse and dynamic content with seamless interoperability.",
+        "Designed inventory management and POS solution with analytics, reporting, and e-commerce integration."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Master of Computer Application, Cloud Technology (Gold Medalist, CGPA 9.8)",
+      "school": "Ajeenkya D. Y. Patil University",
+      "period": "August 2019 -- May 2022"
+    }
+  ],
+  "projects": [
+    {
+      "title": "ZyncSpace | AI-Powered Collaboration Platform",
+      "description": "Engineered a high-performance, AI-powered collaboration platform handling 1M+ daily messages with sub-200ms latency. Built fault-tolerant, event-driven backend using Redis queues and vector embeddings — achieving 99.90% uptime, 3x throughput, and 40% cost reduction.",
+      "tech": ["Node.js", "AWS", "MySQL", "Redis", "Socket.io", "Message Queues", "LangChain"]
+    }
+  ],
+  "preferences": {
+    "locations": ["Remote", "India", "US", "Global"],
+    "remotePreference": "Remote",
+    "companySizes": ["50-200", "200-10,000", "10,000+"],
+    "targetCompanies": [
+      "Stripe",
+      "Atlassian",
+      "Freshworks",
+      "Razorpay",
+      "Postman",
+      "Hasura",
+      "Chargebee",
+      "EdTech",
+      "SaaS"
+    ],
+    "skillsKeywords": [
+      "Node.js",
+      "AWS",
+      "Microservices",
+      "MySQL",
+      "Redis",
+      "TypeScript",
+      "Backend",
+      "System Design",
+      "CI/CD",
+      "Serverless"
+    ]
+  }
+}

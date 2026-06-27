@@ -1,129 +1,142 @@
 {
   "profile": {
-    "fullName": "Amal Singh",
-    "email": "amal.singh@example.com",
-    "phone": "+91-987-654-3210",
-    "website": "https://amal.dev",
-    "github": "https://github.com/amalsingh",
-    "linkedin": "https://linkedin.com/in/amalsingh",
-    "location": "Bengaluru, India (Open to Remote / US Relocation)",
+    "fullName": "Hemal Buha",
+    "email": "buhahemal10@gmail.com",
+    "phone": "+91-7359943259",
+    "website": "https://github.com/buhahemal",
+    "github": "https://github.com/buhahemal",
+    "linkedin": "https://www.linkedin.com/in/hemalbuha/",
+    "location": "Bangalore, India (Open to Remote / Global)",
     "targetRoles": [
+      "Senior Backend Engineer",
       "Senior Platform Engineer",
-      "Platform Engineer",
-      "DevOps Engineer",
-      "Infrastructure Engineer",
-      "SRE",
-      "Backend Engineer"
+      "Node.js Architect",
+      "Backend Engineer",
+      "Platform Engineer"
     ],
     "skills": [
-      "AWS",
-      "Kubernetes",
-      "Docker",
-      "Terraform",
-      "Ansible",
-      "GitHub Actions",
-      "GitLab CI",
-      "Jenkins",
       "Node.js",
-      "Go",
-      "Python",
       "TypeScript",
-      "Express",
-      "Shell Scripting",
-      "Prometheus",
-      "Grafana",
-      "ELK",
+      "JavaScript",
+      "Python",
+      "Golang",
+      "PHP",
+      "Express.js",
+      "Microservices",
+      "REST APIs",
+      "WebSockets",
+      "AWS",
+      "Lambda",
+      "EC2",
+      "S3",
+      "SES",
+      "SQS",
+      "CloudFront",
+      "CloudWatch",
+      "RDS",
+      "Docker",
+      "Kubernetes",
+      "Jenkins",
+      "GitHub Actions",
+      "Terraform",
+      "CI/CD",
+      "MySQL",
       "PostgreSQL",
       "Redis",
-      "DynamoDB"
+      "MongoDB",
+      "System Design",
+      "Event-Driven Architecture",
+      "LangChain",
+      "Socket.io"
     ],
     "experience": [
       {
-        "role": "Lead DevOps / Platform Engineer",
-        "company": "CloudSolutions Inc.",
-        "period": "2022 -- Present",
+        "role": "Senior Platform Engineer - Backend",
+        "company": "Edmingle",
+        "period": "July 2021 -- Present",
         "bullets": [
-          "Architected and deployed multi-region AWS containerized workloads on EKS, achieving 99.99% infrastructure availability.",
-          "Automated standard developer environment setups and deployment pipelines using Terraform and custom GitHub Actions.",
-          "Implemented zero-downtime Blue/Green deployments for microservices, reducing release failure rates by 45%."
+          "Scaled Edmingle from thousands to over 30M+ records using microservices, optimized MySQL queries, and event-driven architecture; improved performance by 65% and boosted revenue by 15%.",
+          "Achieved 99.99% uptime through multi-AZ failovers, load-balanced services, and real-time monitoring with zero-downtime deployments during academic peaks.",
+          "Migrated notification services from Mailgun to Amazon SES, cutting email costs by 70%; deployed serverless functions and auto-scaling EC2, reducing idle compute costs by 40%.",
+          "Built an interactive calendar and class scheduling module with 300ms API response times; adopted by 40% of platform users.",
+          "Revamped multi-gateway payment integrations (Razorpay, Stripe, PayU) into a modular marketplace model, reducing integration time from 2 weeks to 3 days.",
+          "Designed a secure webhook system with event deduplication, signature validation, and retries for real-time external integrations.",
+          "Developed the official Edmingle SDK and integrated Single Sign-On for white-label client onboarding.",
+          "Implemented multi-currency pricing and regional configurations for global expansion.",
+          "Engineered CI/CD and deployment automation via Jenkins and Docker, reducing release times by 2x."
         ]
       },
       {
-        "role": "Senior Systems Engineer",
-        "company": "Global Consulting EPAM",
-        "period": "2019 -- 2022",
+        "role": "Software Engineer",
+        "company": "Rovae Inc.",
+        "period": "July 2020 -- July 2021",
         "bullets": [
-          "Led migration of 15 legacy server-based monolithic applications to serverless and ECS container structures on AWS.",
-          "Built dynamic monitoring and alerting dashboards in Prometheus/Grafana, resulting in 30% faster MTTR.",
-          "Managed PostgreSQL databases, implementing automated scaling, replication, and disaster recovery strategies."
+          "Engineered a high-performance web application using PHP and Laravel that exceeded efficiency benchmarks by 80%.",
+          "Integrated multiple third-party REST APIs to deliver diverse and dynamic content with seamless interoperability.",
+          "Designed inventory management and POS solution with analytics, reporting, and e-commerce integration."
         ]
       }
     ],
     "education": [
       {
-        "degree": "Bachelor of Technology in Computer Science",
-        "school": "IIT Delhi",
-        "period": "2015 -- 2019"
+        "degree": "Master of Computer Application, Cloud Technology (Gold Medalist, CGPA 9.8)",
+        "school": "Ajeenkya D. Y. Patil University",
+        "period": "August 2019 -- May 2022"
       }
     ],
     "projects": [
       {
-        "title": "Self-Healing Kubernetes Controller",
-        "description": "Designed a lightweight Custom Operator in Go that watches pod restarts and performs automated diagnostic memory dumps and service recycles.",
-        "tech": [
-          "Go",
-          "Kubernetes API",
-          "Docker"
-        ]
-      },
-      {
-        "title": "Multi-Cloud Cost Management Dashboard",
-        "description": "Developed a secure serverless pipeline using AWS Lambda and Node.js that crawls cost telemetry from AWS and GCP, highlighting unused resources.",
+        "title": "ZyncSpace | AI-Powered Collaboration Platform",
+        "description": "Engineered a high-performance, AI-powered collaboration platform handling 1M+ daily messages with sub-200ms latency. Built fault-tolerant, event-driven backend using Redis queues and vector embeddings \u2014 achieving 99.90% uptime, 3x throughput, and 40% cost reduction.",
         "tech": [
           "Node.js",
-          "AWS Lambda",
-          "Terraform",
-          "React"
+          "AWS",
+          "MySQL",
+          "Redis",
+          "Socket.io",
+          "Message Queues",
+          "LangChain"
         ]
       }
     ],
     "preferences": {
       "locations": [
-        "US",
         "Remote",
-        "Europe",
-        "India"
+        "India",
+        "US",
+        "Global"
       ],
       "remotePreference": "Remote",
       "companySizes": [
+        "50-200",
         "200-10,000",
         "10,000+"
       ],
       "targetCompanies": [
-        "EPAM",
-        "Globant",
-        "Endava",
-        "Slalom",
-        "Perficient",
-        "Thoughtworks",
-        "SoftServe",
-        "Nagarro",
-        "Valtech",
-        "Cprime"
+        "Stripe",
+        "Atlassian",
+        "Freshworks",
+        "Razorpay",
+        "Postman",
+        "Hasura",
+        "Chargebee",
+        "EdTech",
+        "SaaS"
       ],
       "skillsKeywords": [
-        "Terraform",
+        "Node.js",
         "AWS",
-        "Kubernetes",
-        "DevOps",
-        "Python",
-        "Go",
+        "Microservices",
+        "MySQL",
+        "Redis",
         "TypeScript",
-        "SRE",
-        "CI/CD"
+        "Backend",
+        "System Design",
+        "CI/CD",
+        "Serverless"
       ]
     },
-    "masterResumeLaTeX": "% Master LaTeX Resume\n\\documentclass[11pt,a4paper]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{geometry}\n\\geometry{top=1in, bottom=1in, left=1in, right=1in}\n\n\\begin{document}\n\n\\begin{center}\n  {\\Huge \\textbf{Amal Singh}} \\\\\n  amal.singh@example.com | +91-987-654-3210 | Bengaluru, India \\\\\n  github.com/amalsingh | linkedin.com/in/amalsingh\n\\end{center}\n\n\\section*{Target Roles}\nSenior Platform Engineer, DevOps Engineer, Backend Engineer, SRE\n\n\\section*{Technical Skills}\n\\textbf{Cloud & Infrastructure:} AWS (VPC, EC2, ECS, RDS, S3), GCP, Kubernetes, Docker \\\\\n\\textbf{Automation & IaC:} Terraform, Ansible, GitLab CI, GitHub Actions, Jenkins \\\\\n\\textbf{Languages & Frameworks:} Node.js, Go, Python, TypeScript, Express, Shell Scripting \\\\\n\\textbf{Observability & Databases:} Prometheus, Grafana, ELK, PostgreSQL, Redis, DynamoDB\n\n\\section*{Professional Experience}\n\\textbf{Lead DevOps / Platform Engineer} | CloudSolutions Inc. \\hfill 2022 -- Present \\\\\n\\begin{itemize}\n  \\item Architected and deployed multi-region AWS containerized workloads on EKS, achieving 99.99\\% infrastructure availability.\n  \\item Automated standard developer environment setups and deployment pipelines using Terraform and custom GitHub Actions.\n  \\item Implemented zero-downtime Blue/Green deployments for microservices, reducing release failure rates by 45\\%.\n\\end{itemize}\n\n\\textbf{Senior Systems Engineer} | Global Consulting EPAM \\hfill 2019 -- 2022 \\\\\n\\begin{itemize}\n  \\item Led migration of 15 legacy server-based monolithic applications to serverless and ECS container structures on AWS.\n  \\item Built dynamic monitoring and alerting dashboards in Prometheus/Grafana, resulting in 30\\% faster MTTR.\n  \\item Managed PostgreSQL databases, implementing automated scaling, replication, and disaster recovery strategies.\n\\end{itemize}\n\n\\section*{Education}\n\\textbf{Bachelor of Technology in Computer Science} | IIT Delhi \\hfill 2015 -- 2019\n\n\\end{document}"
+    "masterResumeLaTeX": "%-------------------------\n% Resume in Latex\n% Author : Hemal Buha\n% License : MIT\n%------------------------\n\n\\documentclass[letterpaper,11pt]{article}\n\n\\usepackage{latexsym}\n\\usepackage[empty]{fullpage}\n\\usepackage{titlesec}\n\\usepackage{marvosym}\n\\usepackage[usenames,dvipsnames]{color}\n\\usepackage{verbatim}\n\\usepackage{enumitem}\n\\usepackage[pdftex]{hyperref}\n\\usepackage{fancyhdr}\n\\usepackage{helvet}\n\\renewcommand{\\familydefault}{\\sfdefault}\n\n\\pagestyle{fancy}\n\\fancyhf{} % clear all header and footer fields\n\\fancyfoot{}\n\\renewcommand{\\headrulewidth}{0pt}\n\\renewcommand{\\footrulewidth}{0pt}\n\n% Adjust margins\n\\addtolength{\\oddsidemargin}{-0.375in}\n\\addtolength{\\evensidemargin}{-0.375in}\n\\addtolength{\\textwidth}{1.1in}\n\\addtolength{\\topmargin}{-0.8in}\n\\addtolength{\\textheight}{1.5in}\n\n\\urlstyle{same}\n\n\\raggedbottom\n\\raggedright\n\\setlength{\\tabcolsep}{0in}\n\n% Sections formatting\n\\titleformat{\\section}{\n  \\vspace{-9pt}\\scshape\\raggedright\\large\n}{}{0em}{}[\\color{black}\\titlerule \\vspace{-7pt}]\n\n%-------------------------\n% Custom commands\n\\newcommand{\\resumeItem}[2]{\n  \\item\\small{\n    \\textbf{#1}{: #2 \\vspace{-2pt}}\n  }\n}\n\n\\newcommand{\\resumeSubheading}[4]{\n  \\vspace{-1pt}\\item\n    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}\n      \\textbf{#1} & #2 \\\\\n      \\textit{\\small#3} & \\textit{\\small #4} \\\\\n    \\end{tabular*}\\vspace{-10pt}\n}\n\n\\newcommand{\\resumeSubItem}[2]{\\resumeItem{#1}{#2}\\vspace{-4pt}}\n\n\\renewcommand{\\labelitemii}{$\\circ$}\n\n\\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=*]}\n\\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}\n\\newcommand{\\resumeItemListStart}{\\begin{itemize}}\n\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}\n\n\\hypersetup{\n    colorlinks=false,\n    pdfborder={0 0 0},\n}\n\n%-------------------------------------------\n%%%%%%  CV STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\\begin{document}\n\n%----------HEADING-----------------\n\\begin{tabular*}{\\textwidth}{l@{\\extracolsep{\\fill}}r}\n  \\textbf{\\Large Hemal Buha}\\\\\n   {Linkedin: \\href{https://www.linkedin.com/in/hemalbuha/}{www.linkedin.com/in/hemalbuha/}} &  {Email: \\href{mailto:buhahemal10@gmail.com}{buhahemal10@gmail.com}}\\\\ \n  \\href{https://github.com/buhahemal}{GitHub: https://github.com/buhahemal} & {Mobile: +917359943259/9265075346 }\\\\\n  \\multicolumn{2}{l}{\\textit{Location: Bangalore, India}} \\\\\n\\end{tabular*}\n\n%-----------EDUCATION-----------------\n\\section{Education}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {Ajeenkya D. Y. Patil University}{Pune, India}\n      {Master of Computer Application, Cloud Technology, CGPA: 9.8 | Gold Medalist}{August 2019 - May 2022}\n  \\resumeSubHeadingListEnd\n\n%-----------EXPERIENCE-----------------\n\\section{Experience}\n  \\resumeSubHeadingListStart\n  \n  \\resumeSubheading\n  {Edmingle}{\\textit{July 2021 - Current}}\n  {Senior Platform Engineer - Backend}{\\textbf{\\textit{Tech Stack: }}Node.js, AWS, MySQL, Redis, Jenkins}\n  \\resumeItemListStart\n    \\resumeItem{Platform Scalability}\n      {Scaled Edmingle from thousands to over \\textbf{30M+ records} using microservices, optimized MySQL queries, and event-driven architecture. Improved system performance by \\textbf{65\\%}, enabling real-time analytics and boosting revenue by \\textbf{15\\%}.}\n    \\resumeItem{High Availability \\& Reliability}\n      {Achieved \\textbf{99.99\\% uptime} through multi-AZ failovers, load-balanced services, and real-time monitoring. Ensured zero-downtime deployments and smooth scaling during academic peaks.}\n    \\resumeItem{Cost Optimization}\n      {Migrated notification services from Mailgun to Amazon SES, cutting email costs by \\textbf{70\\%} while improving deliverability and monitoring. Deployed serverless functions and auto-scaling EC2, reducing idle compute costs by \\textbf{40\\%}.}\n    \\resumeItem{Smart Calendar \\& Scheduling System}\n      {Built an interactive calendar and class scheduling module with \\textbf{300ms} API response times. Adopted by \\textbf{40\\% of platform users}, improving scheduling efficiency and user engagement.}\n    \\resumeItem{Secure Payment Architecture}\n      {Revamped multi-gateway payment integrations (Razorpay, Stripe, PayU) into a modular plug-and-play marketplace model, reducing integration time from \\textbf{2 weeks to 3 days} with full webhook verification.}\n    \\resumeItem{Resilient Webhook Framework}\n      {Designed a secure and scalable webhook system with event deduplication, signature validation, and retries \u2014 enabling external integrations with real-time data sync.}\n    \\resumeItem{SDK \\& SSO Integration}\n      {Developed the official Edmingle SDK and integrated Single Sign-On, enhancing white-label capabilities and simplifying client onboarding.}\n    \\resumeItem{Globalization \\& Growth Enablement}\n      {Implemented multi-currency pricing and regional configurations, enabling Edmingle\u2019s global expansion and supporting international sales workflows.}\n    \\resumeItem{Deployment Automation}\n      {Engineered next-gen CI/CD and deployment scripts, reducing release times by \\textbf{2\u00d7} and improving reliability across environments.}\n  \\resumeItemListEnd\n\n    \\resumeSubheading\n      {Rovae Inc.}{\\textit{July 2020 - July 2021}}\n      {Software Engineer}{\\textbf{\\textit{Tech Stack: }}PHP, Laravel, JavaScript, MySQL, REST API}\n      \\resumeItemListStart\n        \\resumeItem{High-Performance Web Application}\n          {Engineered a high-performance web application that exceeded efficiency benchmarks by \\textbf{80\\%}. Integrated multiple third-party APIs to deliver diverse and dynamic content with seamless interoperability.}\n        \\resumeItem{Inventory Management \\& POS Solution}\n           {Designed and implemented a comprehensive inventory management solution integrated with a responsive Point of Sale (POS) system. Added intelligent analytics and reporting features, enabling seamless e-commerce integration for end-to-end retail operations.}\n      \\resumeItemListEnd\n\n  \\resumeSubHeadingListEnd\n\n%-----------PROJECTS-----------------\n\\section{Other Work}\n  \\resumeSubHeadingListStart\n    \\resumeSubheading\n      {ZyncSpace - AI-Powered Collaboration Platform}{}\n      {Team Project}{\\textbf{\\textit{Utilized: }}Node.js, AWS, Mysql, Redis, Socket, Message Queue}\n      \\resumeItemListStart\n        \\resumeItem{Purpose}\n         {Designed and built a collaborative workspace platform with integrated AI assistant for real-time support, enabling users to manage projects, communicate, and get instant contextual help.}\n        \\resumeItem{Results}\n          {Engineered a high-performance, AI-powered collaboration platform handling 1M+ daily messages with sub-200 ms latency. Built fault-tolerant, event-driven backend using Redis queues and embeddings for contextual assistance - achieving 99.90\\% uptime, 3\u00d7 throughput, and 40\\% cost reduction.}\n      \\resumeItemListEnd\n\n  \\resumeSubHeadingListEnd\n\n\\section{Skills}\n\\small{\n\\textbf{Languages:} Node.js, Python, PHP, TypeScript, Golang, MySQL, Redis, MongoDB \\\\\n\\textbf{Cloud \\& Tools:} AWS (EC2, Lambda, RDS, S3, SES, CloudFront, CloudWatch, SQS), Docker, Jenkins, GitHub Actions, REST APIs, WebSockets, Microservices, LangChain, Vector Embeddings, Semantic Search, CI/CD, System Design, Performance Optimization, Cost & Scalability Engineering\n}\n\n\n\\end{document} "
   },
   "jobs": [
     {

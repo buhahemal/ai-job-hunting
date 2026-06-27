@@ -162,7 +162,7 @@ I am writing to express my strong interest in the {job.get('title')} position. W
 I look forward to discussing how my experience can add value to the engineering operations at {job.get('company')}.
 
 Sincerely,
-{profile.get('fullName', 'Amal Singh')}"""
+{profile.get('fullName', 'Hemal Buha')}"""
             return tailored_latex, cover_letter, 75
 
         # 1. Tailor LaTeX

@@ -1,0 +1,29 @@
+name: Sync Profile to Supabase
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/data/profile.json'
+      - 'apps/api/data/master-resume.tex'
+      - 'apps/api/defaults.py'
+      - 'scripts/sync_profile_to_supabase.py'
+      - '.github/workflows/sync-profile.yml'
+
+jobs:
+  sync:
+    name: Upsert profile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-python
+
+      - name: Sync default profile to Supabase
+        env:
+          PYTHONPATH: .
+          USE_JSON_STORE: 'false'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python3 scripts/sync_profile_to_supabase.py

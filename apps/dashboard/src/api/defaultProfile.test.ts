@@ -17,7 +17,7 @@ describe('normalizeProfile', () => {
 
 describe('getProfileInitials', () => {
   it('returns initials for a full name', () => {
-    expect(getProfileInitials('Amal Singh')).toBe('AS');
+    expect(getProfileInitials('Hemal Buha')).toBe('HB');
   });
 
   it('returns fallback when name is missing', () => {
