@@ -41,13 +41,51 @@ interface Job {
   seniority?: string;
 }
 
+const DEFAULT_PROFILE_SEED: Profile = {
+  fullName: "Amal Singh",
+  email: "amal.singh@example.com",
+  phone: "+91-987-654-3210",
+  website: "https://amal.dev",
+  github: "https://github.com/amalsingh",
+  linkedin: "https://linkedin.com/in/amalsingh",
+  location: "Bengaluru, India (Open to Remote / US Relocation)",
+  targetRoles: ["Senior Platform Engineer", "Platform Engineer", "DevOps Engineer", "Infrastructure Engineer", "SRE", "Backend Engineer"],
+  skills: [
+    "AWS", "Kubernetes", "Docker", "Terraform", "Ansible", "GitHub Actions", "GitLab CI", "Jenkins", 
+    "Node.js", "Go", "Python", "TypeScript", "Express", "Shell Scripting", 
+    "Prometheus", "Grafana", "ELK", "PostgreSQL", "Redis", "DynamoDB"
+  ],
+  preferences: {
+    locations: ["US", "Remote", "Europe", "India"],
+    remotePreference: "Remote",
+    companySizes: ["200-10,000", "10,000+"],
+    targetCompanies: ["EPAM", "Globant", "Endava", "Slalom", "Perficient", "Thoughtworks", "SoftServe", "Nagarro", "Valtech", "Cprime"],
+    skillsKeywords: ["Terraform", "AWS", "Kubernetes", "DevOps", "Python", "Go", "TypeScript", "SRE", "CI/CD"]
+  }
+};
+
 // Read database
 function readDB() {
   if (!fs.existsSync(DB_FILE)) {
-    console.error("No database file found at " + DB_FILE);
-    process.exit(1);
+    console.log("No database file found at " + DB_FILE + ". Initializing with default seed profile.");
+    const defaultData = {
+      profile: DEFAULT_PROFILE_SEED,
+      jobs: [],
+      interviews: []
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(defaultData, null, 2));
+    return defaultData;
   }
-  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+  } catch (err) {
+    console.error("Failed to parse DB_FILE, fallback to default seed.", err);
+    return {
+      profile: DEFAULT_PROFILE_SEED,
+      jobs: [],
+      interviews: []
+    };
+  }
 }
 
 // Write database
