@@ -29,7 +29,8 @@ Every PR and AI task must pass this checklist before merge.
 
 - [ ] Duplicate code < 3% (`npm run quality:duplicates`)
 - [ ] No dead code (`npm run quality:dead-code`)
-- [ ] ESLint + TypeScript strict pass
+- [ ] ESLint + TypeScript strict pass (`npm run lint`, `npm run typecheck`)
+- [ ] Python naming rules pass (`npm run lint:python`)
 - [ ] No `console.log` in production paths
 - [ ] No TODO comments left behind
 

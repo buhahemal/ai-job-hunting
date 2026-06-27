@@ -45,6 +45,14 @@ class TestResumeEngine(unittest.TestCase):
         self.assertIn('\\documentclass', latex)
         self.assertIn('Hemal Buha', latex)
 
+    def test_render_master_latex_multicolumn_is_balanced(self):
+        latex = render_master_latex()
+        multicolumn_lines = [line for line in latex.splitlines() if '\\multicolumn' in line]
+        self.assertEqual(len(multicolumn_lines), 1)
+        line = multicolumn_lines[0]
+        self.assertIn('\\textit{Location:', line)
+        self.assertTrue(line.rstrip().endswith('}} \\\\'))
+
     def test_generate_tailored_resume_pipeline(self):
         job = {
             'title': 'Backend Engineer',

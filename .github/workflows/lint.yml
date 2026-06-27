@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node
+      - name: Install Ruff
+        run: pip install -r requirements-dev.txt
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run lint:python
       - run: npm run format:check --workspace=@ai-job-hunter/dashboard

@@ -1,0 +1,26 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = [
+  "apps",
+  "packages",
+  "scraper",
+  "scanners",
+  "scripts",
+]
+
+[tool.ruff.lint]
+select = [
+  "N801", # invalid class name
+  "N802", # invalid function name
+  "N803", # invalid argument name
+  "N806", # non-lowercase variable in function
+  "N815", # mixed-case variable in class scope
+  "N816", # mixed-case variable in global scope
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["N802", "N803", "N806"]
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod"]

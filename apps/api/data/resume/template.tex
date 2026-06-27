@@ -69,9 +69,9 @@
    {Linkedin: \href{ {{ linkedin }} }{ {{ linkedin | latex }} }} &  {Email: \href{mailto:{{ email }}}{ {{ email | latex }} }}\\
   \href{ {{ github }} }{GitHub: {{ github | latex }}} & {Mobile: {{ phone | latex }}}\\
 {% if targetRole %}
-  \multicolumn{2}{l}{\textit{Location: {{ location | latex }} | Target: {{ targetRole | latex }}} \\
+  \multicolumn{2}{l}{\textit{Location: {{ location | latex }} | Target: {{ targetRole | latex }}}} \\
 {% else %}
-  \multicolumn{2}{l}{\textit{Location: {{ location | latex }}} \\
+  \multicolumn{2}{l}{\textit{Location: {{ location | latex }}}} \\
 {% endif %}
 \end{tabular*}
 

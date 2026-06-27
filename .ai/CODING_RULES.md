@@ -19,14 +19,18 @@ Never duplicate: utilities, hooks, services, repositories, API handlers, compone
 - Functions < 50 lines where practical
 - One responsibility per function/class
 
-## Naming
+## Naming (enforced in CI)
 
-| Kind      | Convention             | Example                                |
-| --------- | ---------------------- | -------------------------------------- |
-| Variables | camelCase, descriptive | `jobScanner`, `userId`                 |
-| Classes   | PascalCase             | `ScannerEngine`, `DashboardRepository` |
-| Constants | SCREAMING_SNAKE        | `MAX_RETRY`, `DEFAULT_TIMEOUT`         |
-| Files     | kebab or domain name   | `scanner_engine.py`, `client.ts`       |
+| Kind      | Convention                                  | Example                                  | Enforced by                                                |
+| --------- | ------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| Variables | camelCase, descriptive                      | `jobScanner`, `userId`                   | ESLint `@typescript-eslint/naming-convention`, Ruff `N806` |
+| Functions | camelCase (PascalCase for React components) | `fetchJobs`, `App`                       | ESLint, Ruff `N802`                                        |
+| Classes   | PascalCase                                  | `ScannerEngine`, `DashboardRepository`   | ESLint `typeLike`, Ruff `N801`                             |
+| Constants | SCREAMING_SNAKE                             | `MAX_RETRY`, `DEFAULT_TIMEOUT`           | ESLint `UPPER_CASE`                                        |
+| Files     | camelCase, PascalCase, or kebab-case        | `client.ts`, `App.tsx`, `job-filters.ts` | ESLint `unicorn/filename-case`                             |
+| Python    | snake_case                                  | `job_to_row`, `scan_run_id`              | Ruff PEP 8 naming (`N8xx`)                                 |
+
+DB row shapes (`JobRow`, mappers) may use `snake_case` property names. Quoted HTTP headers and React `__html` are exempt.
 
 ## Modules
 
