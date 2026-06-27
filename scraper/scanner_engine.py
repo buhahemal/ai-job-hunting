@@ -400,7 +400,7 @@ class ScannerEngine:
                 if stats["evaluated"] >= self.max_evaluations():
                     break
 
-                _accepted, new_evals = self._evaluate_scraper_batch(
+                _accepted, batch_newly_evaluated = self._evaluate_scraper_batch(
                     scraper,
                     profile=profile,
                     threshold=threshold,
@@ -414,7 +414,7 @@ class ScannerEngine:
                     stats=stats,
                     matcher=self.ai_matcher,
                 )
-                pass_new_evaluations += new_evals
+                pass_new_evaluations += batch_newly_evaluated
 
             if len(added_jobs) >= target_jobs:
                 print(

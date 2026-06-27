@@ -274,6 +274,50 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
                 "fitExplanation": "weak fit",
             }
 
+        db = self.store.read_db()
+        db["scannedJobKeys"] = ["https://example.com/seen-1"]
+        with open(self._temp_path, "w", encoding="utf-8") as handle:
+            json.dump(db, handle)
+
+        enrich_calls: List[str] = []
+
+        def tracking_score(job, profile):
+            enrich_calls.append(job["id"])
+            return fake_score(job, profile)
+
+        engine = self._engine(scanners)
+        self._bind_enrich(engine, tracking_score)
+        engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
+
+        self.assertEqual(enrich_calls, ["new-1"])
+        self.assertIn("https://example.com/seen-1", self.store.get_scanned_keys())
+        self.assertIn("https://example.com/new-1", self.store.get_scanned_keys())
+
+    def test_follow_up_scan_after_full_run_skips_every_known_job(self):
+        jobs = [
+            {
+                "id": "seen-1",
+                "title": "Backend Engineer",
+                "company": "Acme",
+                "url": "https://example.com/seen-1",
+            },
+            {
+                "id": "new-1",
+                "title": "Platform Engineer",
+                "company": "Beta",
+                "url": "https://example.com/new-1",
+            },
+        ]
+        scanners = [FakeScanner("SourceA", jobs)]
+
+        def fake_score(job, profile):
+            return {
+                "score": 50,
+                "extractedSkills": [],
+                "seniority": "Mid-level",
+                "fitExplanation": "weak fit",
+            }
+
         first_engine = self._engine(scanners)
         self._bind_enrich(first_engine, fake_score)
         first_engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
@@ -288,7 +332,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         self._bind_enrich(second_engine, tracking_score)
         second_engine.run(min_match_score=75, min_jobs=3, limit_per_source=5)
 
-        self.assertEqual(enrich_calls, ["new-1"])
+        self.assertEqual(enrich_calls, [])
 
 
 if __name__ == "__main__":
