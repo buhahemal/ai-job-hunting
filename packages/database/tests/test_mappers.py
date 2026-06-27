@@ -8,6 +8,7 @@ from packages.database.python.mappers import (
     job_to_row,
     row_to_job,
     row_to_scanned_job,
+    scanned_job_row_to_job,
     scanned_job_to_row,
 )
 from packages.database.python.client import is_supabase_configured
@@ -108,6 +109,31 @@ class TestJobMappers(unittest.TestCase):
         self.assertEqual(mapped['overallScore'], 68)
         self.assertEqual(mapped['missingSkills'], ['Kubernetes'])
         self.assertFalse(mapped['promotedToJobs'])
+
+    def test_scanned_job_row_to_job_sets_extracted_skills_for_promotion(self):
+        row = {
+            'dedupe_key': 'https://example.com/jobs/1',
+            'job_id': 'job-1',
+            'source': 'Lever',
+            'overall_score': 68,
+            'title': 'Platform Engineer',
+            'company': 'Acme',
+            'matched_skills': ['Python', 'AWS'],
+        }
+        job = scanned_job_row_to_job(row)
+        upsert_row = job_to_row(job)
+        self.assertEqual(job['extractedSkills'], ['Python', 'AWS'])
+        self.assertEqual(upsert_row['extracted_skills'], ['Python', 'AWS'])
+        self.assertEqual(upsert_row['required_skills'], [])
+        self.assertEqual(upsert_row['preferred_skills'], [])
+        self.assertEqual(upsert_row['extracted_technologies'], [])
+
+    def test_job_to_row_defaults_json_arrays_when_missing(self):
+        row = job_to_row({'id': 'job-1', 'title': 'Engineer', 'company': 'Acme', 'source': 'Test'})
+        self.assertEqual(row['extracted_skills'], [])
+        self.assertEqual(row['required_skills'], [])
+        self.assertEqual(row['preferred_skills'], [])
+        self.assertEqual(row['extracted_technologies'], [])
 
 
 class TestClientEnv(unittest.TestCase):

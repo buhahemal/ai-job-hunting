@@ -288,6 +288,7 @@ def scanned_job_row_to_job(row: Dict[str, Any]) -> Dict[str, Any]:
         'status': 'New',
         'score': overall,
         'fitExplanation': row.get('match_explanation') or '',
+        'extractedSkills': row.get('matched_skills') or [],
         'requiredSkills': row.get('required_skills') or [],
         'preferredSkills': row.get('preferred_skills') or [],
         'extractedTechnologies': row.get('extracted_technologies') or [],
