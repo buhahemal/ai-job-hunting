@@ -12,7 +12,26 @@ AI Job Hunter is a **₹0-cost** job discovery and application workflow — host
 | `packages/ai-engine/`    | HF scoring + tailoring           | GitHub Actions runner |
 | Supabase                 | Jobs, resumes, applications      | Free tier             |
 
-## Current Data Flow (Transitional)
+## Data Flow (Phase 3+)
+
+Production uses **Supabase** when GitHub Secrets are configured. JSON + localStorage remains a fallback.
+
+```mermaid
+sequenceDiagram
+    participant Cron as scanner-cron.yml
+    participant Scraper as scraper/
+    participant DB as Supabase
+    participant Pages as GitHub Pages
+    participant User as Browser
+
+    Cron->>Scraper: Run daily scan
+    Scraper->>DB: Upsert jobs service role
+    User->>Pages: Open dashboard
+    Pages->>DB: Read jobs anon key + RLS
+    User->>DB: Update status profile
+```
+
+### Legacy fallback (no Supabase secrets)
 
 ```mermaid
 sequenceDiagram
@@ -20,16 +39,13 @@ sequenceDiagram
     participant Scraper as scraper/
     participant Data as apps/api/data/data.json
     participant Pages as GitHub Pages
-    participant User as Browser
 
-    Cron->>Scraper: Run daily scan
-    Scraper->>Data: Append scored jobs
+    Cron->>Scraper: Run scan
+    Scraper->>Data: Append to JSON commit
     Pages->>Data: Bundle at build time
-    User->>Pages: Load dashboard
-    User->>User: Persist edits in localStorage
 ```
 
-## Target Data Flow (Phases 3–6)
+## Target Data Flow (Phases 4–6)
 
 ```mermaid
 sequenceDiagram
@@ -59,7 +75,7 @@ Each phase folder contains `README.md` (summary) and `STATUS.md` (deliverable ch
 | ----: | ------------------------------------- |
 |     1 | Research & Architecture (done)        |
 |     2 | Repository + CI/CD + standards (done) |
-|     3 | Supabase schema                       |
+|     3 | Supabase schema (done)                |
 |   4–5 | Scanner SDK + sources                 |
 |     6 | AI pipeline (Hugging Face)            |
 |     7 | Resume engine                         |
@@ -84,15 +100,19 @@ Current transitional layout migrates into the above without breaking GitHub Page
 
 ## Configuration
 
-| Variable               | Module            | Purpose                                 |
-| ---------------------- | ----------------- | --------------------------------------- |
-| `SUPABASE_URL`         | scraper, frontend | Database (Phase 3+)                     |
-| `SUPABASE_SERVICE_KEY` | Actions           | Pipeline writes                         |
-| `HF_HOME`              | Actions           | Hugging Face model cache                |
-| `VITE_USE_BACKEND`     | frontend          | Enable Flask API in dev                 |
-| `VITE_BASE_PATH`       | frontend          | GitHub Pages base path                  |
-| `PYTHONPATH=.`         | scraper, backend  | Python package imports                  |
-| `GEMINI_API_KEY`       | scraper (legacy)  | **Remove in Phase 6** — replace with HF |
+| Variable                 | Module           | Purpose                                 |
+| ------------------------ | ---------------- | --------------------------------------- |
+| `VITE_USE_SUPABASE`      | frontend         | Live data from Supabase on Pages        |
+| `VITE_SUPABASE_URL`      | frontend         | Supabase project URL (anon client)      |
+| `VITE_SUPABASE_ANON_KEY` | frontend         | Public anon key (RLS protected)         |
+| `SUPABASE_URL`           | scraper, Actions | Supabase project URL                    |
+| `SUPABASE_SERVICE_KEY`   | Actions          | Pipeline writes (bypasses RLS)          |
+| `USE_JSON_STORE`         | scraper          | Force JSON file instead of Supabase     |
+| `HF_HOME`                | Actions          | Hugging Face model cache                |
+| `VITE_USE_BACKEND`       | frontend         | Enable Flask API in dev                 |
+| `VITE_BASE_PATH`         | frontend         | GitHub Pages base path                  |
+| `PYTHONPATH=.`           | scraper, backend | Python package imports                  |
+| `GEMINI_API_KEY`         | scraper (legacy) | **Remove in Phase 6** — replace with HF |
 
 ## AI Stack (Target — Phase 6)
 
@@ -106,9 +126,10 @@ No paid LLM APIs. See [RULES.md](../phases/RULES.md).
 
 ## Known Limitations
 
-- GitHub Pages has no server-side API; interim mode uses bundled JSON + localStorage.
-- GitHub Actions free tier: ~2000 min/month — batch AI scoring accordingly.
-- JSON datastore is interim until Supabase (Phase 3).
+- GitHub Pages has no server-side API; Supabase anon client runs in the browser when `VITE_USE_SUPABASE=true`.
+- Without Supabase secrets, dashboard falls back to bundled JSON + `localStorage`.
+- GitHub Actions free tier: ~2000 min/month — batch AI scoring accordingly (Phase 6).
+- Apply migrations manually or via Supabase CLI before first pipeline run — see [SETUP.md](../phases/phase-03-database-supabase/SETUP.md).
 
 ## GitHub Actions
 

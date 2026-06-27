@@ -66,7 +66,10 @@ jobs:
       - name: Scraper unit tests
         env:
           PYTHONPATH: .
-        run: python3 -m unittest discover -s scraper/tests
+          USE_JSON_STORE: 'true'
+        run: |
+          python3 -m unittest discover -s scraper/tests
+          python3 -m unittest discover -s packages/database/tests
 
       - name: Scanner health checks
         env:
@@ -106,6 +109,10 @@ jobs:
             docs/phases/README.md
             docs/phases/RULES.md
             packages/config/README.md
+            packages/database/README.md
+            supabase/README.md
+            supabase/migrations/0001_init_schema.sql
+            docs/phases/phase-03-database-supabase/SETUP.md
             apps/dashboard/README.md
             apps/api/README.md
             scraper/README.md

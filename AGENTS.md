@@ -23,19 +23,19 @@ Never merge experimental or incomplete implementations.
 
 Development is incremental. Every phase must be production-ready before moving to the next. **Never skip phases.**
 
-| Phase | Focus                                   | Status  |
-| ----- | --------------------------------------- | ------- |
-| 1     | Research & Architecture                 | done    |
-| 2     | Repository Setup + CI/CD + Standards    | done    |
-| 3     | Database + Supabase Schema              | pending |
-| 4     | Scanner SDK + Greenhouse                | pending |
-| 5     | Remaining Scanners (one by one)         | pending |
-| 6     | AI Pipeline (Hugging Face on GH runner) | pending |
-| 7     | Resume Engine (LaTeX → PDF)             | pending |
-| 8     | Dashboard Backend                       | pending |
-| 9     | Dashboard Frontend (GitHub Pages)       | pending |
-| 10    | Learning Engine + Analytics             | pending |
-| 11    | Performance, Security, Production       | pending |
+| Phase | Focus                                   | Status      |
+| ----- | --------------------------------------- | ----------- |
+| 1     | Research & Architecture                 | done        |
+| 2     | Repository Setup + CI/CD + Standards    | done        |
+| 3     | Database + Supabase Schema              | done        |
+| 4     | Scanner SDK + Greenhouse                | in_progress |
+| 5     | Remaining Scanners (one by one)         | pending     |
+| 6     | AI Pipeline (Hugging Face on GH runner) | pending     |
+| 7     | Resume Engine (LaTeX → PDF)             | pending     |
+| 8     | Dashboard Backend                       | pending     |
+| 9     | Dashboard Frontend (GitHub Pages)       | pending     |
+| 10    | Learning Engine + Analytics             | pending     |
+| 11    | Performance, Security, Production       | pending     |
 
 Phase specs, deliverables, and global build rules live in [`docs/phases/`](docs/phases/README.md) and [`docs/phases/RULES.md`](docs/phases/RULES.md). Mark a phase done by updating its `STATUS.md` and the index table in `docs/phases/README.md`.
 

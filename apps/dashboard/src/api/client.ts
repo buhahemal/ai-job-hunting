@@ -1,7 +1,37 @@
 import type { Interview, Job, Profile } from '../types';
+import {
+  createBrowserClient,
+  DashboardRepository,
+  readSupabaseEnvFromImportMeta,
+  type InterviewRecord,
+  type JobRecord,
+} from '@ai-job-hunter/database';
 import { normalizeProfile } from './defaultProfile';
-import { USE_BACKEND } from './config';
+import { USE_BACKEND, USE_SUPABASE } from './config';
 import { heuristicScore, loadDatabase, saveDatabase, tailorFallback } from './staticStore';
+
+let repository: DashboardRepository | null = null;
+
+function getRepository(): DashboardRepository {
+  if (!repository) {
+    const env = readSupabaseEnvFromImportMeta(import.meta);
+    if (!env) {
+      throw new Error(
+        'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
+      );
+    }
+    repository = new DashboardRepository(createBrowserClient(env));
+  }
+  return repository;
+}
+
+function asJob(record: JobRecord): Job {
+  return record as Job;
+}
+
+function asInterview(record: InterviewRecord): Interview {
+  return record as Interview;
+}
 
 async function backendFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
@@ -23,6 +53,10 @@ export async function getProfile(): Promise<Profile> {
   if (USE_BACKEND) {
     return backendFetch<Profile>('/api/profile');
   }
+  if (USE_SUPABASE) {
+    const profile = await getRepository().getProfile();
+    return normalizeProfile(profile ?? {});
+  }
   const db = await loadDatabase();
   return normalizeProfile(db.profile);
 }
@@ -36,6 +70,10 @@ export async function saveProfile(profile: Profile): Promise<Profile> {
     });
     return data.profile;
   }
+  if (USE_SUPABASE) {
+    await getRepository().saveProfile(profile);
+    return profile;
+  }
 
   const db = await loadDatabase();
   db.profile = profile;
@@ -46,6 +84,11 @@ export async function saveProfile(profile: Profile): Promise<Profile> {
 export async function getJobs(): Promise<{ jobs: Job[]; interviews: Interview[] }> {
   if (USE_BACKEND) {
     return backendFetch<{ jobs: Job[]; interviews: Interview[] }>('/api/jobs');
+  }
+  if (USE_SUPABASE) {
+    const repo = getRepository();
+    const [jobs, interviews] = await Promise.all([repo.listJobs(), repo.listInterviews()]);
+    return { jobs: jobs.map(asJob), interviews: interviews.map(asInterview) };
   }
 
   const db = await loadDatabase();
@@ -63,7 +106,7 @@ export async function scanJobs(): Promise<{ addedCount: number; addedJobs: Job[]
   }
 
   throw new Error(
-    'Live scans run on GitHub Actions. Trigger the "Scheduled Job Scan & Score" workflow, then refresh this page.',
+    'Live scans run on GitHub Actions. Trigger the "Scanner Cron" workflow, then refresh this page.',
   );
 }
 
@@ -75,6 +118,9 @@ export async function updateJobStatus(jobId: string, status: Job['status']): Pro
       body: JSON.stringify({ status }),
     });
     return data.job;
+  }
+  if (USE_SUPABASE) {
+    return asJob(await getRepository().updateJobStatus(jobId, status));
   }
 
   const db = await loadDatabase();
@@ -94,6 +140,9 @@ export async function updateJobNotes(jobId: string, notes: string): Promise<Job>
     });
     return data.job;
   }
+  if (USE_SUPABASE) {
+    return asJob(await getRepository().updateJobNotes(jobId, notes));
+  }
 
   const db = await loadDatabase();
   const job = db.jobs.find((entry) => entry.id === jobId);
@@ -107,6 +156,17 @@ export async function tailorJob(jobId: string): Promise<Job> {
   if (USE_BACKEND) {
     const data = await backendFetch<{ job: Job }>(`/api/jobs/${jobId}/tailor`, { method: 'POST' });
     return data.job;
+  }
+
+  const profile = await getProfile();
+
+  if (USE_SUPABASE) {
+    const repo = getRepository();
+    const jobs = await repo.listJobs();
+    const job = jobs.find((entry) => entry.id === jobId);
+    if (!job) throw new Error('Job not found');
+    const tailored = { ...job, ...tailorFallback(job as Job, profile) };
+    return asJob(await repo.upsertJob(tailored));
   }
 
   const db = await loadDatabase();
@@ -129,6 +189,9 @@ export async function saveTailoredJob(
       body: JSON.stringify(payload),
     });
     return data.job;
+  }
+  if (USE_SUPABASE) {
+    return asJob(await getRepository().saveTailoredJob(jobId, payload));
   }
 
   const db = await loadDatabase();
@@ -159,7 +222,7 @@ export async function addCustomJob(payload: {
     return data.job;
   }
 
-  const db = await loadDatabase();
+  const profile = await getProfile();
   const newJob: Job = {
     id: `custom-${Date.now()}`,
     title: payload.title,
@@ -171,9 +234,14 @@ export async function addCustomJob(payload: {
     description: payload.description,
     postedAt: new Date().toISOString(),
     status: 'New',
-    ...heuristicScore(payload, db.profile),
+    ...heuristicScore(payload, profile),
   };
 
+  if (USE_SUPABASE) {
+    return asJob(await getRepository().upsertJob(newJob));
+  }
+
+  const db = await loadDatabase();
   db.jobs.unshift(newJob);
   saveDatabase(db);
   return newJob;
@@ -189,13 +257,21 @@ export async function addInterview(interviewData: Omit<Interview, 'id' | 'status
     return;
   }
 
-  const db = await loadDatabase();
   const interview: Interview = {
     ...interviewData,
     id: `int-${Date.now()}`,
     status: 'Scheduled',
   };
 
+  if (USE_SUPABASE) {
+    await getRepository().addInterview(interview);
+    if (interview.jobId) {
+      await getRepository().updateJobStatus(interview.jobId, 'Interviewing');
+    }
+    return;
+  }
+
+  const db = await loadDatabase();
   db.interviews.push(interview);
   const job = db.jobs.find((entry) => entry.id === interview.jobId);
   if (job) job.status = 'Interviewing';
@@ -212,6 +288,20 @@ export async function updateInterviewStatus(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
+    return;
+  }
+
+  if (USE_SUPABASE) {
+    const repo = getRepository();
+    await repo.updateInterviewStatus(id, status);
+    const interviews = await repo.listInterviews();
+    const interview = interviews.find((entry) => entry.id === id);
+    if (interview) {
+      const jobStatus = status === 'Passed' ? 'Offer' : status === 'Failed' ? 'Rejected' : null;
+      if (jobStatus) {
+        await repo.updateJobStatus(interview.jobId, jobStatus);
+      }
+    }
     return;
   }
 

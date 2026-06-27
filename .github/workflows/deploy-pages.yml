@@ -6,7 +6,8 @@ on:
     paths:
       - 'apps/dashboard/**'
       - 'apps/api/data/data.json'
-      - 'packages/config/**'
+      - 'packages/**'
+      - 'supabase/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -44,6 +45,21 @@ jobs:
         run: |
           npm ci
           rm -rf apps/dashboard/node_modules
+
+      - name: Configure Supabase client for Pages
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            echo "VITE_USE_SUPABASE=true" >> "$GITHUB_ENV"
+            echo "VITE_SUPABASE_URL=$SUPABASE_URL" >> "$GITHUB_ENV"
+            echo "VITE_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> "$GITHUB_ENV"
+            echo "Building dashboard with Supabase data source."
+          else
+            echo "VITE_USE_SUPABASE=false" >> "$GITHUB_ENV"
+            echo "Supabase secrets missing — static JSON + localStorage mode."
+          fi
 
       - name: Build Dashboard (GitHub Pages)
         run: npm run build --workspace=@ai-job-hunter/dashboard

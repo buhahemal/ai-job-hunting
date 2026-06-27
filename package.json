@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "workspaces": [
     "apps/dashboard",
-    "packages/config"
+    "packages/config",
+    "packages/database"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=@ai-job-hunter/dashboard",
@@ -15,7 +16,7 @@
     "lint": "npm run lint --workspace=@ai-job-hunter/dashboard",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test --workspace=@ai-job-hunter/dashboard && PYTHONPATH=. python3 -m unittest discover -s scraper/tests",
+    "test": "npm run test --workspace=@ai-job-hunter/dashboard && PYTHONPATH=. python3 -m unittest discover -s scraper/tests && PYTHONPATH=. python3 -m unittest discover -s packages/database/tests",
     "test:coverage": "npm run test:coverage --workspace=@ai-job-hunter/dashboard",
     "scan": "PYTHONPATH=. python3 -m scraper",
     "scanner:health": "PYTHONPATH=. python3 scripts/scanner_health.py",

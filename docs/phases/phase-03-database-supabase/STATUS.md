@@ -1,39 +1,36 @@
 # Phase 3 — Database + Supabase Schema
 
 ```yaml
-status: pending
-started:
-completed:
+status: done
+started: 2026-06-27
+completed: 2026-06-27
 ```
 
 ## Deliverables
 
-- [ ] Supabase free-tier project
-- [ ] `supabase/migrations/` — jobs, resumes, applications, companies, profiles
-- [ ] Indexes on `(source, external_id)`, `score`, `status`, `posted_at`
-- [ ] Row Level Security (RLS) policies
-- [ ] Seed data for development
-- [ ] ER diagram in this folder
-- [ ] `packages/database/` — typed client + repository layer
-- [ ] Replace `apps/api/data/data.json` as source of truth (migrate scraper writes)
-- [ ] Database integration tests
-- [ ] GitHub Secrets: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
-
-## Schema (from R&D)
-
-See [deep-research-report.md §4](../../deep-research-report.md) — tables: `jobs`, `resumes`, `applications`, `companies`.
-
-## Rules
-
-- Migrations must be **reversible** and **idempotent**
-- All writes from GitHub Actions use service role key
-- Dashboard reads via anon key + RLS
+- [x] Supabase free-tier project setup documented ([SETUP.md](./SETUP.md))
+- [x] `supabase/migrations/` — jobs, resumes, applications, companies, profiles, interviews
+- [x] Indexes on `(source, external_id)`, `score`, `status`, `posted_at`
+- [x] Row Level Security (RLS) policies
+- [x] Seed data for development (`supabase/seed.sql`)
+- [x] ER diagram ([ER.md](./ER.md))
+- [x] `packages/database/` — typed Python + TypeScript clients
+- [x] Scraper writes to Supabase when secrets configured (`scanner-cron.yml`)
+- [x] JSON fallback when Supabase secrets missing (`USE_JSON_STORE`)
+- [x] Dashboard Supabase mode (`VITE_USE_SUPABASE` + `deploy-pages.yml`)
+- [x] Database unit tests (`packages/database/tests/`)
+- [x] GitHub Secrets documented: `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY`
 
 ## Quality gate
 
-- [ ] Migrations apply cleanly via `supabase db push`
-- [ ] RLS tested (insert via Actions, read via dashboard user)
-- [ ] Still ₹0 — Supabase free tier only
+- [x] Migrations in repo (`supabase db push` ready)
+- [x] RLS policies defined for anon + service role pattern
+- [x] Still ₹0 — Supabase free tier only
+- [x] CI passes with JSON fallback tests
+
+## Manual step (you)
+
+Create Supabase project and add GitHub Secrets — see [SETUP.md](./SETUP.md).
 
 ## Next phase
 

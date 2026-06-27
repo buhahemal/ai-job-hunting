@@ -11,6 +11,10 @@ jobs:
     permissions:
       contents: write
 
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -23,13 +27,24 @@ jobs:
       - name: Install Scraper Dependencies
         run: pip install -r scraper/requirements.txt
 
+      - name: Configure storage backend
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_KEY" ]; then
+            echo "USE_JSON_STORE=false" >> "$GITHUB_ENV"
+            echo "Using Supabase storage backend."
+          else
+            echo "USE_JSON_STORE=true" >> "$GITHUB_ENV"
+            echo "Supabase secrets missing — using JSON file fallback."
+          fi
+
       - name: Run Job Scraper Pipeline
         env:
           PYTHONPATH: .
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python3 -m scraper
 
-      - name: Commit & Push Updated Leads
+      - name: Commit JSON updates (fallback mode only)
+        if: env.USE_JSON_STORE == 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"

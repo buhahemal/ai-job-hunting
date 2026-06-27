@@ -3,7 +3,7 @@ import unittest
 
 from scanners.arbeitnow import ArbeitnowScanner
 from scanners.career_portal import CareerPortalScanner
-from scraper.scanner_engine import ScannerEngine
+from scraper.scanner_engine import JsonJobStore, ScannerEngine
 
 
 class TestScraperEngine(unittest.TestCase):
@@ -11,7 +11,8 @@ class TestScraperEngine(unittest.TestCase):
     def setUp(self):
         self.arbeitnow = ArbeitnowScanner()
         self.portal = CareerPortalScanner()
-        self.engine = ScannerEngine()
+        os.environ['USE_JSON_STORE'] = 'true'
+        self.engine = ScannerEngine(store=JsonJobStore())
 
     def test_scanner_names(self):
         self.assertEqual(self.arbeitnow.name, "Arbeitnow")

@@ -1,0 +1,12 @@
+# Supabase local development config (optional — production is hosted Supabase cloud)
+# See: https://supabase.com/docs/guides/cli/config
+
+project_id = "ai-job-hunter"
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+major_version = 15

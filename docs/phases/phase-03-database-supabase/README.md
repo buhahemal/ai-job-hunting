@@ -1,5 +1,9 @@
 # Phase 3 — Database + Supabase
 
-**Status:** pending
+**Status:** done
 
-Track deliverables in [STATUS.md](./STATUS.md).
+Managed Postgres via Supabase — no servers you operate. GitHub Actions writes; GitHub Pages reads.
+
+- [STATUS.md](./STATUS.md) — deliverables
+- [SETUP.md](./SETUP.md) — one-time project + secrets
+- [ER.md](./ER.md) — schema diagram

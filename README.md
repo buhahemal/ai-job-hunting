@@ -1,17 +1,19 @@
 # AI Job Hunter
 
-Monorepo for a GitHub-hosted job hunting dashboard: React dashboard on GitHub Pages, Python scraper via GitHub Actions, and a static JSON data store (migrating to Supabase in Phase 3).
+Monorepo for a GitHub-hosted job hunting dashboard: React on GitHub Pages, Python scraper on GitHub Actions, and Supabase for live data (JSON fallback when secrets are not configured).
 
 ## Repository layout
 
 ```text
 apps/
   dashboard/     React + Vite → GitHub Pages
-  api/           Local Flask API + data/data.json
+  api/           Local Flask API + data/data.json (dev / fallback)
 packages/
   config/        Shared path configuration (TS + Python)
+  database/      Supabase clients (TS + Python)
 scanners/        Per-source job discovery plugins
 scraper/         Scan pipeline orchestration (GitHub Actions)
+supabase/        SQL migrations + RLS
 docs/            Architecture and phase planning
 ```
 
@@ -23,18 +25,22 @@ Roadmap and completion tracking: [`docs/phases/README.md`](docs/phases/README.md
 | -------------------------------: | ------- |
 |        1 Research & Architecture | done    |
 | 2 Repository + CI/CD + Standards | done    |
-|                             3–11 | pending |
+|            3 Database + Supabase | done    |
+|                             4–11 | pending |
 
 ## GitHub hosting model
 
-| Component | Host           | How it runs                                                      |
-| --------- | -------------- | ---------------------------------------------------------------- |
-| Dashboard | GitHub Pages   | `deploy-pages.yml` builds `apps/dashboard/` on push to `main`    |
-| Data      | GitHub repo    | `apps/api/data/data.json` updated by scanner workflow            |
-| Scraper   | GitHub Actions | `scanner-cron.yml` runs daily                                    |
-| API       | Local only     | Optional Flask server for full AI scan/tailor during development |
+| Component       | Host               | How it runs                                                      |
+| --------------- | ------------------ | ---------------------------------------------------------------- |
+| Dashboard       | GitHub Pages       | `deploy-pages.yml` builds `apps/dashboard/` on push to `main`    |
+| Data            | Supabase (primary) | `scanner-cron.yml` upserts jobs; dashboard reads via anon key    |
+| Data (fallback) | GitHub repo        | `data.json` when Supabase secrets are not set                    |
+| Scraper         | GitHub Actions     | `scanner-cron.yml` runs daily                                    |
+| API             | Local only         | Optional Flask server for full AI scan/tailor during development |
 
-On GitHub Pages, the app loads `data/data.json` and stores edits in browser `localStorage`.
+On GitHub Pages with Supabase secrets, the app loads live data from Supabase. Without secrets, it uses bundled `data.json` and `localStorage`.
+
+See [docs/phases/phase-03-database-supabase/SETUP.md](docs/phases/phase-03-database-supabase/SETUP.md) to connect Supabase.
 
 ## Setup
 
