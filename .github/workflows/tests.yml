@@ -29,6 +29,7 @@ jobs:
           python3 -m unittest discover -s scraper/tests
           python3 -m unittest discover -s packages/database/tests
           python3 -m unittest discover -s packages/scanner_sdk/tests
+          python3 -m unittest discover -s packages/ai_engine/tests
       - name: Scanner health checks
         env:
           PYTHONPATH: .

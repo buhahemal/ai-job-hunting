@@ -24,6 +24,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache Hugging Face model and pip downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/pip
+          key: hf-minilm-${{ runner.os }}-${{ hashFiles('packages/ai_engine/requirements.txt', 'scraper/requirements.txt') }}
+          restore-keys: |
+            hf-minilm-${{ runner.os }}-
+
       - name: Install Scraper Dependencies
         run: pip install -r scraper/requirements.txt
 
@@ -40,6 +50,8 @@ jobs:
       - name: Run Job Scraper Pipeline
         env:
           PYTHONPATH: .
+          HF_HOME: ~/.cache/huggingface
+          TRANSFORMERS_OFFLINE: '0'
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GREENHOUSE_BOARD_TOKENS: ${{ secrets.GREENHOUSE_BOARD_TOKENS }}
           GREENHOUSE_BOARD_TOKEN: ${{ secrets.GREENHOUSE_BOARD_TOKEN }}

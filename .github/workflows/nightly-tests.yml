@@ -41,4 +41,5 @@ jobs:
         run: |
           pip install -r scraper/requirements.txt -r apps/api/requirements.txt
           PYTHONPATH=. python3 -m unittest discover -s scraper/tests
+          PYTHONPATH=. python3 -m unittest discover -s packages/ai_engine/tests
           PYTHONPATH=. python3 scripts/scanner_health.py

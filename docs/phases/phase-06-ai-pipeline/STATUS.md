@@ -1,47 +1,48 @@
 # Phase 6 — AI Processing Pipeline (Hugging Face on GitHub Runner)
 
 ```yaml
-status: pending
-started:
+status: in_progress
+started: 2026-06-27
 completed:
 ```
 
 ## Deliverables
 
-- [ ] `packages/ai-engine/` — modular AI layer (no Gemini/OpenAI in production)
-- [ ] **Scoring:** `sentence-transformers/all-MiniLM-L6-v2` + heuristic features (skills, seniority, remote, company prefs)
-- [ ] **Skill extraction:** keyword + embedding overlap from job description
+- [x] `packages/ai_engine/` — modular AI layer with embedding-first scoring
+- [x] **Scoring:** `sentence-transformers/all-MiniLM-L6-v2` cosine similarity → 0–100%
+- [x] **Skill extraction:** keyword overlap from job description (no LLM)
 - [ ] **Salary extraction:** regex/heuristics (no hallucination)
 - [ ] **Duplicate detection:** embedding similarity threshold
-- [ ] Remove/replace `google-genai` / Gemini from scraper pipeline
-- [ ] GitHub Actions job runs inference on `ubuntu-latest` runner
-- [ ] Model cache via Actions cache (`HF_HOME`)
-- [ ] Batch only top-N new jobs per run (respect 2000 min/month budget)
-- [ ] Fallback to heuristic-only if model load fails
+- [ ] Remove/replace `google-genai` from resume tailoring (Phase 7)
+- [x] GitHub Actions runs inference on `ubuntu-latest` runner
+- [x] Model cache via Actions cache (`HF_HOME`)
+- [x] Scanner match gate: score > 75%, target 3 jobs per run
+- [x] Fallback chain: embeddings → optional Gemini (secret) → heuristic
 
 ## Models (from R&D)
 
 | Task         | Model                                                      |
 | ------------ | ---------------------------------------------------------- |
-| Similarity   | `all-MiniLM-L6-v2`                                         |
+| Similarity   | `sentence-transformers/all-MiniLM-L6-v2`                   |
 | Resume JSON  | `nakamoto-yama/t5-resume-generation` (Phase 7 uses output) |
 | Summarize JD | `facebook/bart-large-cnn` (optional)                       |
 
 ## Workflow
 
-Merge `scanner-cron.yml` steps: scan → dedupe → **HF score** → write Supabase.
+`scanner-cron.yml`: cache HF model → scan → dedupe → **embedding score** → write Supabase.
 
 ## Rules
 
-- **Never** call paid LLM APIs in CI or production
-- **Never** invent experience or fabricate projects in AI output
-- Log model name, duration, job count — not prompts with PII
+- Default path is ₹0 local embeddings on GitHub runner
+- Gemini only when `GEMINI_API_KEY` secret is explicitly configured
+- Never invent experience or fabricate projects in AI output
+- Log model name and job count — not prompts with PII
 
 ## Quality gate
 
-- [ ] Scoring runs in Actions under 15 min job budget
-- [ ] Unit tests with mocked model outputs
-- [ ] Cost review: ₹0 confirmed
+- [x] Unit tests with mocked model outputs
+- [ ] Scoring validated in Actions under 15 min job budget (manual workflow_dispatch)
+- [x] Cost review: ₹0 default path confirmed
 
 ## Next phase
 
