@@ -1,9 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-export interface SupabaseEnv {
+type SupabaseEnv = {
   url: string;
   anonKey: string;
-}
+};
 
 /** Create browser-safe Supabase client (anon key + RLS). */
 export function createBrowserClient(env: SupabaseEnv): SupabaseClient {

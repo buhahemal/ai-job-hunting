@@ -504,7 +504,7 @@ export default function App() {
                         No matching career leads found
                       </h4>
                       <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                        Try broading search parameters or click "Scan Career Boards" to discover
+                        Try broadening search parameters or click "Scan Career Boards" to discover
                         fresh listings.
                       </p>
                     </div>

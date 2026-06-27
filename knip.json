@@ -2,17 +2,16 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     "apps/dashboard": {
-      "entry": ["src/main.tsx"],
-      "project": ["src/**/*.{ts,tsx}"]
+      "entry": ["src/main.tsx!"],
+      "project": ["src/**/*.{ts,tsx}!"]
     },
     "packages/database": {
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts!"]
     },
     "packages/config": {
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts!"]
     }
   },
-  "ignore": ["**/*.test.ts", "**/dist/**", "**/coverage/**"],
   "ignoreDependencies": ["@rollup/rollup-linux-x64-gnu", "lightningcss-linux-x64-gnu"],
   "ignoreBinaries": ["python3"]
 }
