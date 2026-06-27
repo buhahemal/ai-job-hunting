@@ -1,4 +1,5 @@
 export { createBrowserClient, readSupabaseEnvFromImportMeta } from './client.js';
+export { normalizeStoredProfile } from './profile.js';
 export {
   buildScanSummary,
   filterVerifiedGaps,

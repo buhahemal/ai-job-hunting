@@ -762,11 +762,16 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Skills Tags Setup */}
+              {/* Skills Tags Setup — persisted in Supabase profiles.data.skills */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
-                  Profile Skills Inventory
-                </h3>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+                    Profile Skills Inventory
+                  </h3>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Loaded from your saved profile and used for scan matching and gap analysis.
+                  </p>
+                </div>
 
                 <div className="flex gap-2">
                   <input

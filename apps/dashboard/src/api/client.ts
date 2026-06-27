@@ -61,8 +61,7 @@ export async function getProfile(): Promise<Profile> {
     return backendFetch<Profile>('/api/profile');
   }
   if (USE_SUPABASE) {
-    const profile = await getRepository().getProfile();
-    return normalizeProfile(profile ?? {});
+    return getRepository().getProfile();
   }
   const db = await loadDatabase();
   return normalizeProfile(db.profile);

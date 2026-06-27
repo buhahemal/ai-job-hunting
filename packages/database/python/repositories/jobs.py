@@ -18,6 +18,7 @@ from packages.database.python.mappers import (
     scanned_job_row_to_job,
     scanned_job_to_row,
 )
+from packages.database.python.profile import normalize_stored_profile
 
 
 class JobRepository:
@@ -29,7 +30,7 @@ class JobRepository:
         self._client = client
 
     def get_profile(self) -> Dict[str, Any]:
-        """Fetch profile JSON from profiles table."""
+        """Fetch profile JSON from profiles table (Supabase source of truth)."""
         response = (
             self._client.table('profiles')
             .select('data')
@@ -37,7 +38,7 @@ class JobRepository:
             .maybe_single()
             .execute()
         )
-        return profile_data_from_row(response.data)
+        return normalize_stored_profile(profile_data_from_row(response.data))
 
     def save_profile(self, profile: Dict[str, Any]) -> None:
         """Upsert profile JSON."""

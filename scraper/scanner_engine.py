@@ -193,8 +193,8 @@ class SupabaseJobStore:
         self._repo = repository
 
     def get_profile(self) -> Dict:
-        profile = self._repo.get_profile()
-        return normalize_profile(profile)
+        """Load profile from Supabase without local file skill defaults."""
+        return self._repo.get_profile()
 
     def get_dedupe_indexes(self) -> Tuple[set, set]:
         return self._repo.get_dedupe_indexes()

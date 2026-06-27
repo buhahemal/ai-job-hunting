@@ -10,6 +10,7 @@ import {
   rowToScannedJob,
   scannedJobRowToJob,
 } from './mappers.js';
+import { normalizeStoredProfile } from './profile.js';
 import type {
   InterviewRecord,
   JobRecord,
@@ -27,15 +28,14 @@ const PROFILE_ID = 'default';
 export class DashboardRepository {
   constructor(private readonly client: SupabaseClient) {}
 
-  async getProfile(): Promise<ProfileRecord | null> {
+  async getProfile(): Promise<ProfileRecord> {
     const { data, error } = await this.client
       .from('profiles')
       .select('data')
       .eq('id', PROFILE_ID)
       .maybeSingle();
     if (error) throw error;
-    if (!data?.data) return null;
-    return data.data as ProfileRecord;
+    return normalizeStoredProfile((data?.data as ProfileRecord | undefined) ?? null);
   }
 
   async saveProfile(profile: ProfileRecord): Promise<void> {
