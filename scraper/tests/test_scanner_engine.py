@@ -8,6 +8,15 @@ from packages.database.python.constants import MATCH_SCORE_THRESHOLD
 from packages.scanner_sdk.python.base import BaseScanner
 from scraper.scanner_engine import JsonJobStore, ScannerEngine
 
+_SCANNER_ENV_KEYS = (
+    "SCANNER_MAX_PASSES",
+    "SCANNER_MAX_LIMIT_PER_SOURCE",
+    "SCANNER_LIMIT_STEP",
+    "SCANNER_MAX_EVALUATIONS",
+    "SCANNER_MIN_MATCH_SCORE",
+    "SCANNER_MIN_JOBS_PER_RUN",
+)
+
 
 class FakeScanner(BaseScanner):
     """Test scanner returning predetermined raw jobs."""
@@ -42,6 +51,7 @@ class FakeScanner(BaseScanner):
 
 class TestScannerEngineMatchPolicy(unittest.TestCase):
     def setUp(self):
+        self._saved_scanner_env = {key: os.environ.get(key) for key in _SCANNER_ENV_KEYS}
         self.profile = {
             "skills": ["Python", "Kubernetes", "Terraform"],
             "preferences": {"remotePreference": "Remote", "targetCompanies": []},
@@ -56,6 +66,12 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         self.store = JsonJobStore(path=self._temp_path)
 
     def tearDown(self):
+        for key in _SCANNER_ENV_KEYS:
+            saved = self._saved_scanner_env.get(key)
+            if saved is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = saved
         if os.path.exists(self._temp_path):
             os.remove(self._temp_path)
 
