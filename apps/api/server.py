@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import logging
 from datetime import datetime
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -37,6 +38,7 @@ bootstrap_packages()
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from werkzeug.utils import safe_join
 from apps.api.paths import FRONTEND_DIST
 from scraper.ai_matcher import AIMatcher
 from scraper.scanner_engine import ScannerEngine, create_job_store
@@ -46,8 +48,10 @@ from packages.database.python.repositories.jobs import JobRepository
 
 app = Flask(__name__)
 CORS(app)
+logger = logging.getLogger(__name__)
 
 PORT = 3000
+FLASK_DEBUG = os.getenv('FLASK_DEBUG', '').lower() in ('1', 'true', 'yes')
 
 ai_matcher = AIMatcher()
 scanner_engine = ScannerEngine()
@@ -64,6 +68,25 @@ def get_repository() -> JobRepository:
             )
         _repository = JobRepository(create_service_client())
     return _repository
+
+
+def _internal_error(endpoint: str):
+    """Log exception details server-side; return a generic client-safe message."""
+    logger.exception('%s failed', endpoint)
+    return jsonify({'error': 'Internal server error'}), 500
+
+
+def _safe_dist_relative_path(dist_dir: str, path: str) -> str | None:
+    """Resolve a user-supplied path to a file under dist_dir, blocking traversal."""
+    if not path:
+        return None
+    normalized = os.path.normpath(path).replace('\\', '/')
+    if normalized.startswith('../') or normalized == '..' or normalized.startswith('/'):
+        return None
+    full_path = safe_join(dist_dir, normalized)
+    if full_path is None or not os.path.isfile(full_path):
+        return None
+    return normalized
 
 
 @app.errorhandler(RuntimeError)
@@ -141,8 +164,8 @@ def scan_jobs():
             "addedCount": len(added_jobs),
             "addedJobs": added_jobs
         })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        return _internal_error('scan_jobs')
 
 @app.route("/api/scan-insights/rescan", methods=["POST"])
 def rescan_scan_insights():
@@ -152,8 +175,8 @@ def rescan_scan_insights():
         engine = RescanEngine(store)
         rescored_count = engine.run()
         return jsonify({"success": True, "rescoredCount": rescored_count})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        return _internal_error('rescan_scan_insights')
 
 @app.route("/api/scan-insights/<path:dedupe_key>/promote", methods=["POST"])
 def promote_scanned_job(dedupe_key):
@@ -165,10 +188,10 @@ def promote_scanned_job(dedupe_key):
         else:
             return jsonify({"error": "Promotion is not supported for this store backend."}), 501
         return jsonify({"success": True, "job": job})
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except ValueError:
+        return jsonify({"error": "Scanned job not found"}), 404
+    except Exception:
+        return _internal_error('promote_scanned_job')
 
 @app.route("/api/jobs/<string:job_id>/tailor", methods=["POST"])
 def tailor_resume(job_id):
@@ -314,13 +337,13 @@ def serve_frontend(path):
             "then refresh this preview.</p>"
         ), 404
 
-    # Route real directory files if found
-    file_path = os.path.join(dist_dir, path)
-    if path and os.path.exists(file_path) and os.path.isfile(file_path):
-        return send_from_directory(dist_dir, path)
+    # Route real directory files if found (path validated against traversal)
+    safe_relative = _safe_dist_relative_path(dist_dir, path)
+    if safe_relative:
+        return send_from_directory(dist_dir, safe_relative)
 
     # SPA route fallback serving the entry index
     return send_from_directory(dist_dir, "index.html")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=FLASK_DEBUG)

@@ -220,10 +220,19 @@ def _compute_experience_match(job: Dict, profile: Dict) -> int:
         score += 20
     elif job_seniority == 'Mid-level':
         score += 10
-    years = re.search(r'(\d+)\+?\s*years', _job_text(job))
-    if years and int(years.group(1)) <= 7:
+    years = _extract_years_experience(job)
+    if years is not None and years <= 7:
         score += 10
     return _clamp(score)
+
+
+def _extract_years_experience(job: Dict) -> int | None:
+    """Parse years-of-experience from job text using a bounded, linear-time pattern."""
+    snippet = _job_text(job)[:8000]
+    match = re.search(r'(\d{1,2})\+?[ \t]+years', snippet, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return int(match.group(1))
 
 
 def _compute_remote_match(job: Dict, profile: Dict) -> int:

@@ -398,8 +398,7 @@ class ScannerEngine:
             if enriched.get("isDuplicate"):
                 stats["skipped_duplicate"] += 1
                 print(
-                    f"[ScannerEngine] Skipped duplicate: "
-                    f"{enriched.get('title')} at {enriched.get('company')}"
+                    f"[ScannerEngine] Skipped duplicate: job_id={ScannerEngine._job_log_ref(enriched)}"
                 )
                 continue
 
@@ -407,14 +406,15 @@ class ScannerEngine:
                 stats["ignored_low_score"] += 1
                 print(
                     f"[ScannerEngine] Ignored (match {score}% <= {threshold}%): "
-                    f"{enriched.get('title')} at {enriched.get('company')}"
+                    f"job_id={ScannerEngine._job_log_ref(enriched)}"
                 )
                 continue
 
             print(
                 f"[ScannerEngine] Accepted (match {score}%): "
-                f"{enriched.get('title')} at {enriched.get('company')} "
-                f"[{enriched.get('canonicalRole')} / {enriched.get('priority')}]"
+                f"job_id={ScannerEngine._job_log_ref(enriched)} "
+                f"role={enriched.get('canonicalRole') or 'n/a'} "
+                f"priority={enriched.get('priority') or 'n/a'}"
             )
             added_jobs.append(enriched)
             accepted += 1
@@ -444,6 +444,11 @@ class ScannerEngine:
         """Score a job using the provided matcher (or a fresh one for tests)."""
         enriched = ScannerEngine._enrich_job_static(canonical, profile, matcher, [])
         return ScannerEngine._coerce_score({"score": enriched.get("score", 0)})
+
+    @staticmethod
+    def _job_log_ref(job: Dict) -> str:
+        """Return a non-sensitive identifier for log lines."""
+        return str(job.get('id') or job.get('externalId') or job.get('source') or 'unknown')
 
     @staticmethod
     def _coerce_score(analysis: Dict) -> int:

@@ -8,6 +8,35 @@ interface ResumePreviewProps {
   onApplyDirectly: () => void;
 }
 
+/** Render a small subset of LaTeX inline markup as React nodes (no innerHTML). */
+function renderLatexInline(text: string, keyPrefix: string): React.ReactNode {
+  const nodes: React.ReactNode[] = [];
+  const pattern = /\\textbf\{([^}]+)\}|\\%/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  let partIndex = 0;
+
+  const pushPlain = (chunk: string) => {
+    if (!chunk) return;
+    nodes.push(chunk.replace(/\\&/g, '&').replace(/\\/g, ''));
+  };
+
+  while ((match = pattern.exec(text)) !== null) {
+    pushPlain(text.slice(last, match.index));
+    if (match[0] === '\\%') {
+      nodes.push('%');
+    } else {
+      nodes.push(<strong key={`${keyPrefix}-b-${partIndex++}`}>{match[1]}</strong>);
+    }
+    last = pattern.lastIndex;
+  }
+  pushPlain(text.slice(last));
+
+  if (nodes.length === 0) return null;
+  if (nodes.length === 1) return nodes[0];
+  return nodes;
+}
+
 export default function ResumePreview({
   job,
   onSaveTailored,
@@ -134,7 +163,7 @@ export default function ResumePreview({
         elements.push(
           <ul key={`list-${index}`} className="list-disc pl-5 space-y-1 my-1 text-xs text-gray-700">
             {itemsList.map((item, idx) => (
-              <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
+              <li key={idx}>{renderLatexInline(item, `item-${index}-${idx}`)}</li>
             ))}
           </ul>,
         );
@@ -142,27 +171,18 @@ export default function ResumePreview({
       }
 
       if (inItemize && cleanLine.startsWith('\\item')) {
-        let itemText = cleanLine.replace('\\item', '').trim();
-        // Translate simple latex formatting like \textbf or \%
-        itemText = itemText.replace(/\\textbf\{([^}]+)\}/g, '<strong>$1</strong>');
-        itemText = itemText.replace(/\\%/g, '%');
-        itemText = itemText.replace(/\\&/g, '&');
+        const itemText = cleanLine.replace('\\item', '').trim();
         itemsList.push(itemText);
         return;
       }
 
       // Standard paragraphs / headings
       if (!inItemize) {
-        let formattedText = cleanLine;
-        formattedText = formattedText.replace(/\\textbf\{([^}]+)\}/g, '<strong>$1</strong>');
-        formattedText = formattedText.replace(/\\hfill/g, ' &nbsp; ');
-        formattedText = formattedText.replace(/\\/g, '');
+        const formattedText = cleanLine.replace(/\\hfill/g, ' \u00A0 ');
         elements.push(
-          <p
-            key={`p-${index}`}
-            className="text-xs text-gray-700 leading-relaxed my-1"
-            dangerouslySetInnerHTML={{ __html: formattedText }}
-          />,
+          <p key={`p-${index}`} className="text-xs text-gray-700 leading-relaxed my-1">
+            {renderLatexInline(formattedText, `p-${index}`)}
+          </p>,
         );
       }
     });
