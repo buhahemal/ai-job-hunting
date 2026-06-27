@@ -153,7 +153,20 @@
     "WEWORK",
     "psycopg",
     "sslmode",
-    "fetchall"
+    "fetchall",
+    "unconfigured",
+    "linalg",
+    "embedder",
+    "Embedder",
+    "Xenova",
+    "huggingface",
+    "smartrecruiters",
+    "SMARTRECRUITERS",
+    "klarna",
+    "QJPW",
+    "jsdata",
+    "Aiqs",
+    "PCSX"
   ],
   "ignorePaths": [
     "node_modules",
