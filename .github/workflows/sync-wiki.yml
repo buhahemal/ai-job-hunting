@@ -8,10 +8,11 @@ on:
       - 'docs/PROJECT-TRACKER.md'
       - 'docs/phases/README.md'
       - 'scripts/sync_docs_to_wiki.sh'
+      - '.github/workflows/sync-wiki.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   sync:
@@ -24,21 +25,7 @@ jobs:
         env:
           GITHUB_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WIKI_COMMIT_MESSAGE: 'docs: sync from ${{ github.sha }}'
         run: |
           chmod +x scripts/sync_docs_to_wiki.sh
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          WIKI_DIR="${RUNNER_TEMP}/wiki"
-          git clone "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPO}.wiki.git" "$WIKI_DIR" || {
-            echo "::warning::Wiki not enabled or clone failed. Enable Wikis in repo Settings."
-            exit 0
-          }
-          cp docs/wiki/*.md "$WIKI_DIR/"
-          cd "$WIKI_DIR"
-          git add -A
-          if git diff --staged --quiet; then
-            echo "Wiki already up to date."
-            exit 0
-          fi
-          git commit -m "docs: sync from ${GITHUB_SHA}"
-          git push origin master 2>/dev/null || git push origin main
+          scripts/sync_docs_to_wiki.sh
