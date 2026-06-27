@@ -18,10 +18,18 @@ def bootstrap_packages():
     if missing:
         print(f"[Boot] Installing missing dependencies in container: {missing}")
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", *missing])
+            # We add --break-system-packages to allow installing packages globally in modern system python versions (PEP 668)
+            cmd = [sys.executable, "-m", "pip", "install", "--break-system-packages", *missing]
+            subprocess.check_call(cmd)
             print("[Boot] Package installation completed successfully.")
         except Exception as e:
-            print(f"[Boot] Warning: Package install failure: {e}")
+            print(f"[Boot] Primary installation failed: {e}. Trying without --break-system-packages as fallback...")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", *missing])
+                print("[Boot] Fallback package installation completed successfully.")
+            except Exception as e2:
+                print(f"[Boot] CRITICAL: Both installation attempts failed. e1: {e}, e2: {e2}")
+                raise RuntimeError(f"Could not bootstrap required dependencies {missing}: {e2}") from e2
 
 bootstrap_packages()
 
