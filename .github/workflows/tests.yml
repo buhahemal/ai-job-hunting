@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-python
       - name: Install TeX Live for resume PDF tests
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-fonts-recommended
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
       - name: Run Python unit tests
         env:
           PYTHONPATH: .
