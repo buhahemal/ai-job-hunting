@@ -202,7 +202,7 @@ def add_custom_job():
 def scan_jobs():
     try:
         # Executes our clean modular plugin scanner pipeline
-        added_jobs = scanner_engine.run(limit_per_source=3)
+        added_jobs = scanner_engine.run()
         return jsonify({
             "success": True, 
             "addedCount": len(added_jobs), 
