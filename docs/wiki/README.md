@@ -26,7 +26,7 @@ bash scripts/sync_docs_to_wiki.sh
 
 **Prerequisite:** Enable Wikis under **Settings → General → Features → Wikis**.
 
-The wiki repo uses the `master` branch by default. The sync script pushes `HEAD` to the
-checked-out branch (never assumes `main`).
+The wiki git repo is synced on branch **`main`** (same as this repository). Legacy wiki
+checkouts on `master` are normalized to `main` before push.
 
 Also update [PROJECT-TRACKER.md](../PROJECT-TRACKER.md) in the repo when marking deliverables complete.

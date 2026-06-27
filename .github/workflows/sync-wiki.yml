@@ -25,6 +25,7 @@ jobs:
         env:
           GITHUB_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WIKI_BRANCH: main
           WIKI_COMMIT_MESSAGE: 'docs: sync from ${{ github.sha }}'
         run: |
           chmod +x scripts/sync_docs_to_wiki.sh

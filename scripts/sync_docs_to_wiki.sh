@@ -6,11 +6,13 @@
 #   GITHUB_REPO=owner/repo bash scripts/sync_docs_to_wiki.sh
 #   GH_TOKEN=... GITHUB_REPO=owner/repo bash scripts/sync_docs_to_wiki.sh  # CI
 #
+# The main repo and wiki both use the `main` branch (override with WIKI_BRANCH).
 # Requires: git, push access to REPO.wiki.git (enable Wiki in repo Settings first).
 
 set -euo pipefail
 
 REPO="${GITHUB_REPO:-buhahemal/ai-job-hunting}"
+WIKI_BRANCH="${WIKI_BRANCH:-main}"
 SOURCE_DIR="$(cd "$(dirname "$0")/../docs/wiki" && pwd)"
 WORK_DIR="$(mktemp -d)"
 
@@ -38,13 +40,16 @@ if ! git clone "$WIKI_URL" "$WORK_DIR"; then
   exit 1
 fi
 
-cp "$SOURCE_DIR"/*.md "$WORK_DIR/"
-
 cd "$WORK_DIR"
+
+# GitHub wikis may clone as legacy `master`; normalize to `main` for this project.
+git checkout -B "$WIKI_BRANCH"
+
+cp "$SOURCE_DIR"/*.md "$WORK_DIR/"
 git add -A
 
 if git diff --staged --quiet; then
-  echo "Wiki already up to date."
+  echo "Wiki already up to date on ${WIKI_BRANCH}."
   exit 0
 fi
 
@@ -52,9 +57,7 @@ git -c user.name="${GIT_AUTHOR_NAME:-github-actions[bot]}" \
   -c user.email="${GIT_AUTHOR_EMAIL:-github-actions[bot]@users.noreply.github.com}" \
   commit -m "${WIKI_COMMIT_MESSAGE:-docs: sync project tracker and phase pages from repo}"
 
-# Wiki repos use master by default; push current HEAD to matching remote branch.
-WIKI_BRANCH="$(git symbolic-ref --short HEAD)"
 echo "Pushing wiki branch: ${WIKI_BRANCH}"
-git push origin "HEAD:refs/heads/${WIKI_BRANCH}"
+git push origin "$WIKI_BRANCH"
 
 echo "Wiki synced: https://github.com/${REPO}/wiki"
