@@ -10,7 +10,8 @@ completed:
 
 - [x] `apps/api/` Flask API (Phase 2); evolve to Supabase-backed REST layer
 - [ ] Read jobs, resumes, applications from Supabase (not static JSON)
-- [ ] Profile CRUD, job status updates, interview tracking
+- [x] Profile CRUD (GET/POST, import, validation, LaTeX regen on save)
+- [ ] Job status updates, interview tracking (partial — existing endpoints)
 - [ ] Search, filter, pagination
 - [ ] Optional: Supabase Edge Functions for serverless API (still free tier)
 - [ ] OpenAPI documentation in `docs/api/`

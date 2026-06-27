@@ -1,10 +1,17 @@
 import type { Profile } from '../types';
 import profileBase from '../../../api/data/profile.json';
+import masterResume from '../../../api/data/resume/master.json';
 import masterResumeLaTeX from '../../../api/data/resume/master.tex?raw';
 
 /** Offline/demo fallback only — not used when VITE_USE_SUPABASE=true. */
 export const DEFAULT_PROFILE: Profile = {
-  ...(profileBase as Omit<Profile, 'masterResumeLaTeX'>),
+  ...(profileBase as Omit<
+    Profile,
+    'masterResumeLaTeX' | 'summary' | 'skillGroups' | 'matchSettings'
+  >),
+  summary: (masterResume as { summary?: string }).summary ?? '',
+  skillGroups: (masterResume as { skillGroups?: Profile['skillGroups'] }).skillGroups ?? [],
+  matchSettings: { minMatchScore: 90 },
   masterResumeLaTeX,
 };
 
@@ -18,9 +25,15 @@ export function normalizeProfile(profile?: Partial<Profile> | null): Profile {
       experience: profile?.experience?.length ? profile.experience : DEFAULT_PROFILE.experience,
       education: profile?.education?.length ? profile.education : DEFAULT_PROFILE.education,
       projects: profile?.projects?.length ? profile.projects : DEFAULT_PROFILE.projects,
+      summary: profile?.summary || DEFAULT_PROFILE.summary,
+      skillGroups: profile?.skillGroups?.length ? profile.skillGroups : DEFAULT_PROFILE.skillGroups,
       preferences: {
         ...DEFAULT_PROFILE.preferences,
         ...profile?.preferences,
+      },
+      matchSettings: {
+        ...DEFAULT_PROFILE.matchSettings,
+        ...profile?.matchSettings,
       },
       masterResumeLaTeX: profile?.masterResumeLaTeX || DEFAULT_PROFILE.masterResumeLaTeX,
     };
@@ -34,9 +47,15 @@ export function normalizeProfile(profile?: Partial<Profile> | null): Profile {
     experience: profile.experience ?? DEFAULT_PROFILE.experience,
     education: profile.education ?? DEFAULT_PROFILE.education,
     projects: profile.projects ?? DEFAULT_PROFILE.projects,
+    summary: profile.summary ?? DEFAULT_PROFILE.summary,
+    skillGroups: profile.skillGroups ?? DEFAULT_PROFILE.skillGroups,
     preferences: {
       ...DEFAULT_PROFILE.preferences,
       ...profile.preferences,
+    },
+    matchSettings: {
+      ...DEFAULT_PROFILE.matchSettings,
+      ...profile.matchSettings,
     },
     masterResumeLaTeX: profile.masterResumeLaTeX ?? DEFAULT_PROFILE.masterResumeLaTeX,
   };

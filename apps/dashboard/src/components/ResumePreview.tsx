@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Copy, Check, FileText, Code, Printer, Award, AlertCircle } from 'lucide-react';
+import { Copy, Check, FileText, Code, Printer, Award, AlertCircle, Download } from 'lucide-react';
 import { Job } from '../types';
 
 interface ResumePreviewProps {
   job: Job;
+  pdfUrl?: string;
   onSaveTailored: (resumeLaTeX: string, coverLetter: string) => Promise<void>;
   onApplyDirectly: () => void;
 }
@@ -39,6 +40,7 @@ function renderLatexInline(text: string, keyPrefix: string): React.ReactNode {
 
 export default function ResumePreview({
   job,
+  pdfUrl,
   onSaveTailored,
   onApplyDirectly,
 }: ResumePreviewProps) {
@@ -208,6 +210,9 @@ export default function ResumePreview({
           <p className="text-xs text-slate-400 mt-0.5">
             {job.company} &bull; {job.location}
           </p>
+          <p className="text-[10px] text-slate-500 mt-2">
+            Deterministic tailoring reorders skills and bullets for this job. Facts stay unchanged.
+          </p>
         </div>
 
         {/* ATS Quality Score Ring */}
@@ -300,6 +305,17 @@ export default function ResumePreview({
                 <Printer className="h-3.5 w-3.5" />
                 Print
               </button>
+              {pdfUrl ? (
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1.5 rounded-md flex items-center gap-1.5 font-medium"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download PDF
+                </a>
+              ) : null}
             </>
           )}
         </div>

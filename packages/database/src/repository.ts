@@ -43,9 +43,10 @@ export class DashboardRepository {
   }
 
   async saveProfile(profile: ProfileRecord): Promise<void> {
+    const normalized = normalizeStoredProfile(profile);
     const { error } = await this.client
       .from('profiles')
-      .upsert({ id: PROFILE_ID, data: profile }, { onConflict: 'id' });
+      .upsert({ id: PROFILE_ID, data: normalized }, { onConflict: 'id' });
     if (error) throw error;
   }
 

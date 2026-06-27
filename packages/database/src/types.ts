@@ -134,6 +134,41 @@ export interface InterviewRecord {
   status: 'Scheduled' | 'Completed' | 'Cancelled' | 'Passed' | 'Failed';
 }
 
+export type ExperienceBullet = string | { title: string; body: string };
+
+export interface ProfileExperienceEntry {
+  role: string;
+  company: string;
+  period: string;
+  location?: string;
+  techStack?: string;
+  bullets: ExperienceBullet[];
+}
+
+export interface ProfileEducationEntry {
+  degree: string;
+  school: string;
+  period: string;
+  location?: string;
+}
+
+export interface ProfileProjectEntry {
+  title: string;
+  description: string;
+  tech: string[];
+  subtitle?: string;
+  techStack?: string;
+}
+
+export interface ProfileSkillGroup {
+  label: string;
+  items: string[];
+}
+
+export interface ProfileMatchSettings {
+  minMatchScore: number;
+}
+
 export interface ProfileRecord {
   fullName: string;
   email: string;
@@ -142,24 +177,13 @@ export interface ProfileRecord {
   github: string;
   linkedin: string;
   location: string;
+  summary: string;
   targetRoles: string[];
   skills: string[];
-  experience: {
-    role: string;
-    company: string;
-    period: string;
-    bullets: string[];
-  }[];
-  education: {
-    degree: string;
-    school: string;
-    period: string;
-  }[];
-  projects: {
-    title: string;
-    description: string;
-    tech: string[];
-  }[];
+  skillGroups: ProfileSkillGroup[];
+  experience: ProfileExperienceEntry[];
+  education: ProfileEducationEntry[];
+  projects: ProfileProjectEntry[];
   preferences: {
     locations: string[];
     remotePreference: RemoteType | 'Any';
@@ -167,6 +191,7 @@ export interface ProfileRecord {
     targetCompanies: string[];
     skillsKeywords: string[];
   };
+  matchSettings: ProfileMatchSettings;
   masterResumeLaTeX: string;
 }
 
