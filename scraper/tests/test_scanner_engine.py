@@ -186,6 +186,12 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         self.assertEqual(added, [])
         db = self.store.read_db()
         self.assertEqual(db.get("jobs", []), [])
+        scanned_jobs = db.get("scannedJobs", [])
+        self.assertEqual(len(scanned_jobs), 1)
+        self.assertEqual(scanned_jobs[0]["dedupe_key"], "https://example.com/low-1")
+        self.assertEqual(scanned_jobs[0]["overall_score"], 50)
+        self.assertEqual(scanned_jobs[0]["title"], "Role")
+        self.assertFalse(scanned_jobs[0]["promoted_to_jobs"])
 
     def test_multi_pass_increases_fetch_limit_until_target_met(self):
         jobs = [

@@ -15,6 +15,7 @@ import {
   FileCheck,
   Save,
   Info,
+  Radar,
 } from 'lucide-react';
 import * as api from './api/client';
 import { getProfileInitials } from './api/defaultProfile';
@@ -24,10 +25,11 @@ import AnalyticsView from './components/AnalyticsView';
 import InterviewTracker from './components/InterviewTracker';
 import JobDetailPanel from './components/JobDetailPanel';
 import JobFilters, { filterJobs, type JobFilterState } from './components/JobFilters';
+import ScanInsightsView from './components/ScanInsightsView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'tailor' | 'interviews' | 'analytics' | 'profile'
+    'dashboard' | 'scanInsights' | 'tailor' | 'interviews' | 'analytics' | 'profile'
   >('dashboard');
 
   // App States
@@ -305,6 +307,18 @@ export default function App() {
             >
               <Briefcase className="h-4 w-4" />
               Job Leads
+            </button>
+
+            <button
+              onClick={() => setActiveTab('scanInsights')}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
+                activeTab === 'scanInsights'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+              }`}
+            >
+              <Radar className="h-4 w-4" />
+              Scan Insights
             </button>
 
             <button
@@ -623,6 +637,8 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {activeTab === 'scanInsights' && <ScanInsightsView />}
 
           {/* TAB 2: Tailor Suite (Split screen previewer) */}
           {activeTab === 'tailor' && (

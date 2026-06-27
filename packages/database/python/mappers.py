@@ -159,3 +159,71 @@ def dedupe_indexes(jobs: List[Dict[str, Any]]) -> tuple[set[str], set[str]]:
     urls = {j.get('url') for j in jobs if j.get('url')}
     signatures = {f"{j.get('title')}-{j.get('company')}".lower() for j in jobs}
     return urls, signatures
+
+
+def scanned_job_to_row(record: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert scanned job insight dict to database row (snake_case)."""
+    overall = record.get('overall_score', record.get('score'))
+    return {
+        'dedupe_key': record['dedupe_key'],
+        'job_id': record.get('job_id'),
+        'source': record.get('source'),
+        'score': overall,
+        'title': record.get('title'),
+        'company': record.get('company'),
+        'location': record.get('location'),
+        'remote_type': record.get('remote_type'),
+        'canonical_role': record.get('canonical_role'),
+        'primary_stack': record.get('primary_stack'),
+        'seniority': record.get('seniority'),
+        'employment_type': record.get('employment_type'),
+        'application_url': record.get('application_url'),
+        'required_skills': record.get('required_skills') or [],
+        'preferred_skills': record.get('preferred_skills') or [],
+        'extracted_technologies': record.get('extracted_technologies') or [],
+        'overall_score': overall,
+        'skill_match_score': record.get('skill_match_score'),
+        'experience_match_score': record.get('experience_match_score'),
+        'ats_score': record.get('ats_score'),
+        'matched_skills': record.get('matched_skills') or [],
+        'missing_skills': record.get('missing_skills') or [],
+        'missing_keywords': record.get('missing_keywords') or [],
+        'match_explanation': record.get('match_explanation'),
+        'scorer': record.get('scorer'),
+        'promoted_to_jobs': bool(record.get('promoted_to_jobs')),
+        'scan_run_id': record.get('scan_run_id'),
+    }
+
+
+def row_to_scanned_job(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert scanned_jobs database row to camelCase insight dict."""
+    overall = row.get('overall_score', row.get('score'))
+    return {
+        'dedupeKey': row['dedupe_key'],
+        'jobId': row.get('job_id'),
+        'source': row.get('source') or '',
+        'title': row.get('title') or '',
+        'company': row.get('company') or '',
+        'location': row.get('location') or '',
+        'remoteType': row.get('remote_type') or 'Remote',
+        'canonicalRole': row.get('canonical_role'),
+        'primaryStack': row.get('primary_stack'),
+        'seniority': row.get('seniority'),
+        'employmentType': row.get('employment_type'),
+        'applicationUrl': row.get('application_url') or '',
+        'requiredSkills': row.get('required_skills') or [],
+        'preferredSkills': row.get('preferred_skills') or [],
+        'extractedTechnologies': row.get('extracted_technologies') or [],
+        'overallScore': overall or 0,
+        'skillMatchScore': row.get('skill_match_score'),
+        'experienceMatchScore': row.get('experience_match_score'),
+        'atsScore': row.get('ats_score'),
+        'matchedSkills': row.get('matched_skills') or [],
+        'missingSkills': row.get('missing_skills') or [],
+        'missingKeywords': row.get('missing_keywords') or [],
+        'matchExplanation': row.get('match_explanation') or '',
+        'scorer': row.get('scorer'),
+        'promotedToJobs': bool(row.get('promoted_to_jobs')),
+        'scanRunId': row.get('scan_run_id'),
+        'scannedAt': row.get('scanned_at') or '',
+    }

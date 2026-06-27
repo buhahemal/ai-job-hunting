@@ -1,7 +1,24 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { interviewToRow, jobToRow, rowToInterview, rowToJob } from './mappers.js';
-import type { InterviewRecord, JobRecord, JobRow, ProfileRecord } from './types.js';
+import {
+  buildScanSummary,
+  interviewToRow,
+  jobToRow,
+  rowToInterview,
+  rowToJob,
+  rowToScannedJob,
+} from './mappers.js';
+import type {
+  InterviewRecord,
+  JobRecord,
+  JobRow,
+  ListScannedJobsParams,
+  ProfileRecord,
+  ScanSummary,
+  ScanSummaryRow,
+  ScannedJobRow,
+  ScannedJobsPage,
+} from './types.js';
 
 const PROFILE_ID = 'default';
 
@@ -108,5 +125,56 @@ export class DashboardRepository {
   async updateInterviewStatus(id: string, status: InterviewRecord['status']): Promise<void> {
     const { error } = await this.client.from('interviews').update({ status }).eq('id', id);
     if (error) throw error;
+  }
+
+  async listScannedJobs(params: ListScannedJobsParams = {}): Promise<ScannedJobsPage> {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.max(1, Math.min(params.limit ?? 25, 100));
+    const threshold = params.threshold ?? 75;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    let query = this.client.from('scanned_jobs').select('*', { count: 'exact' });
+
+    if (params.minScore !== undefined) {
+      query = query.gte('overall_score', params.minScore);
+    }
+    if (params.maxScore !== undefined) {
+      query = query.lte('overall_score', params.maxScore);
+    }
+    if (params.source) {
+      query = query.eq('source', params.source);
+    }
+    if (params.role) {
+      query = query.eq('canonical_role', params.role);
+    }
+    if (params.missingSkill) {
+      query = query.contains('missing_skills', [params.missingSkill]);
+    }
+    if (params.belowThresholdOnly) {
+      query = query.lte('overall_score', threshold);
+    }
+
+    const { data, error, count } = await query
+      .order('scanned_at', { ascending: false })
+      .range(from, to);
+    if (error) throw error;
+
+    return {
+      items: ((data ?? []) as ScannedJobRow[]).map(rowToScannedJob),
+      page,
+      limit,
+      total: count ?? data?.length ?? 0,
+    };
+  }
+
+  async getScanSummary(threshold = 75): Promise<ScanSummary> {
+    const { data, error } = await this.client
+      .from('scanned_jobs')
+      .select(
+        'overall_score, score, source, scanned_at, promoted_to_jobs, missing_skills, scan_run_id',
+      );
+    if (error) throw error;
+    return buildScanSummary((data ?? []) as ScanSummaryRow[], threshold);
   }
 }

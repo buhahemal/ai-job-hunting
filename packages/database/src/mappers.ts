@@ -4,6 +4,11 @@ import type {
   JobMatchScoreRow,
   JobRecord,
   JobRow,
+  ScanSummary,
+  ScanSummaryMissingSkill,
+  ScanSummaryRow,
+  ScannedJobRecord,
+  ScannedJobRow,
 } from './types.js';
 
 function rowToMatchInsights(
@@ -151,5 +156,118 @@ export function interviewToRow(interview: InterviewRecord): InterviewRow {
     interview_type: interview.type,
     notes: interview.notes,
     status: interview.status,
+  };
+}
+
+/** Map scanned_jobs DB row to app insight record. */
+export function rowToScannedJob(row: ScannedJobRow): ScannedJobRecord {
+  const overall = row.overall_score ?? row.score ?? 0;
+  return {
+    dedupeKey: row.dedupe_key,
+    jobId: row.job_id ?? undefined,
+    source: row.source ?? '',
+    title: row.title ?? '',
+    company: row.company ?? '',
+    location: row.location ?? '',
+    remoteType: row.remote_type ?? 'Remote',
+    canonicalRole: row.canonical_role ?? undefined,
+    primaryStack: row.primary_stack ?? undefined,
+    seniority: row.seniority ?? undefined,
+    employmentType: row.employment_type ?? undefined,
+    applicationUrl: row.application_url ?? '',
+    requiredSkills: row.required_skills ?? [],
+    preferredSkills: row.preferred_skills ?? [],
+    extractedTechnologies: row.extracted_technologies ?? [],
+    overallScore: overall,
+    skillMatchScore: row.skill_match_score ?? undefined,
+    experienceMatchScore: row.experience_match_score ?? undefined,
+    atsScore: row.ats_score ?? undefined,
+    matchedSkills: row.matched_skills ?? [],
+    missingSkills: row.missing_skills ?? [],
+    missingKeywords: row.missing_keywords ?? [],
+    matchExplanation: row.match_explanation ?? '',
+    scorer: row.scorer ?? undefined,
+    promotedToJobs: row.promoted_to_jobs ?? false,
+    scanRunId: row.scan_run_id ?? undefined,
+    scannedAt: row.scanned_at ?? '',
+  };
+}
+
+function aggregateMissingSkills(
+  rows: ScanSummaryRow[],
+  threshold: number,
+): ScanSummaryMissingSkill[] {
+  const counts = new Map<string, number>();
+  const scoreSum = new Map<string, number>();
+  const bandBoost = new Map<string, number>();
+
+  for (const row of rows) {
+    const overall = row.overall_score ?? row.score ?? 0;
+    for (const skill of row.missing_skills ?? []) {
+      counts.set(skill, (counts.get(skill) ?? 0) + 1);
+      scoreSum.set(skill, (scoreSum.get(skill) ?? 0) + overall);
+      if (overall >= threshold - 10 && overall <= threshold) {
+        bandBoost.set(skill, (bandBoost.get(skill) ?? 0) + 1);
+      }
+    }
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([skill, count]) => ({
+      skill,
+      count,
+      averageScoreWhenMissing: Math.round((scoreSum.get(skill) ?? 0) / count),
+      estimatedBandBoost: bandBoost.get(skill) ?? 0,
+    }));
+}
+
+/** Build scan summary aggregates from scanned job rows. */
+export function buildScanSummary(rows: ScanSummaryRow[], threshold = 75): ScanSummary {
+  if (!rows.length) {
+    return {
+      totalScanned: 0,
+      promotedCount: 0,
+      averageScore: 0,
+      topSource: null,
+      lastScanAt: null,
+      lastRunScanned: 0,
+      topMissingSkills: [],
+    };
+  }
+
+  const sourceCounts = new Map<string, number>();
+  let promotedCount = 0;
+  let scoreTotal = 0;
+  let lastScanAt: string | null = null;
+  let latestRunId: string | null = null;
+
+  for (const row of rows) {
+    const overall = row.overall_score ?? row.score ?? 0;
+    scoreTotal += overall;
+    if (row.promoted_to_jobs) promotedCount += 1;
+    if (row.source) {
+      sourceCounts.set(row.source, (sourceCounts.get(row.source) ?? 0) + 1);
+    }
+    if (row.scanned_at && (!lastScanAt || row.scanned_at > lastScanAt)) {
+      lastScanAt = row.scanned_at;
+      latestRunId = row.scan_run_id ?? null;
+    }
+  }
+
+  const topSource = [...sourceCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const lastRunScanned = latestRunId
+    ? rows.filter((row) => row.scan_run_id === latestRunId).length
+    : 0;
+
+  return {
+    totalScanned: rows.length,
+    promotedCount,
+    averageScore: Math.round(scoreTotal / rows.length),
+    topSource,
+    lastScanAt,
+    lastRunScanned,
+    topMissingSkills: aggregateMissingSkills(rows, threshold),
   };
 }

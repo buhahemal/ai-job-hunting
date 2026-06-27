@@ -33,7 +33,14 @@ Scoring is handled by [`../packages/ai_engine/`](../packages/ai_engine/) with th
 2. Optional Gemini when `GEMINI_API_KEY` is set
 3. Deterministic heuristic scorer
 
-The scanner only **persists jobs with match score above 75%** and tries to collect **at least 3 qualifying jobs** per run by scanning multiple portals.
+The scanner only **promotes jobs with match score above 75%** to the Job Leads pipeline (`jobs` table) and tries to collect **at least 3 qualifying jobs** per run by scanning multiple portals.
+
+Every evaluated job — including sub-threshold rejects — is persisted as a **Scan Insight** in `scanned_jobs` (Supabase) or `scannedJobs[]` (JSON). The dashboard **Scan Insights** tab surfaces these records for transparency and skill-gap analytics; **Job Leads** remains the actionable apply/tailor pipeline.
+
+| Layer         | Storage                     | Purpose                                             |
+| ------------- | --------------------------- | --------------------------------------------------- |
+| Job Leads     | `jobs` + `job_match_scores` | Score > 75% — apply, tailor, track                  |
+| Scan Insights | `scanned_jobs`              | All evaluated jobs — market visibility + skill gaps |
 
 ## Configuration
 
@@ -50,7 +57,7 @@ The scanner only **persists jobs with match score above 75%** and tries to colle
 | `SCANNER_MAX_EVALUATIONS`      | No       | Max unique jobs to score per run (default `3000`)         |
 | `HF_TOKEN`                     | No       | Optional Hugging Face token for faster model downloads    |
 
-Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. Jobs already evaluated in prior runs are skipped via a persistent `scannedJobKeys` registry (JSON) or `scanned_jobs` table (Supabase). GitHub Actions `scanner-cron` uses a **60-minute** timeout.
+Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. Jobs already evaluated in prior runs are skipped via a persistent `scannedJobs[]` / `scannedJobKeys` registry (JSON) or `scanned_jobs` table (Supabase). Apply migration `0004_scanned_job_insights.sql` before using Scan Insights. GitHub Actions `scanner-cron` uses a **60-minute** timeout.
 
 Paths: `packages/config/python/paths.py`
 

@@ -168,3 +168,110 @@ export interface ProfileRecord {
   };
   masterResumeLaTeX: string;
 }
+
+export interface ScannedJobRow {
+  dedupe_key: string;
+  job_id: string | null;
+  source: string | null;
+  score: number | null;
+  scanned_at: string;
+  title: string | null;
+  company: string | null;
+  location: string | null;
+  remote_type: RemoteType | null;
+  canonical_role: string | null;
+  primary_stack: string | null;
+  seniority: string | null;
+  employment_type: string | null;
+  application_url: string | null;
+  required_skills: string[] | null;
+  preferred_skills: string[] | null;
+  extracted_technologies: string[] | null;
+  overall_score: number | null;
+  skill_match_score: number | null;
+  experience_match_score: number | null;
+  ats_score: number | null;
+  matched_skills: string[] | null;
+  missing_skills: string[] | null;
+  missing_keywords: string[] | null;
+  match_explanation: string | null;
+  scorer: string | null;
+  promoted_to_jobs: boolean;
+  scan_run_id: string | null;
+}
+
+export interface ScannedJobRecord {
+  dedupeKey: string;
+  jobId?: string;
+  source: string;
+  title: string;
+  company: string;
+  location: string;
+  remoteType: RemoteType;
+  canonicalRole?: string;
+  primaryStack?: string;
+  seniority?: string;
+  employmentType?: string;
+  applicationUrl: string;
+  requiredSkills: string[];
+  preferredSkills: string[];
+  extractedTechnologies: string[];
+  overallScore: number;
+  skillMatchScore?: number;
+  experienceMatchScore?: number;
+  atsScore?: number;
+  matchedSkills: string[];
+  missingSkills: string[];
+  missingKeywords: string[];
+  matchExplanation: string;
+  scorer?: string;
+  promotedToJobs: boolean;
+  scanRunId?: string;
+  scannedAt: string;
+}
+
+export interface ScanSummaryRow {
+  overall_score?: number | null;
+  score?: number | null;
+  source?: string | null;
+  scanned_at?: string;
+  promoted_to_jobs?: boolean;
+  missing_skills?: string[] | null;
+  scan_run_id?: string | null;
+}
+
+export interface ScanSummaryMissingSkill {
+  skill: string;
+  count: number;
+  averageScoreWhenMissing: number;
+  estimatedBandBoost: number;
+}
+
+export interface ScanSummary {
+  totalScanned: number;
+  promotedCount: number;
+  averageScore: number;
+  topSource: string | null;
+  lastScanAt: string | null;
+  lastRunScanned: number;
+  topMissingSkills: ScanSummaryMissingSkill[];
+}
+
+export interface ScannedJobsPage {
+  items: ScannedJobRecord[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface ListScannedJobsParams {
+  page?: number;
+  limit?: number;
+  minScore?: number;
+  maxScore?: number;
+  source?: string;
+  role?: string;
+  missingSkill?: string;
+  belowThresholdOnly?: boolean;
+  threshold?: number;
+}

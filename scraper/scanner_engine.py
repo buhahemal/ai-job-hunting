@@ -6,7 +6,7 @@ from apps.api.defaults import DEFAULT_PROFILE, normalize_profile
 from scraper.ai_matcher import AIMatcher
 from scraper.paths import DATA_FILE
 from packages.scanner_sdk.python.base import BaseScanner
-from packages.scanner_sdk.python.dedupe import job_dedupe_key, merge_scanned_keys, scanned_job_record
+from packages.scanner_sdk.python.dedupe import job_dedupe_key, merge_scanned_keys, scan_run_id, scanned_job_record
 from packages.scanner_sdk.python.registry import get_registered_scanners
 
 DB_FILE = DATA_FILE
@@ -63,19 +63,44 @@ class JsonJobStore:
 
     def get_scanned_keys(self) -> set:
         db = self.read_db()
-        keys = db.get("scannedJobKeys", [])
-        return set(keys) if isinstance(keys, list) else set()
+        keys: set = set()
+        scanned_jobs = db.get("scannedJobs", [])
+        if isinstance(scanned_jobs, list):
+            for entry in scanned_jobs:
+                key = entry.get("dedupe_key") or entry.get("dedupeKey")
+                if key:
+                    keys.add(key)
+        legacy_keys = db.get("scannedJobKeys", [])
+        if isinstance(legacy_keys, list):
+            keys.update(legacy_keys)
+        return keys
 
     def record_scanned_jobs(self, records: List[Dict]) -> None:
         if not records:
             return
         db = self.read_db()
-        existing = set(db.get("scannedJobKeys", []))
+        existing_jobs = db.get("scannedJobs", [])
+        if not isinstance(existing_jobs, list):
+            existing_jobs = []
+
+        by_key = {
+            (entry.get("dedupe_key") or entry.get("dedupeKey")): entry
+            for entry in existing_jobs
+            if entry.get("dedupe_key") or entry.get("dedupeKey")
+        }
+        legacy_keys = db.get("scannedJobKeys", [])
+        if isinstance(legacy_keys, list):
+            for key in legacy_keys:
+                if key and key not in by_key:
+                    by_key[key] = {"dedupe_key": key}
+
         for record in records:
             key = record.get("dedupe_key")
             if key:
-                existing.add(key)
-        db["scannedJobKeys"] = sorted(existing)
+                by_key[key] = record
+
+        db["scannedJobs"] = sorted(by_key.values(), key=lambda row: row.get("dedupe_key", ""))
+        db["scannedJobKeys"] = sorted(by_key.keys())
         with open(self._path, "w", encoding="utf-8") as handle:
             json.dump(db, handle, indent=2)
 
@@ -258,7 +283,15 @@ class ScannerEngine:
                 canonical, profile, matcher, existing_jobs + added_jobs
             )
             score = ScannerEngine._coerce_score({"score": enriched.get("score", 0)})
-            new_scan_records.append(scanned_job_record(enriched, score=score))
+            promoted = not enriched.get("isDuplicate") and score > threshold
+            new_scan_records.append(
+                scanned_job_record(
+                    enriched,
+                    score=score,
+                    promoted_to_jobs=promoted,
+                    scan_run_id_value=scan_run_id(),
+                )
+            )
 
             if enriched.get("isDuplicate"):
                 stats["skipped_duplicate"] += 1

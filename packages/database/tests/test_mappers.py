@@ -3,7 +3,13 @@
 import os
 import unittest
 
-from packages.database.python.mappers import dedupe_indexes, job_to_row, row_to_job
+from packages.database.python.mappers import (
+    dedupe_indexes,
+    job_to_row,
+    row_to_job,
+    row_to_scanned_job,
+    scanned_job_to_row,
+)
 from packages.database.python.client import is_supabase_configured, use_json_store
 
 
@@ -65,6 +71,43 @@ class TestJobMappers(unittest.TestCase):
         urls, signatures = dedupe_indexes(jobs)
         self.assertIn('https://a.com/1', urls)
         self.assertIn('dev-a', signatures)
+
+    def test_scanned_job_mapper_round_trip(self):
+        record = {
+            'dedupe_key': 'https://example.com/jobs/1',
+            'job_id': 'job-1',
+            'source': 'Greenhouse',
+            'score': 68,
+            'title': 'Platform Engineer',
+            'company': 'Acme',
+            'location': 'Remote',
+            'remote_type': 'Remote',
+            'canonical_role': 'Platform Engineer',
+            'primary_stack': 'Kubernetes',
+            'seniority': 'Senior',
+            'employment_type': 'Full-time',
+            'application_url': 'https://example.com/jobs/1',
+            'required_skills': ['Kubernetes'],
+            'preferred_skills': ['Terraform'],
+            'extracted_technologies': ['Kubernetes'],
+            'overall_score': 68,
+            'skill_match_score': 60,
+            'experience_match_score': 70,
+            'ats_score': 55,
+            'matched_skills': ['Python'],
+            'missing_skills': ['Kubernetes'],
+            'missing_keywords': ['SRE'],
+            'match_explanation': 'Missing Kubernetes experience',
+            'scorer': 'embedding',
+            'promoted_to_jobs': False,
+            'scan_run_id': 'run-123',
+        }
+        row = scanned_job_to_row(record)
+        mapped = row_to_scanned_job({**row, 'scanned_at': '2026-06-27T00:00:00Z'})
+        self.assertEqual(mapped['dedupeKey'], 'https://example.com/jobs/1')
+        self.assertEqual(mapped['overallScore'], 68)
+        self.assertEqual(mapped['missingSkills'], ['Kubernetes'])
+        self.assertFalse(mapped['promotedToJobs'])
 
 
 class TestClientEnv(unittest.TestCase):

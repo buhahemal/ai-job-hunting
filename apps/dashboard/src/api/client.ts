@@ -1,9 +1,16 @@
 import type { Interview, Job, Profile } from '../types';
 import {
+  buildScanSummary,
   createBrowserClient,
   DashboardRepository,
+  rowToScannedJob,
   type InterviewRecord,
   type JobRecord,
+  type ListScannedJobsParams,
+  type ScanSummary,
+  type ScannedJobRecord,
+  type ScannedJobsPage,
+  type ScanSummaryRow,
 } from '@ai-job-hunter/database';
 import { normalizeProfile } from './defaultProfile';
 import { SUPABASE_ANON_KEY, SUPABASE_URL, USE_BACKEND, USE_SUPABASE } from './config';
@@ -316,4 +323,98 @@ export async function updateInterviewStatus(
     if (status === 'Failed') job.status = 'Rejected';
   }
   saveDatabase(db);
+}
+
+function mapJsonScannedJob(raw: Record<string, unknown>): ScannedJobRecord {
+  if (raw.dedupeKey) {
+    return raw as unknown as ScannedJobRecord;
+  }
+  return rowToScannedJob({
+    dedupe_key: String(raw.dedupe_key ?? ''),
+    job_id: (raw.job_id as string | null) ?? null,
+    source: (raw.source as string | null) ?? null,
+    score: (raw.score as number | null) ?? null,
+    scanned_at: String(raw.scanned_at ?? ''),
+    title: (raw.title as string | null) ?? null,
+    company: (raw.company as string | null) ?? null,
+    location: (raw.location as string | null) ?? null,
+    remote_type: (raw.remote_type as ScannedJobRecord['remoteType'] | null) ?? null,
+    canonical_role: (raw.canonical_role as string | null) ?? null,
+    primary_stack: (raw.primary_stack as string | null) ?? null,
+    seniority: (raw.seniority as string | null) ?? null,
+    employment_type: (raw.employment_type as string | null) ?? null,
+    application_url: (raw.application_url as string | null) ?? null,
+    required_skills: (raw.required_skills as string[] | null) ?? null,
+    preferred_skills: (raw.preferred_skills as string[] | null) ?? null,
+    extracted_technologies: (raw.extracted_technologies as string[] | null) ?? null,
+    overall_score: (raw.overall_score as number | null) ?? (raw.score as number | null),
+    skill_match_score: (raw.skill_match_score as number | null) ?? null,
+    experience_match_score: (raw.experience_match_score as number | null) ?? null,
+    ats_score: (raw.ats_score as number | null) ?? null,
+    matched_skills: (raw.matched_skills as string[] | null) ?? null,
+    missing_skills: (raw.missing_skills as string[] | null) ?? null,
+    missing_keywords: (raw.missing_keywords as string[] | null) ?? null,
+    match_explanation: (raw.match_explanation as string | null) ?? null,
+    scorer: (raw.scorer as string | null) ?? null,
+    promoted_to_jobs: Boolean(raw.promoted_to_jobs),
+    scan_run_id: (raw.scan_run_id as string | null) ?? null,
+  });
+}
+
+function filterScannedJobs(
+  items: ScannedJobRecord[],
+  params: ListScannedJobsParams,
+): ScannedJobRecord[] {
+  const threshold = params.threshold ?? 75;
+  return items.filter((item) => {
+    if (params.minScore !== undefined && item.overallScore < params.minScore) return false;
+    if (params.maxScore !== undefined && item.overallScore > params.maxScore) return false;
+    if (params.source && item.source !== params.source) return false;
+    if (params.role && item.canonicalRole !== params.role) return false;
+    if (params.missingSkill && !item.missingSkills.includes(params.missingSkill)) return false;
+    if (params.belowThresholdOnly && item.overallScore > threshold) return false;
+    return true;
+  });
+}
+
+export async function listScannedJobs(
+  params: ListScannedJobsParams = {},
+): Promise<ScannedJobsPage> {
+  if (USE_SUPABASE) {
+    return getRepository().listScannedJobs(params);
+  }
+
+  const db = await loadDatabase();
+  const rawItems = (db as { scannedJobs?: Record<string, unknown>[] }).scannedJobs ?? [];
+  const allItems = rawItems.map(mapJsonScannedJob);
+  const filtered = filterScannedJobs(allItems, params);
+  const page = Math.max(1, params.page ?? 1);
+  const limit = Math.max(1, Math.min(params.limit ?? 25, 100));
+  const offset = (page - 1) * limit;
+
+  return {
+    items: filtered.slice(offset, offset + limit),
+    page,
+    limit,
+    total: filtered.length,
+  };
+}
+
+export async function getScanSummary(threshold = 75): Promise<ScanSummary> {
+  if (USE_SUPABASE) {
+    return getRepository().getScanSummary(threshold);
+  }
+
+  const db = await loadDatabase();
+  const rawItems = (db as { scannedJobs?: Record<string, unknown>[] }).scannedJobs ?? [];
+  const rows: ScanSummaryRow[] = rawItems.map((raw) => ({
+    overall_score: (raw.overall_score as number | null) ?? (raw.score as number | null),
+    score: (raw.score as number | null) ?? null,
+    source: (raw.source as string | null) ?? null,
+    scanned_at: String(raw.scanned_at ?? ''),
+    promoted_to_jobs: Boolean(raw.promoted_to_jobs),
+    missing_skills: (raw.missing_skills as string[] | null) ?? [],
+    scan_run_id: (raw.scan_run_id as string | null) ?? null,
+  }));
+  return buildScanSummary(rows, threshold);
 }

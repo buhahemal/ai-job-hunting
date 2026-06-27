@@ -26,12 +26,44 @@ class TestScannerDedupe(unittest.TestCase):
 
     def test_scanned_job_record(self):
         record = scanned_job_record(
-            {"id": "gh-1", "source": "Greenhouse", "url": "https://example.com/1"},
+            {
+                "id": "gh-1",
+                "source": "Greenhouse",
+                "url": "https://example.com/1",
+                "title": "Platform Engineer",
+                "company": "Acme",
+                "location": "Remote",
+                "remoteType": "Remote",
+                "canonicalRole": "Platform Engineer",
+                "primaryStack": "Kubernetes",
+                "seniority": "Senior",
+                "employmentType": "Full-time",
+                "applicationUrl": "https://example.com/1",
+                "requiredSkills": ["Kubernetes"],
+                "preferredSkills": ["Terraform"],
+                "extractedTechnologies": ["Kubernetes", "AWS"],
+                "matchInsights": {
+                    "overallScore": 42,
+                    "skillMatchScore": 40,
+                    "experienceMatchScore": 55,
+                    "atsScore": 35,
+                    "matchedSkills": ["Python"],
+                    "missingSkills": ["Kubernetes"],
+                    "missingKeywords": ["SRE"],
+                    "matchExplanation": "Weak fit",
+                    "scorer": "test",
+                },
+            },
             score=42,
+            promoted_to_jobs=False,
         )
         self.assertEqual(record["dedupe_key"], "https://example.com/1")
         self.assertEqual(record["job_id"], "gh-1")
         self.assertEqual(record["score"], 42)
+        self.assertEqual(record["overall_score"], 42)
+        self.assertEqual(record["title"], "Platform Engineer")
+        self.assertEqual(record["missing_skills"], ["Kubernetes"])
+        self.assertFalse(record["promoted_to_jobs"])
 
 
 if __name__ == "__main__":
