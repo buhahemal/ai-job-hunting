@@ -2,6 +2,8 @@
 
 Incremental delivery. **Never skip phases.** Each phase is production-ready before the next begins.
 
+**Tracker:** [docs/PROJECT-TRACKER.md](../docs/PROJECT-TRACKER.md) · **Wiki:** [GitHub Wiki](https://github.com/buhahemal/ai-job-hunting/wiki)
+
 | Phase | Focus                         | Status      | Spec                                |
 | ----: | ----------------------------- | ----------- | ----------------------------------- |
 |     1 | Research & Architecture       | done        | [phase-01.md](./phases/phase-01.md) |
@@ -12,9 +14,11 @@ Incremental delivery. **Never skip phases.** Each phase is production-ready befo
 |     6 | AI pipeline (Hugging Face)    | done        | [phase-06.md](./phases/phase-06.md) |
 |     7 | Resume engine (LaTeX → PDF)   | done        | [phase-07.md](./phases/phase-07.md) |
 |     8 | Dashboard backend             | in_progress | [phase-08.md](./phases/phase-08.md) |
-|     9 | Dashboard frontend            | pending     | [phase-09.md](./phases/phase-09.md) |
+|     9 | Dashboard frontend            | in_progress | [phase-09.md](./phases/phase-09.md) |
 |    10 | Learning engine + analytics   | pending     | [phase-10.md](./phases/phase-10.md) |
 |    11 | Production hardening          | pending     | [phase-11.md](./phases/phase-11.md) |
+
+**Progress:** 7 done · 2 in progress · 2 pending
 
 ## Dependency chain
 
@@ -23,9 +27,15 @@ P1 → P2 → P3 → P4 → P5 → P6 → P7
 P3 → P8 → P9 → P10 → P11
 ```
 
+## Active focus
+
+- **Phase 8:** Auth, OpenAPI, applications API, integration tests
+- **Phase 9:** Accessibility, E2E tests, resume versions UI
+
 ## Marking a phase complete
 
 1. Check all deliverables in `docs/phases/phase-XX-*/STATUS.md`
 2. Run full quality pipeline (`npm run quality`)
-3. Update phase table above and `docs/phases/README.md`
-4. Set next phase to `in_progress`
+3. Update phase table above, `docs/phases/README.md`, and `docs/PROJECT-TRACKER.md`
+4. Sync wiki: `bash scripts/sync_docs_to_wiki.sh`
+5. Set next phase to `in_progress`

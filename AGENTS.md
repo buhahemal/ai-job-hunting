@@ -19,4 +19,4 @@ Read `.ai/` before any implementation:
 - Duplicate code must stay **< 3%** (`npm run quality:duplicates`)
 - Full pipeline: `npm run quality && npm test`
 
-Human phase specs: [`docs/phases/README.md`](docs/phases/README.md)
+Human phase specs: [`docs/phases/README.md`](docs/phases/README.md) · [Project tracker](docs/PROJECT-TRACKER.md) · [Wiki](https://github.com/buhahemal/ai-job-hunting/wiki)

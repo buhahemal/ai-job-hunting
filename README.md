@@ -23,15 +23,23 @@ AI agents: read [`.ai/AGENTS.md`](.ai/AGENTS.md) first. Quality pipeline: `npm r
 
 ## Development phases
 
-Roadmap and completion tracking: [`docs/phases/README.md`](docs/phases/README.md)
+**Tracker:** [`docs/PROJECT-TRACKER.md`](docs/PROJECT-TRACKER.md) · **Phases:** [`docs/phases/README.md`](docs/phases/README.md) · **Wiki:** [GitHub Wiki](https://github.com/buhahemal/ai-job-hunting/wiki) _(enable in Settings → Features → Wikis, then run `bash scripts/sync_docs_to_wiki.sh`)_
 
-|                            Phase | Status  |
-| -------------------------------: | ------- |
-|        1 Research & Architecture | done    |
-| 2 Repository + CI/CD + Standards | done    |
-|            3 Database + Supabase | done    |
-|          4 Scanner SDK + sources | done    |
-|                             5–11 | pending |
+| Phase | Name                    | Status      |
+| ----: | ----------------------- | ----------- |
+|     1 | Research & Architecture | done        |
+|     2 | Foundation + CI/CD      | done        |
+|     3 | Database + Supabase     | done        |
+|     4 | Scanner SDK + sources   | done        |
+|     5 | Scanner expansion       | done        |
+|     6 | AI pipeline             | done        |
+|     7 | Resume engine           | done        |
+|     8 | Dashboard backend       | in progress |
+|     9 | Dashboard frontend      | in progress |
+|    10 | Learning + analytics    | pending     |
+|    11 | Production hardening    | pending     |
+
+**Progress:** 7 done · 2 in progress · 2 pending
 
 ## GitHub hosting model
 

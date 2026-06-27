@@ -50,7 +50,7 @@ npm test
 
 ## Phase status
 
-See [EXECUTION_PLAN.md](./EXECUTION_PLAN.md). Human phase specs: [`docs/phases/`](../docs/phases/README.md)
+See [EXECUTION_PLAN.md](./EXECUTION_PLAN.md). Human specs: [`docs/phases/`](../docs/phases/README.md) · [Tracker](../docs/PROJECT-TRACKER.md) · [Wiki](https://github.com/buhahemal/ai-job-hunting/wiki)
 
 ## Constraints for AI
 
