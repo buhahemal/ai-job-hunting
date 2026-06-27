@@ -17,6 +17,33 @@ DEFAULT_MAX_PASSES = 0
 DEFAULT_LIMIT_STEP = 50
 DEFAULT_MAX_LIMIT_PER_SOURCE = 2000
 DEFAULT_MAX_EVALUATIONS = 3000
+DEFAULT_SCAN_INSIGHT_BATCH_SIZE = 10
+
+
+class ScanInsightBuffer:
+    """Buffer scanned job insight rows and flush to the store in fixed-size batches."""
+
+    def __init__(self, store: JobStore, batch_size: int = DEFAULT_SCAN_INSIGHT_BATCH_SIZE):
+        self._store = store
+        self._batch_size = max(1, batch_size)
+        self._pending: List[Dict] = []
+
+    def append(self, record: Dict) -> None:
+        """Queue one insight row; flush automatically when the batch is full."""
+        self._pending.append(record)
+        if len(self._pending) >= self._batch_size:
+            self.flush()
+
+    def flush(self) -> None:
+        """Persist any queued insight rows."""
+        if not self._pending:
+            return
+        self._store.record_scanned_jobs(self._pending)
+        self._pending.clear()
+
+    @property
+    def pending_count(self) -> int:
+        return len(self._pending)
 
 
 class JobStore(Protocol):
@@ -130,7 +157,7 @@ class SupabaseJobStore:
     def record_scanned_jobs(self, records: List[Dict]) -> None:
         count = self._repo.record_scanned_jobs(records)
         if count:
-            print(f"[SupabaseJobStore] Recorded {count} scanned job key(s).")
+            print(f"[SupabaseJobStore] Recorded {count} scanned job insight(s).")
 
     def persist_new_jobs(self, jobs: List[Dict]) -> None:
         count = self._repo.upsert_jobs(jobs)
@@ -234,9 +261,22 @@ class ScannerEngine:
             return DEFAULT_MAX_EVALUATIONS
 
     @staticmethod
+    def scan_insight_batch_size() -> int:
+        """Number of scanned job rows to buffer before upserting."""
+        raw = os.environ.get(
+            "SCANNER_SCAN_INSIGHT_BATCH_SIZE",
+            str(DEFAULT_SCAN_INSIGHT_BATCH_SIZE),
+        )
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            return DEFAULT_SCAN_INSIGHT_BATCH_SIZE
+
+    @staticmethod
     def _evaluate_scraper_batch(
         scraper: BaseScanner,
         *,
+        scan_insights: ScanInsightBuffer,
         profile: Dict,
         threshold: int,
         target_jobs: int,
@@ -245,7 +285,6 @@ class ScannerEngine:
         evaluated_keys: set,
         existing_jobs: List[Dict],
         added_jobs: List[Dict],
-        new_scan_records: List[Dict],
         stats: Dict[str, int],
         matcher: Optional[AIMatcher] = None,
     ) -> Tuple[int, int]:
@@ -284,7 +323,7 @@ class ScannerEngine:
             )
             score = ScannerEngine._coerce_score({"score": enriched.get("score", 0)})
             promoted = not enriched.get("isDuplicate") and score > threshold
-            new_scan_records.append(
+            scan_insights.append(
                 scanned_job_record(
                     enriched,
                     score=score,
@@ -393,7 +432,10 @@ class ScannerEngine:
         evaluated_keys: set = set(scanned_at_start)
 
         added_jobs: List[Dict] = []
-        new_scan_records: List[Dict] = []
+        scan_insights = ScanInsightBuffer(
+            self.store,
+            batch_size=self.scan_insight_batch_size(),
+        )
         stats = {
             "evaluated": 0,
             "ignored_low_score": 0,
@@ -435,6 +477,7 @@ class ScannerEngine:
 
                 _accepted, batch_newly_evaluated = self._evaluate_scraper_batch(
                     scraper,
+                    scan_insights=scan_insights,
                     profile=profile,
                     threshold=threshold,
                     target_jobs=target_jobs,
@@ -443,7 +486,6 @@ class ScannerEngine:
                     evaluated_keys=evaluated_keys,
                     existing_jobs=saved_jobs + added_jobs,
                     added_jobs=added_jobs,
-                    new_scan_records=new_scan_records,
                     stats=stats,
                     matcher=self.ai_matcher,
                 )
@@ -468,8 +510,7 @@ class ScannerEngine:
             if current_limit < max_limit:
                 current_limit = min(current_limit + step, max_limit)
 
-        if new_scan_records:
-            self.store.record_scanned_jobs(new_scan_records)
+        scan_insights.flush()
 
         if added_jobs:
             self.store.persist_new_jobs(added_jobs)

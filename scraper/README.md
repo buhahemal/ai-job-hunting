@@ -44,20 +44,21 @@ Every evaluated job — including sub-threshold rejects — is persisted as a **
 
 ## Configuration
 
-| Variable                       | Required | Description                                               |
-| ------------------------------ | -------- | --------------------------------------------------------- |
-| `HF_HOME`                      | No       | Hugging Face model cache (default `~/.cache/huggingface`) |
-| `AI_SCORER`                    | No       | `embedding` (default), `gemini`, or `heuristic`           |
-| `GEMINI_API_KEY`               | No       | Optional Gemini fallback when embedding fails             |
-| `SCANNER_MIN_MATCH_SCORE`      | No       | Minimum match threshold (default `75`)                    |
-| `SCANNER_MIN_JOBS_PER_RUN`     | No       | Target jobs per scan (default `3`)                        |
-| `SCANNER_MAX_PASSES`           | No       | Pass safety cap; `0` = scan until exhausted (default `0`) |
-| `SCANNER_LIMIT_STEP`           | No       | Increase per-source fetch limit each pass (default `50`)  |
-| `SCANNER_MAX_LIMIT_PER_SOURCE` | No       | Cap jobs fetched per source per pass (default `2000`)     |
-| `SCANNER_MAX_EVALUATIONS`      | No       | Max unique jobs to score per run (default `3000`)         |
-| `HF_TOKEN`                     | No       | Optional Hugging Face token for faster model downloads    |
+| Variable                          | Required | Description                                               |
+| --------------------------------- | -------- | --------------------------------------------------------- |
+| `HF_HOME`                         | No       | Hugging Face model cache (default `~/.cache/huggingface`) |
+| `AI_SCORER`                       | No       | `embedding` (default), `gemini`, or `heuristic`           |
+| `GEMINI_API_KEY`                  | No       | Optional Gemini fallback when embedding fails             |
+| `SCANNER_MIN_MATCH_SCORE`         | No       | Minimum match threshold (default `75`)                    |
+| `SCANNER_MIN_JOBS_PER_RUN`        | No       | Target jobs per scan (default `3`)                        |
+| `SCANNER_MAX_PASSES`              | No       | Pass safety cap; `0` = scan until exhausted (default `0`) |
+| `SCANNER_LIMIT_STEP`              | No       | Increase per-source fetch limit each pass (default `50`)  |
+| `SCANNER_MAX_LIMIT_PER_SOURCE`    | No       | Cap jobs fetched per source per pass (default `2000`)     |
+| `SCANNER_MAX_EVALUATIONS`         | No       | Max unique jobs to score per run (default `3000`)         |
+| `SCANNER_SCAN_INSIGHT_BATCH_SIZE` | No       | Scan insight upsert batch size (default `10`)             |
+| `HF_TOKEN`                        | No       | Optional Hugging Face token for faster model downloads    |
 
-Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. Jobs already evaluated in prior runs are skipped via a persistent `scannedJobs[]` / `scannedJobKeys` registry (JSON) or `scanned_jobs` table (Supabase). Apply migration `0004_scanned_job_insights.sql` before using Scan Insights. GitHub Actions `scanner-cron` uses a **60-minute** timeout.
+Discovery keeps increasing fetch limits and re-scanning all sources until every unique job is scored, the target is met, or evaluation limits are hit. Evaluated jobs are upserted to `scanned_jobs` / `scannedJobs[]` in batches of 10 (configurable via `SCANNER_SCAN_INSIGHT_BATCH_SIZE`), with a final flush for any remainder, so Scan Insights updates during long runs without one row per network call. Jobs already evaluated in prior runs are skipped via a persistent `scannedJobs[]` / `scannedJobKeys` registry (JSON) or `scanned_jobs` table (Supabase). Apply migration `0004_scanned_job_insights.sql` before using Scan Insights. GitHub Actions `scanner-cron` uses a **60-minute** timeout.
 
 Paths: `packages/config/python/paths.py`
 

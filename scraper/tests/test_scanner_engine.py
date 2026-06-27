@@ -193,6 +193,42 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         self.assertEqual(scanned_jobs[0]["title"], "Role")
         self.assertFalse(scanned_jobs[0]["promoted_to_jobs"])
 
+    def test_persists_scan_insights_in_batches_of_ten(self):
+        """Scan insights flush every 10 rows, with a final flush for the remainder."""
+        write_counts: List[int] = []
+        original_record = self.store.record_scanned_jobs
+
+        def tracking_record(records):
+            write_counts.append(len(records))
+            return original_record(records)
+
+        self.store.record_scanned_jobs = tracking_record  # type: ignore[method-assign]
+
+        jobs = [
+            {
+                "id": f"job-{index}",
+                "title": f"Role {index}",
+                "company": "Acme",
+                "url": f"https://example.com/job-{index}",
+            }
+            for index in range(13)
+        ]
+        engine = self._engine([FakeScanner("SourceA", jobs)])
+        self._bind_enrich(
+            engine,
+            lambda job, profile: {
+                "score": 50,
+                "extractedSkills": [],
+                "seniority": "Mid-level",
+                "fitExplanation": "weak fit",
+            },
+        )
+
+        engine.run(min_match_score=75, min_jobs=3, limit_per_source=20)
+
+        self.assertEqual(write_counts, [10, 3])
+        self.assertEqual(len(self.store.get_scanned_keys()), 13)
+
     def test_multi_pass_increases_fetch_limit_until_target_met(self):
         jobs = [
             {
