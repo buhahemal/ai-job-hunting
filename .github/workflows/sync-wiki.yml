@@ -1,0 +1,44 @@
+name: Sync GitHub Wiki
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/wiki/**'
+      - 'docs/PROJECT-TRACKER.md'
+      - 'docs/phases/README.md'
+      - 'scripts/sync_docs_to_wiki.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Push wiki pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Sync docs/wiki to GitHub Wiki
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x scripts/sync_docs_to_wiki.sh
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          WIKI_DIR="${RUNNER_TEMP}/wiki"
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPO}.wiki.git" "$WIKI_DIR" || {
+            echo "::warning::Wiki not enabled or clone failed. Enable Wikis in repo Settings."
+            exit 0
+          }
+          cp docs/wiki/*.md "$WIKI_DIR/"
+          cd "$WIKI_DIR"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "Wiki already up to date."
+            exit 0
+          fi
+          git commit -m "docs: sync from ${GITHUB_SHA}"
+          git push origin master 2>/dev/null || git push origin main
