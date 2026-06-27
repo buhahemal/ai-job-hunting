@@ -178,9 +178,20 @@ def tailor_resume(job_id):
     if not target_job:
         return jsonify({"error": "Job description not found"}), 404
 
-    latex, cover_letter, ats_score = ai_matcher.tailor_resume_and_cover_letter(
-        target_job, repo.get_profile()
-    )
+    profile = repo.get_profile()
+    try:
+        from packages.resume_engine.python.generator import generate_tailored_resume, save_generated_artifacts
+
+        result = generate_tailored_resume(target_job)
+        save_generated_artifacts(result, target_job)
+        latex = result.latex
+        cover_letter = result.cover_letter
+        ats_score = result.ats_score
+    except Exception as exc:
+        print(f"[Server] Resume engine error, using matcher fallback: {exc}")
+        latex, cover_letter, ats_score = ai_matcher.tailor_resume_and_cover_letter(
+            target_job, profile
+        )
 
     updated = repo.update_job_tailored(
         job_id,

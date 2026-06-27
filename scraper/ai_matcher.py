@@ -1,11 +1,6 @@
-import json
-import time
 from typing import Dict, Tuple
 
-from google.genai import types
-
 from packages.ai_engine.python import heuristic_scorer
-from packages.ai_engine.python.gemini_scorer import get_client
 from packages.ai_engine.python.matcher import score_job as engine_score_job
 from packages.ai_engine.python.job_enricher import enrich_job as engine_enrich_job
 
@@ -32,93 +27,22 @@ class AIMatcher:
 
     def tailor_resume_and_cover_letter(self, job: Dict, profile: Dict) -> Tuple[str, str, int]:
         """
-        Generates customized LaTeX resume and plaintext cover letter for target jobs.
-        Computes dynamic ATS score comparing result against job specs.
+        Generate tailored LaTeX resume and cover letter for a target job.
+
+        Uses the JSON master → tailor → LaTeX pipeline. Master JSON is never modified.
         """
-        client = get_client()
-        master_latex = profile.get('masterResumeLaTeX', '')
-
-        if not client:
-            tailored_latex = master_latex.replace(
-                '\\section*{Target Roles}',
-                f'\\section*{{Target Roles - Tailored for {job.get("title")} at {job.get("company")}}}',
-            )
-            cover_letter = f"""Dear Hiring Team at {job.get('company')},
-
-I am writing to express my strong interest in the {job.get('title')} position. With my background in DevOps, Platform engineering, and AWS systems, I am confident I am a great fit.
-
-I look forward to discussing how my experience can add value to the engineering operations at {job.get('company')}.
-
-Sincerely,
-{profile.get('fullName', 'Hemal Buha')}"""
-            return tailored_latex, cover_letter, 75
-
-        resume_prompt = f"""You are a professional LaTeX Resume Optimizer.
-Tailor the master LaTeX resume specifically for the job description below.
-
-MASTER RESUME:
-{master_latex}
-
-TARGET JOB DESCRIPTION:
-Title: {job.get('title')}
-Company: {job.get('company')}
-Description: {job.get('description')}
-
-CRITICAL RULES:
-1. Remain factually accurate. Do NOT invent new jobs, roles, companies, or degrees.
-2. Rearrange technical skills to prioritize what this job description requests.
-3. Highlight relevant achievements in experience bullets matching required keywords.
-4. OUTPUT ONLY valid LaTeX. Start with \\documentclass and end with \\end{{document}}. No code-blocks, no introductory remarks.
-"""
-
-        cover_letter_prompt = f"""Write a highly compelling, professional 3-paragraph cover letter for:
-Candidate Name: {profile.get('fullName')}
-Target Role: {job.get('title')}
-Company: {job.get('company')}
-Job Description: {job.get('description')}
-
-Do not include any placeholders like [Company Name]. Write real text. Keep it professional.
-"""
+        from packages.resume_engine.python.generator import generate_tailored_resume
 
         try:
-            resume_res = client.models.generate_content(
-                model='gemini-3.5-flash',
-                contents=resume_prompt,
-            )
-            latex_out = (resume_res.text or '').replace('```latex', '').replace('```', '').strip()
-
-            cover_res = client.models.generate_content(
-                model='gemini-3.5-flash',
-                contents=cover_letter_prompt,
-            )
-            cover_out = cover_res.text or ''
-
-            ats_prompt = f"""Compare this tailored resume with the job description.
-Estimate an ATS match score (integer between 0 and 100).
-
-RESUME:
-{latex_out}
-
-JOB DESCRIPTION:
-{job.get('description')}
-"""
-            ats_schema = {
-                'type': 'OBJECT',
-                'properties': {'atsScore': {'type': 'INTEGER'}},
-                'required': ['atsScore'],
-            }
-
-            ats_res = client.models.generate_content(
-                model='gemini-3.5-flash',
-                contents=ats_prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type='application/json',
-                    response_schema=ats_schema,
-                ),
-            )
-            ats_score = json.loads(ats_res.text).get('atsScore', 85)
-            return latex_out, cover_out, ats_score
-
+            result = generate_tailored_resume(job)
+            return result.latex, result.cover_letter, result.ats_score
         except Exception as exc:
-            print(f'[AIMatcher] Error generating tailored files: {exc}')
-            return master_latex, 'Fallback cover letter', 70
+            print(f"[AIMatcher] Resume engine fallback error: {exc}")
+            master_latex = profile.get('masterResumeLaTeX') or ''
+            cover_letter = f"""Dear Hiring Team at {job.get('company')},
+
+I am writing to express my strong interest in the {job.get('title')} position.
+
+Sincerely,
+{profile.get('fullName', 'Candidate')}"""
+            return master_latex, cover_letter, 70

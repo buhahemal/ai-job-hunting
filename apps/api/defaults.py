@@ -8,9 +8,14 @@ from apps.api.paths import MASTER_RESUME_TEX, PROFILE_JSON
 
 
 def load_master_resume_latex() -> str:
-    """Load read-only master resume LaTeX from apps/api/data/master-resume.tex."""
-    with open(MASTER_RESUME_TEX, encoding="utf-8") as handle:
-        return handle.read()
+    """Render master resume LaTeX from apps/api/data/resume/master.json."""
+    try:
+        from packages.resume_engine.python.generator import render_master_latex
+
+        return render_master_latex()
+    except Exception:
+        with open(MASTER_RESUME_TEX, encoding="utf-8") as handle:
+            return handle.read()
 
 
 def load_profile_base() -> dict:
