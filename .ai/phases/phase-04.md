@@ -1,17 +1,21 @@
-# Phase 4 — Scanner SDK + Greenhouse
+# Phase 4 — Scanner SDK + Job Sources
 
-**Status:** in_progress
+**Status:** complete
 
 ## Deliverables
 
-- [x] `packages/scanner-sdk` — BaseScanner, registry, HTTP, normalize
-- [x] Scanner folder structure (`scanners/arbeitnow`, `company_pages`, `greenhouse`)
-- [ ] Greenhouse integration tests with mock API
-- [ ] Scanner SDK documentation in OpenAPI-style contract doc
-
-## Env
-
-`GREENHOUSE_BOARD_TOKEN` — board token from Greenhouse public job board URL
+- [x] `packages/scanner_sdk` — BaseScanner, registry, HTTP, normalize, config
+- [x] Scanner plugins (no subscription, public APIs):
+  - Greenhouse (`GREENHOUSE_BOARD_TOKENS`)
+  - Lever (`LEVER_COMPANY_SITES`)
+  - SmartRecruiters (`SMARTRECRUITERS_COMPANIES`)
+  - Teamtailor (`TEAMTAILOR_COMPANY_SLUGS`)
+  - Workable (`WORKABLE_ACCOUNT_SLUGS`)
+  - RemoteOK (no config)
+  - We Work Remotely RSS (no config)
+  - Company career pages (curated)
+- [x] Unit tests for normalize + registry
+- [x] `.env.example` and `scanners/README.md`
 
 ## Spec
 

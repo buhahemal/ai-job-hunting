@@ -2,38 +2,51 @@ import os
 from typing import Dict, List
 
 from packages.scanner_sdk.python.base import BaseScanner
-from packages.scanner_sdk.python.http import get_json, head_ok
+from packages.scanner_sdk.python.config import parse_env_list
+from packages.scanner_sdk.python.http import fetch_ok, get_json
 from packages.scanner_sdk.python.normalize import build_canonical_job, strip_html
 
 
 class GreenhouseScanner(BaseScanner):
-    """Greenhouse Job Board API scanner (requires GREENHOUSE_BOARD_TOKEN env)."""
+    """Greenhouse Job Board API (public boards — set GREENHOUSE_BOARD_TOKENS)."""
 
     @property
     def name(self) -> str:
         return 'Greenhouse'
 
-    def _board_token(self) -> str:
-        return os.environ.get('GREENHOUSE_BOARD_TOKEN', '').strip()
+    def _board_tokens(self) -> List[str]:
+        tokens = parse_env_list('GREENHOUSE_BOARD_TOKENS')
+        legacy = os.environ.get('GREENHOUSE_BOARD_TOKEN', '').strip()
+        if legacy and legacy not in tokens:
+            tokens.append(legacy)
+        return tokens
 
-    def _jobs_url(self) -> str:
-        return f'https://boards-api.greenhouse.io/v1/boards/{self._board_token()}/jobs'
+    def _jobs_url(self, token: str) -> str:
+        return f'https://boards-api.greenhouse.io/v1/boards/{token}/jobs'
 
     def discover_jobs(self, limit: int = 10) -> List[Dict]:
-        token = self._board_token()
-        if not token:
-            print('[GreenhouseScanner] GREENHOUSE_BOARD_TOKEN not set — skipping.')
+        tokens = self._board_tokens()
+        if not tokens:
+            print('[GreenhouseScanner] GREENHOUSE_BOARD_TOKENS not set — skipping.')
             return []
 
-        data = get_json(self._jobs_url())
-        if not data:
-            return []
-        return data.get('jobs', [])[:limit]
+        jobs: List[Dict] = []
+        per_board = max(1, limit // len(tokens))
+        for token in tokens:
+            data = get_json(self._jobs_url(token))
+            if not data:
+                continue
+            for raw in data.get('jobs', [])[:per_board]:
+                raw['_board_token'] = token
+                jobs.append(raw)
+            if len(jobs) >= limit:
+                break
+        return jobs[:limit]
 
     def normalize(self, raw_job: Dict) -> Dict:
         job_id = raw_job.get('id', 'unknown')
         location = raw_job.get('location', {}).get('name', 'Remote')
-        company_name = 'Unknown Company'
+        company_name = raw_job.get('_board_token', 'Unknown Company')
         if isinstance(raw_job.get('company'), dict):
             company_name = raw_job['company'].get('name', company_name)
 
@@ -49,7 +62,7 @@ class GreenhouseScanner(BaseScanner):
         )
 
     def health_check(self) -> bool:
-        token = self._board_token()
-        if not token:
+        tokens = self._board_tokens()
+        if not tokens:
             return True
-        return head_ok(self._jobs_url())
+        return fetch_ok(self._jobs_url(tokens[0]))

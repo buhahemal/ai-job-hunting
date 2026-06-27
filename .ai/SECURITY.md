@@ -13,11 +13,15 @@
 
 ## Secrets
 
-| Secret                   | Where                        | Never                 |
-| ------------------------ | ---------------------------- | --------------------- |
-| `SUPABASE_SERVICE_KEY`   | GitHub Actions, local `.env` | Frontend, commits     |
-| `SUPABASE_ANON_KEY`      | GitHub Pages build, frontend | Untrusted without RLS |
-| `GREENHOUSE_BOARD_TOKEN` | GitHub Actions env           | Commits               |
+| Secret                      | Where                        | Never                 |
+| --------------------------- | ---------------------------- | --------------------- |
+| `SUPABASE_SERVICE_KEY`      | GitHub Actions, local `.env` | Frontend, commits     |
+| `SUPABASE_ANON_KEY`         | GitHub Pages build, frontend | Untrusted without RLS |
+| `GREENHOUSE_BOARD_TOKENS`   | GitHub Actions env           | Commits               |
+| `LEVER_COMPANY_SITES`       | GitHub Actions env           | Commits               |
+| `SMARTRECRUITERS_COMPANIES` | GitHub Actions env           | Commits               |
+| `TEAMTAILOR_COMPANY_SLUGS`  | GitHub Actions env           | Commits               |
+| `WORKABLE_ACCOUNT_SLUGS`    | GitHub Actions env           | Commits               |
 
 Scan: Gitleaks on every PR.
 

@@ -9,12 +9,22 @@ from packages.scanner_sdk.python.base import BaseScanner
 
 def get_registered_scanners() -> List[BaseScanner]:
     """Return all scanner plugins available to the pipeline."""
-    from scanners.arbeitnow.scanner import ArbeitnowScanner
     from scanners.company_pages.scanner import CompanyPagesScanner
     from scanners.greenhouse.scanner import GreenhouseScanner
+    from scanners.lever.scanner import LeverScanner
+    from scanners.remoteok.scanner import RemoteOkScanner
+    from scanners.smartrecruiters.scanner import SmartRecruitersScanner
+    from scanners.teamtailor.scanner import TeamtailorScanner
+    from scanners.weworkremotely.scanner import WeWorkRemotelyScanner
+    from scanners.workable.scanner import WorkableScanner
 
     return [
-        ArbeitnowScanner(),
-        CompanyPagesScanner(),
         GreenhouseScanner(),
+        LeverScanner(),
+        SmartRecruitersScanner(),
+        TeamtailorScanner(),
+        WorkableScanner(),
+        RemoteOkScanner(),
+        WeWorkRemotelyScanner(),
+        CompanyPagesScanner(),
     ]

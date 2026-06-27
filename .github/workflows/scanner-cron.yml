@@ -41,6 +41,12 @@ jobs:
         env:
           PYTHONPATH: .
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GREENHOUSE_BOARD_TOKENS: ${{ secrets.GREENHOUSE_BOARD_TOKENS }}
+          GREENHOUSE_BOARD_TOKEN: ${{ secrets.GREENHOUSE_BOARD_TOKEN }}
+          LEVER_COMPANY_SITES: ${{ secrets.LEVER_COMPANY_SITES }}
+          SMARTRECRUITERS_COMPANIES: ${{ secrets.SMARTRECRUITERS_COMPANIES }}
+          TEAMTAILOR_COMPANY_SLUGS: ${{ secrets.TEAMTAILOR_COMPANY_SLUGS }}
+          WORKABLE_ACCOUNT_SLUGS: ${{ secrets.WORKABLE_ACCOUNT_SLUGS }}
         run: python3 -m scraper
 
       - name: Commit JSON updates (fallback mode only)

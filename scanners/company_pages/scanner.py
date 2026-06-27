@@ -27,7 +27,7 @@ class CompanyPagesScanner(BaseScanner):
 
     @property
     def name(self) -> str:
-        return 'Target Career Portals'
+        return 'Company Career Pages'
 
     def discover_jobs(self, limit: int = 5) -> List[Dict]:
         raw_leads: List[Dict] = []

@@ -13,7 +13,7 @@ packages/
   config/        Shared path configuration (TS + Python)
   database/      Supabase clients (TS + Python)
   scanner_sdk/   Scanner plugin SDK (Python)
-scanners/        Per-source plugins (arbeitnow, company_pages, greenhouse)
+scanners/        Per-source plugins (greenhouse, lever, remoteok, …)
 scraper/         Scan pipeline orchestration (GitHub Actions)
 supabase/        SQL migrations + RLS
 docs/            Architecture and phase planning
@@ -30,7 +30,8 @@ Roadmap and completion tracking: [`docs/phases/README.md`](docs/phases/README.md
 |        1 Research & Architecture | done    |
 | 2 Repository + CI/CD + Standards | done    |
 |            3 Database + Supabase | done    |
-|                             4–11 | pending |
+|          4 Scanner SDK + sources | done    |
+|                             5–11 | pending |
 
 ## GitHub hosting model
 

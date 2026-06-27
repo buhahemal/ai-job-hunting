@@ -16,7 +16,7 @@ class TestScraperEngine(unittest.TestCase):
 
     def test_scanner_names(self):
         self.assertEqual(self.arbeitnow.name, 'Arbeitnow')
-        self.assertEqual(self.portal.name, 'Target Career Portals')
+        self.assertEqual(self.portal.name, 'Company Career Pages')
 
     def test_company_pages_discovery_and_normalization(self):
         jobs = self.portal.discover_jobs(limit=2)
