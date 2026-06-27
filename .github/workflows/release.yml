@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+env:
+  HUSKY: 0
+  VITE_BASE_PATH: /${{ github.event.repository.name }}/
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,10 +21,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: npm
 
       - name: Build dashboard artifact
         run: |
-          npm install
+          npm ci
           npm run build --workspace=@ai-job-hunter/dashboard
 
       - name: Create GitHub Release

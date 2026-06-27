@@ -9,6 +9,11 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  HUSKY: 0
+  # Match GitHub Pages project-site URL (same as deploy-pages.yml)
+  VITE_BASE_PATH: /${{ github.event.repository.name }}/
+
 jobs:
   frontend:
     name: Frontend Quality Gates
@@ -20,30 +25,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Type check
-        working-directory: apps/dashboard
         run: npm run typecheck
 
       - name: ESLint
-        working-directory: apps/dashboard
         run: npm run lint
 
-      - name: Prettier check
-        working-directory: apps/dashboard
-        run: npm run format:check
+      - name: Prettier check (dashboard)
+        run: npm run format:check --workspace=@ai-job-hunter/dashboard
 
       - name: Unit tests
-        working-directory: apps/dashboard
         run: npm run test:coverage
 
-      - name: Build
-        working-directory: apps/dashboard
-        env:
-          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+      - name: Build (GitHub Pages)
         run: npm run build
 
   python:
@@ -139,9 +138,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: npm
 
-      - name: Install root dependencies
-        run: npm install
+      - name: Install dependencies
+        run: npm ci
+        env:
+          HUSKY: 0
 
       - name: Prettier check
         run: npm run format:check
