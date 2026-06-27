@@ -8,7 +8,7 @@ on:
       - 'apps/api/data/profile.json'
       - 'apps/api/data/resume/master.json'
       - 'apps/api/data/resume/template.tex'
-      - 'apps/api/data/master-resume.tex'
+      - 'apps/api/data/resume/master.tex'
       - 'apps/api/defaults.py'
       - 'scripts/sync_profile_to_supabase.py'
       - '.github/workflows/sync-profile.yml'

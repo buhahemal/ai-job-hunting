@@ -15,8 +15,8 @@ Incremental, production-ready delivery for **AI Job Hunter** — 100% free, GitH
 |     4 | Scanner SDK + Greenhouse              | done        | [phase-04-scanner-sdk-greenhouse](./phase-04-scanner-sdk-greenhouse/) |
 |     5 | Remaining Scanners (one by one)       | done        | [phase-05-scanners-expansion](./phase-05-scanners-expansion/)         |
 |     6 | AI Processing Pipeline (Hugging Face) | done        | [phase-06-ai-pipeline](./phase-06-ai-pipeline/)                       |
-|     7 | Resume Engine (LaTeX → PDF)           | in_progress | [phase-07-resume-engine](./phase-07-resume-engine/)                   |
-|     8 | Dashboard Backend                     | pending     | [phase-08-dashboard-backend](./phase-08-dashboard-backend/)           |
+|     7 | Resume Engine (LaTeX → PDF)           | done        | [phase-07-resume-engine](./phase-07-resume-engine/)                   |
+|     8 | Dashboard Backend                     | in_progress | [phase-08-dashboard-backend](./phase-08-dashboard-backend/)           |
 |     9 | Dashboard Frontend (GitHub Pages)     | pending     | [phase-09-dashboard-frontend](./phase-09-dashboard-frontend/)         |
 |    10 | Learning Engine + Analytics           | pending     | [phase-10-learning-analytics](./phase-10-learning-analytics/)         |
 |    11 | Performance, Security, Production     | pending     | [phase-11-production-hardening](./phase-11-production-hardening/)     |

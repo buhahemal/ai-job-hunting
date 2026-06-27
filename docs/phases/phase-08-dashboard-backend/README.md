@@ -1,5 +1,5 @@
 # Phase 8 — Dashboard Backend
 
-**Status:** pending
+**Status:** in_progress
 
 Track deliverables in [STATUS.md](./STATUS.md).

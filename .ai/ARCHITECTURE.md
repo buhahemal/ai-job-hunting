@@ -47,7 +47,7 @@ Registry: `get_registered_scanners()` in `packages/scanner-sdk/python/registry.p
 packages/scanner-sdk/   ✅ Phase 4
 packages/database/      ✅ Phase 3
 packages/ai-engine/     ✅ Phase 6
-packages/resume-engine/ Phase 7 (in progress)
+packages/resume_engine/ Phase 7 (done)
 packages/logger/        Phase 11
 packages/common/        As needed
 ```

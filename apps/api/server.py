@@ -178,11 +178,18 @@ def tailor_resume(job_id):
         return jsonify({"error": "Job description not found"}), 404
 
     profile = repo.get_profile()
+    published = None
     try:
-        from packages.resume_engine.python.generator import generate_tailored_resume, save_generated_artifacts
+        from packages.resume_engine.python.generator import generate_tailored_resume
+        from packages.resume_engine.python.publisher import publish_tailored_resume
 
         result = generate_tailored_resume(target_job)
-        save_generated_artifacts(result, target_job)
+        published = publish_tailored_resume(
+            result,
+            job_id=job_id,
+            job=target_job,
+            client=repo._client,
+        )
         latex = result.latex
         cover_letter = result.cover_letter
         ats_score = result.ats_score
@@ -199,7 +206,38 @@ def tailor_resume(job_id):
         ats_score=ats_score,
         status="Shortlisted",
     )
-    return jsonify({"success": True, "job": updated})
+    payload = {"success": True, "job": updated}
+    if published:
+        payload["resume"] = {
+            "version": published.version,
+            "pdfUrl": published.pdf_url,
+            "pdfCompiled": published.pdf_compiled,
+        }
+    return jsonify(payload)
+
+
+@app.route("/api/jobs/<string:job_id>/resumes", methods=["GET"])
+def list_job_resumes(job_id):
+    from packages.database.python.repositories.resumes import ResumeRepository
+
+    repo = get_repository()
+    if not repo.get_job(job_id):
+        return jsonify({"error": "Job not found"}), 404
+    resume_repo = ResumeRepository(repo._client)
+    rows = resume_repo.list_for_job(job_id)
+    return jsonify(
+        {
+            "items": [
+                {
+                    "version": row.get("version"),
+                    "pdfUrl": row.get("pdf_url"),
+                    "atsScore": row.get("ats_score"),
+                    "createdAt": row.get("created_at"),
+                }
+                for row in rows
+            ]
+        }
+    )
 
 @app.route("/api/jobs/<string:job_id>/save-tailored", methods=["POST"])
 def save_tailored(job_id):

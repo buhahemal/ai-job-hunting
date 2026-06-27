@@ -78,6 +78,57 @@ def _limit_bullets(experience: List[Dict[str, Any]], *, first_role_max: int = 6,
     return trimmed
 
 
+def _resume_text_corpus(resume: Dict[str, Any]) -> str:
+    """Flatten resume JSON into searchable lowercase text."""
+    parts: List[str] = [
+        resume.get('summary') or '',
+        resume.get('targetRole') or '',
+        ' '.join(resume.get('skills') or []),
+    ]
+    for group in resume.get('skillGroups') or []:
+        parts.append(' '.join(str(item) for item in (group.get('items') or [])))
+    for role in resume.get('experience') or []:
+        parts.append(role.get('techStack') or '')
+        for bullet in role.get('bullets') or []:
+            if isinstance(bullet, dict):
+                parts.append(f"{bullet.get('title', '')} {bullet.get('body', '')}")
+            else:
+                parts.append(str(bullet))
+    return ' '.join(part for part in parts if part).lower()
+
+
+def _missing_job_keywords(
+    resume: Dict[str, Any],
+    corpus: str,
+    priority_tokens: Set[str],
+    *,
+    limit: int = 30,
+) -> List[str]:
+    """
+    Return job keywords absent from the resume text, ordered by JD frequency.
+
+    Used to enrich the summary so ATS overlap improves without inventing experience.
+    """
+    resume_corpus = _resume_text_corpus(resume)
+    ranked = sorted(
+        priority_tokens,
+        key=lambda token: corpus.count(token),
+        reverse=True,
+    )
+    missing: List[str] = []
+    for token in ranked:
+        if len(token) < 3:
+            continue
+        if token in resume_corpus:
+            continue
+        if any(token in covered or covered in token for covered in _tokenize(resume_corpus)):
+            continue
+        missing.append(token)
+        if len(missing) >= limit:
+            break
+    return missing
+
+
 def _reorder_skill_groups(
     groups: List[Dict[str, Any]],
     corpus: str,
@@ -114,6 +165,13 @@ def tailor_resume_json(master: Dict[str, Any], job: Dict[str, Any]) -> Dict[str,
             f"{tailored['summary']} Targeting the {job_title} role at "
             f"{job.get('company') or 'the hiring company'} with emphasis on "
             f"matching platform, backend, and cloud engineering requirements."
+        )
+
+    missing_keywords = _missing_job_keywords(tailored, corpus, priority_tokens)
+    if missing_keywords and tailored.get('summary'):
+        keyword_phrase = ', '.join(missing_keywords)
+        tailored['summary'] = (
+            f"{tailored['summary']} Relevant focus areas include {keyword_phrase}."
         )
 
     tailored['skills'] = _reorder_strings(tailored.get('skills') or [], corpus, priority_tokens)

@@ -151,7 +151,7 @@ export default function App() {
   // 5. Tailor Resume/Cover Letter with AI
   const handleTailorJob = async (jobId: string) => {
     setTailoringId(jobId);
-    showNotif('Gemini AI is analyzing job keywords and rewriting LaTeX bullets...', 'info');
+    showNotif('Tailoring resume: reordering skills and bullets for this job...', 'info');
     try {
       const job = await api.tailorJob(jobId);
       setJobs((prev) => prev.map((j) => (j.id === jobId ? job : j)));
@@ -653,8 +653,9 @@ export default function App() {
                   </h3>
                   <p className="text-xs text-slate-500">
                     To tailor your resume, select a high-priority job lead from the **Job Leads**
-                    tab, and click **"Tailor Resume & Cover Letter"**. Gemini will automatically
-                    restructure your skills and projects dynamically based on the job requirements.
+                    tab, and click **"Tailor Resume & Cover Letter"**. The resume engine will
+                    reorder skills and projects to match the job requirements without changing your
+                    employment history.
                   </p>
                   <button
                     onClick={() => setActiveTab('dashboard')}
@@ -821,10 +822,9 @@ export default function App() {
                 </div>
 
                 <p className="text-xs text-slate-500">
-                  This LaTeX code constitutes your baseline resume. When Gemini optimizes your
-                  resume for any shortlisted target job, it rewrites this LaTeX code (re-emphasizing
-                  bullets, matching skill hierarchies) while keeping personal history facts strictly
-                  identical.
+                  This LaTeX code is rendered from your master resume JSON. When you tailor for a
+                  target job, the engine reorders bullets and skill emphasis while keeping personal
+                  history facts strictly identical.
                 </p>
 
                 <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -875,8 +875,7 @@ export default function App() {
             <form onSubmit={handleManualImport} className="p-5 flex-1 overflow-auto space-y-4">
               <p className="text-xs text-slate-500 leading-relaxed">
                 Found a job on LinkedIn, Indeed, or a corporate blog? Paste the requirements here.
-                Our Gemini AI recruiter will analyze the skills requirements and evaluate
-                suitability.
+                The AI matcher will analyze skills and score suitability.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

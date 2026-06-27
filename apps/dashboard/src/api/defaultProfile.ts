@@ -1,6 +1,6 @@
 import type { Profile } from '../types';
 import profileBase from '../../../api/data/profile.json';
-import masterResumeLaTeX from '../../../api/data/master-resume.tex?raw';
+import masterResumeLaTeX from '../../../api/data/resume/master.tex?raw';
 
 /** Offline/demo fallback only — not used when VITE_USE_SUPABASE=true. */
 export const DEFAULT_PROFILE: Profile = {

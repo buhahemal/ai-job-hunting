@@ -12,6 +12,14 @@ def _normalize(value: str) -> str:
 
 def _collect_resume_terms(resume: Dict[str, Any]) -> Set[str]:
     terms: Set[str] = set()
+    for chunk in (
+        resume.get('summary') or '',
+        resume.get('targetRole') or '',
+    ):
+        for token in re.split(r'[\s,;/|]+', chunk.lower()):
+            normalized = _normalize(token)
+            if len(normalized) > 1:
+                terms.add(normalized)
     for skill in resume.get('skills') or []:
         terms.add(_normalize(skill))
     for group in resume.get('skillGroups') or []:
