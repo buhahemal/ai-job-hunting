@@ -18,6 +18,8 @@
     "usepackage",
     "inputenc",
     "textbf",
+    "textit",
+    "multicolumn",
     "moderncv",
     "moderncvstyle",
     "moderncvcolor",
