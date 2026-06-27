@@ -7,8 +7,11 @@
     "dev:backend": "PYTHONPATH=. python3 backend/server.py",
     "dev:full": "VITE_USE_BACKEND=true npm run dev --prefix frontend",
     "build": "npm run build --prefix frontend",
+    "typecheck": "npm run typecheck --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "test": "npm run test --prefix frontend && PYTHONPATH=. python3 -m unittest discover -s scraper/tests",
+    "test:coverage": "npm run test:coverage --prefix frontend",
     "scan": "PYTHONPATH=. python3 -m scraper",
-    "test:scraper": "PYTHONPATH=. python3 -m unittest discover -s scraper/tests",
-    "lint": "npm run lint --prefix frontend"
+    "scanner:health": "PYTHONPATH=. python3 scripts/scanner_health.py"
   }
 }

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, UserCheck, Clock, CheckCircle, XCircle, FileText, ArrowRight, BookOpen, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Clock, CheckCircle, XCircle, BookOpen, Plus } from 'lucide-react';
 import { Job, Interview } from '../types';
 
 interface InterviewTrackerProps {

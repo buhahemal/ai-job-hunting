@@ -1,162 +1,333 @@
-# AI Job Hunter - Engineering Execution Plan & Project Rules
+# AI Job Hunter - Engineering Standards & Repository Guidelines
 
-## Project Rules
-This project must be developed incrementally. Every phase must be production-ready before moving to the next phase.
-The AI must never skip phases.
-The AI must not generate placeholder implementations.
+## Repository Principles
 
-Every feature must include:
-* Design
-* Implementation
-* Unit tests
-* Integration tests
-* Documentation
-* Code review
-* Performance review
-* Security review
+This repository follows strict engineering standards.
 
-A phase is considered complete only after all quality gates pass.
+Every change must be:
+
+* Production Ready
+* Fully Tested
+* Fully Typed
+* Fully Documented
+* Secure
+* Modular
+* Cost Optimized (₹0)
+* Open Source Friendly
+
+Never merge experimental or incomplete implementations.
 
 ---
 
 ## Development Phases
 
-### Phase 0 — Research & Architecture
-Deliverables:
-* Technical Design Document
-* Architecture Diagram
-* Database Schema
-* API Design
-* Folder Structure
-* Technology Decisions
-* Risk Analysis
-* Cost Analysis (₹0 only)
-* Dependency Analysis
-No implementation.
+Development is incremental. Every phase must be production-ready before moving to the next. Never skip phases.
+
+| Phase | Focus |
+|-------|-------|
+| 0 | Research & Architecture |
+| 1 | Foundation (monorepo, CI, tooling) |
+| 2 | Database (Supabase) |
+| 3 | Job Scanner Engine |
+| 4 | AI Processing |
+| 5 | Resume Engine |
+| 6 | Dashboard Backend |
+| 7 | Dashboard Frontend |
+| 8 | AI Learning Engine |
+| 9 | Production |
+
+See `PHASE0_ARCHITECTURE.md` and `PHASE1_FOUNDATION.md` for phase deliverables.
 
 ---
 
-### Phase 1 — Foundation
-Deliverables:
-* Repository setup
-* Monorepo structure
-* TypeScript
-* ESLint
-* Prettier
-* Husky
-* Commitlint
-* GitHub Actions
-* Docker
-* Environment management
-* Logging
-* Configuration system
-No business logic.
+## Current Repository Layout (Transitional)
+
+The repo is migrating toward the target monorepo layout. Current modules:
+
+```text
+frontend/          Dashboard (React + Vite) → GitHub Pages
+backend/           Local Flask API + data/data.json
+scraper/           Scheduled job scan pipeline → GitHub Actions
+docs/              Architecture, API, research
+.github/workflows/ CI, security, deployment, scanner cron
+```
+
+### Target Folder Structure
+
+```text
+apps/
+    dashboard/
+    api/
+
+packages/
+    scanner-sdk/
+    ai-engine/
+    resume-engine/
+    common/
+    database/
+    logger/
+    queue/
+    config/
+
+scanners/
+    greenhouse/
+    lever/
+    workday/
+    ashby/
+    company-pages/
+
+.github/
+    workflows/
+    ISSUE_TEMPLATE/
+    PULL_REQUEST_TEMPLATE.md
+
+docs/
+    architecture/
+    api/
+    research/
+
+scripts/
+tests/
+docker/
+supabase/
+.ai/
+```
 
 ---
 
-### Phase 2 — Database
-Design: Supabase
-Tables, Indexes, RLS, Policies, Migrations, Seed Data, ER Diagram, Database Tests.
+## General Coding Rules
+
+### Code Quality
+
+* TypeScript Strict Mode only
+* Never use `any`
+* Prefer interfaces over types when appropriate
+* Prefer composition over inheritance
+* Prefer dependency injection
+* Avoid global mutable state
+* Keep functions small (<50 lines where practical)
+* One responsibility per function
+* One responsibility per class
+
+### Naming
+
+| Kind | Good | Bad |
+|------|------|-----|
+| Variables | `userId`, `jobScanner` | `x`, `obj`, `temp2` |
+| Classes | `ResumeService`, `JobScanner` | — |
+| Interfaces | `IResumeGenerator`, `IJobScanner` | — |
+| Constants | `MAX_RETRY`, `DEFAULT_TIMEOUT` | — |
 
 ---
 
-### Phase 3 — Job Scanner Engine
-This is the highest priority.
-Implement:
-* Scanner SDK
-* Plugin architecture
-* Queue
-* Retry
-* Rate Limiter
-* Deduplication
-* Normalization
-* Caching
-* Scheduler
-Supported Sources: Greenhouse, Lever, Ashby, Workday, Company Career Pages, RemoteOK, Wellfound, etc.
-Every scanner should expose:
-* `discoverJobs()`
-* `normalize()`
-* `healthCheck()`
-Tests required.
+## Module Rules
+
+Every module must contain:
+
+```text
+README.md
+src/ or package root
+tests/
+CHANGELOG.md
+```
 
 ---
 
-### Phase 4 — AI Processing
-Build:
-* Job Parser
-* Skill Extractor
-* Salary Extractor
-* Resume Matcher
-* AI Score
-* Keyword Extraction
-* Semantic Similarity
-* Duplicate Detection
-* LLM abstraction layer
+## Function Rules
+
+Every public function must have:
+
+* Description
+* Parameters
+* Return Type
+* Example (where helpful)
+* Tests
 
 ---
 
-### Phase 5 — Resume Engine
-Master Resume -> LaTeX -> Generate -> PDF -> Store -> Version -> ATS Validation.
-Never modify the master resume.
+## Error Handling
+
+Never:
+
+```ts
+catch (e) {}
+```
+
+Always:
+
+* Log
+* Retry if recoverable
+* Wrap meaningful errors
+* Preserve stack traces
 
 ---
 
-### Phase 6 — Dashboard Backend
-REST APIs, Authentication, Caching, Search, Filtering, Pagination, Analytics.
+## Logging
+
+Every important action should log: Request ID, Job ID, Scanner, Duration, Status.
+
+Never log: Secrets, Tokens, Passwords.
 
 ---
 
-### Phase 7 — Dashboard Frontend
-Next.js / React, Dashboard, Jobs, Companies, Resume, Applications, Analytics, Responsive, Accessibility.
+## Configuration
+
+Never hardcode URLs, API keys, timeouts, or retry counts. Everything must come from configuration.
 
 ---
 
-### Phase 8 — AI Learning Engine
-Learn from: Applied, Rejected, Ignored, Interview, Offer. Update scoring automatically.
+## Security Rules
+
+Never commit: `.env`, secrets, private keys, tokens.
+
+Always: validate inputs, escape outputs, rate limit, sanitize HTML, use parameterized queries.
 
 ---
 
-### Phase 9 — Production
-Monitoring, Logging, Metrics, Performance, Backup, Documentation, Deployment.
+## Database Rules
+
+Every migration must be reversible, idempotent, and documented. Indexes and foreign keys required. Use transactions where needed.
 
 ---
 
-## AI Coding Rules
-* Behavior: Principal Engineer.
-* Never generate code before designing it.
-* Before implementing anything explain: Design, Trade-offs, Complexity, Security, Scalability.
-* Never create duplicate code.
-* Always prefer reusable abstractions.
-* Never hardcode values. Use dependency injection.
-* Every function must be documented.
-* Every public method must have tests.
-* Every API must have OpenAPI documentation.
+## AI Rules
+
+* Never hallucinate resume content
+* Never invent experience or fabricate projects
+* Only optimize wording
 
 ---
 
-## AI Review Rules
-Perform these reviews after every completed feature:
-* **Architecture Review**: SOLID, Clean Architecture, Modular Design, Separation of Concerns, Dependency Direction.
-* **Security Review**: OWASP, Secrets, Injection, SSRF, XSS, CSRF, Authentication, Authorization, Rate Limiting, Input Validation.
-* **Performance Review**: N+1, Memory, CPU, Parallelism, Indexes, Caching, Streaming, Pagination.
-* **Database Review**: Indexes, Normalization, Foreign Keys, Transactions, Deadlocks, Query Plans.
-* **AI Review**: Prompt Quality, Model Selection, Token Usage, Latency, Caching, Hallucination Risk.
-* **Code Quality Review**: Cyclomatic Complexity, Naming, Duplication, Maintainability, Readability, Documentation.
-* **Test Review**: Coverage, Edge Cases, Failure Cases, Retry Logic, Mocking, Integration.
-* **Cost Review**: Verify everything remains within ₹0 budget. Reject paid services. Prefer open-source alternatives.
+## Resume Rules
+
+Master Resume → Read Only → Generate → Store Version → PDF. Never overwrite master.
+
+---
+
+## Scanner Rules
+
+Every scanner implements:
+
+```text
+discoverJobs()
+normalize()
+healthCheck()
+validate()
+deduplicate()
+```
+
+Every scanner must be: independent, retryable, observable, testable.
+
+---
+
+## Testing Rules
+
+Required: Unit, Integration, Contract, Snapshot tests where applicable.
+
+Coverage target: **minimum 90%** (enforced incrementally in CI).
+
+---
+
+## Pull Request Rules
+
+Every PR must include: Purpose, Architecture Impact, Performance Impact, Security Impact, Testing, Screenshots (UI), Documentation.
+
+Use `.github/PULL_REQUEST_TEMPLATE.md`.
+
+---
+
+## Git Commit Rules
+
+Format: `type(scope): summary`
+
+Examples:
+
+```text
+feat(scanner): add greenhouse scanner
+fix(ai): improve resume scoring
+docs(api): update endpoints
+refactor(database): optimize indexes
+```
+
+---
+
+## Documentation Rules
+
+Every module requires: README, Architecture notes, Configuration, Example Usage, Known Limitations.
+
+---
+
+## GitHub Actions
+
+| Workflow | Purpose |
+|----------|---------|
+| `ci.yml` | Type check, lint, tests, build |
+| `codeql.yml` | GitHub CodeQL analysis |
+| `dependency-review.yml` | Dependency changes in PRs |
+| `secret-scan.yml` | Secret scanning (Gitleaks) |
+| `markdown.yml` | Markdown lint |
+| `docs.yml` | Documentation validation |
+| `scanner-health.yml` | Verify scanner plugins |
+| `nightly-tests.yml` | Full integration tests |
+| `docker.yml` | Docker build verification |
+| `release.yml` | Release automation |
+| `stale.yml` | Close stale issues |
+| `scanner-cron.yml` | Scheduled job discovery |
+| `deploy-pages.yml` | GitHub Pages deployment |
+
+Every pull request runs: type check, lint, tests, security scan, dependency review, markdown validation, build.
+
+---
+
+## Code Review Checklist
+
+Before merge verify: SOLID, DRY, KISS, Clean Architecture, no dead code, no duplication, no magic numbers, proper logging, proper error handling, performance reviewed, security reviewed, tests added, documentation updated.
+
+---
+
+## AI Self Review
+
+Before finishing any task answer:
+
+1. Is the implementation production ready?
+2. Can it be simplified?
+3. Is it modular?
+4. Is it scalable?
+5. Are there hidden edge cases?
+6. Are failures handled?
+7. Are retries implemented?
+8. Is the code reusable?
+9. Are tests sufficient?
+10. Does it increase operational cost?
+
+If any answer is **No**, revise before completion.
+
+---
+
+## AI Review Rules (Post-Feature)
+
+* **Architecture**: SOLID, Clean Architecture, modular design
+* **Security**: OWASP, injection, SSRF, XSS, CSRF, auth, rate limiting
+* **Performance**: N+1, memory, CPU, caching, pagination
+* **Database**: indexes, FKs, transactions, query plans
+* **AI**: prompt quality, token usage, latency, hallucination risk
+* **Cost**: verify ₹0 budget; prefer open-source alternatives
 
 ---
 
 ## Definition of Done
-A feature is complete only if:
-✓ Builds successfully
-✓ Tests pass
-✓ Lint passes
-✓ Type checking passes
-✓ Documentation updated
-✓ Architecture review passed
-✓ Security review passed
-✓ Performance review passed
-✓ Cost review passed
-✓ GitHub Actions pass
-Otherwise the feature is incomplete.
+
+A task is complete only when:
+
+✓ Builds successfully  
+✓ TypeScript passes (strict)  
+✓ ESLint passes  
+✓ Tests pass  
+✓ Coverage ≥ 90% (target; CI reports progress)  
+✓ Documentation updated  
+✓ Security review passed  
+✓ Performance review passed  
+✓ GitHub Actions pass  
+✓ No TODO comments remain  
+
+Otherwise the task is considered incomplete.

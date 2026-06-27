@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Briefcase, Calendar, BarChart2, User, FileText, Search, Filter, 
-  Plus, Play, CheckCircle, RefreshCw, ChevronRight, X, Sparkles, 
-  MapPin, DollarSign, Clock, FileCheck, HelpCircle, Save, Info, AlertTriangle, ArrowUpRight
+  Plus, RefreshCw, ChevronRight, X, Sparkles, 
+  MapPin, DollarSign, FileCheck, Save, Info, ArrowUpRight
 } from 'lucide-react';
 import * as api from './api/client';
 import { getProfileInitials } from './api/defaultProfile';
@@ -52,12 +52,6 @@ export default function App() {
     setTimeout(() => setNotif(null), 5000);
   };
 
-  // 1. Initial Load Sync
-  useEffect(() => {
-    fetchProfile();
-    fetchJobs();
-  }, []);
-
   const fetchProfile = async () => {
     try {
       const data = await api.getProfile();
@@ -77,6 +71,12 @@ export default function App() {
       console.error('Failed to fetch jobs', e);
     }
   };
+
+  // 1. Initial Load Sync
+  useEffect(() => {
+    void fetchProfile();
+    void fetchJobs();
+  }, []);
 
   // 2. Scan Careers Boards trigger
   const handleScan = async () => {
@@ -102,7 +102,7 @@ export default function App() {
         setSelectedJob(job);
       }
       showNotif(`Application status updated to ${status}.`, 'success');
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to update status.', 'error');
     }
   };
@@ -113,7 +113,7 @@ export default function App() {
       const job = await api.updateJobNotes(jobId, notes);
       setJobs(prev => prev.map(j => j.id === jobId ? job : j));
       showNotif('Notes saved successfully.', 'success');
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to save notes.', 'error');
     }
   };
@@ -146,7 +146,7 @@ export default function App() {
       setJobs(prev => prev.map(j => j.id === selectedJob.id ? job : j));
       setSelectedJob(job);
       showNotif('Tailored resume code modifications saved successfully.', 'success');
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to save tailored changes.', 'error');
     }
   };
@@ -166,7 +166,7 @@ export default function App() {
       setNewManualJob({ title: '', company: '', location: '', remoteType: 'Remote', url: '', description: '' });
       showNotif(`Job import complete. Ranked with Match Score of ${job.score}%.`, 'success');
       setSelectedJob(job);
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to manually import job.', 'error');
     }
   };
@@ -177,7 +177,7 @@ export default function App() {
       await api.addInterview(interviewData);
       await fetchJobs();
       showNotif('Upcoming interview round booked successfully!', 'success');
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to schedule interview.', 'error');
     }
   };
@@ -188,7 +188,7 @@ export default function App() {
       await api.updateInterviewStatus(id, status);
       await fetchJobs();
       showNotif(`Interview round status transitioned to ${status}.`, 'success');
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to save interview status.', 'error');
     }
   };
@@ -203,7 +203,7 @@ export default function App() {
       setProfile(saved);
       setProfileForm(saved);
       showNotif('Master Profile and scoring parameters updated successfully.', 'success');
-    } catch (e) {
+    } catch (_e) {
       showNotif('Failed to save profile.', 'error');
     } finally {
       setSavingProfile(false);
@@ -931,7 +931,10 @@ export default function App() {
                   <label className="text-[10px] font-bold text-slate-600 uppercase">Working Setting</label>
                   <select
                     value={newManualJob.remoteType}
-                    onChange={(e) => setNewManualJob({ ...newManualJob, remoteType: e.target.value as any })}
+                    onChange={(e) => setNewManualJob({
+                      ...newManualJob,
+                      remoteType: e.target.value as Job['remoteType'],
+                    })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   >
                     <option value="Remote">Remote</option>

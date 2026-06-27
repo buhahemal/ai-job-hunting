@@ -1,4 +1,4 @@
-name: Scheduled Job Scan & Score
+name: Scanner Cron
 
 on:
   schedule:

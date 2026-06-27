@@ -1,0 +1,30 @@
+name: Documentation Validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required documentation exists
+        run: |
+          required_files=(
+            README.md
+            AGENTS.md
+            docs/architecture/overview.md
+            frontend/README.md
+            backend/README.md
+            scraper/README.md
+          )
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Missing required doc: $file"
+              exit 1
+            fi
+          done
+          echo "All required documentation files present."

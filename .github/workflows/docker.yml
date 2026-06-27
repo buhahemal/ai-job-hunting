@@ -1,0 +1,27 @@
+name: Docker Build
+
+on:
+  pull_request:
+    paths:
+      - 'docker/**'
+      - 'backend/**'
+      - 'scraper/**'
+  push:
+    branches: [main]
+    paths:
+      - 'docker/**'
+      - 'backend/**'
+      - 'scraper/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: ai-job-hunter:latest

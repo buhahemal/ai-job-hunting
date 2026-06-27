@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, FileText, Code, Download, Printer, Award, AlertCircle } from 'lucide-react';
+import { Copy, Check, FileText, Code, Printer, Award, AlertCircle } from 'lucide-react';
 import { Job } from '../types';
 
 interface ResumePreviewProps {
@@ -23,7 +23,7 @@ export default function ResumePreview({ job, onSaveTailored, onApplyDirectly }: 
 
   const handleCopy = () => {
     const textToCopy = activeTab === 'resume' ? editedLaTeX : editedCoverLetter;
-    navigator.clipboard.writeText(textToCopy);
+    void navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -54,7 +54,7 @@ export default function ResumePreview({ job, onSaveTailored, onApplyDirectly }: 
     let itemsList: string[] = [];
 
     lines.forEach((line, index) => {
-      let cleanLine = line.trim();
+      const cleanLine = line.trim();
       if (!cleanLine || cleanLine.startsWith('%')) return;
 
       // Skip document wrapper setup commands

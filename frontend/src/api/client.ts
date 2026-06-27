@@ -11,8 +11,15 @@ import {
 async function backendFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: response.statusText }));
-    throw new Error(String((error as { error?: string }).error ?? 'Request failed'));
+    const errorBody: unknown = await response.json().catch(() => ({ error: response.statusText }));
+    const message =
+      typeof errorBody === 'object' &&
+      errorBody !== null &&
+      'error' in errorBody &&
+      typeof (errorBody as { error: unknown }).error === 'string'
+        ? (errorBody as { error: string }).error
+        : 'Request failed';
+    throw new Error(message);
   }
   return response.json() as Promise<T>;
 }

@@ -1,0 +1,35 @@
+name: Nightly Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  full-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Frontend tests
+        working-directory: frontend
+        run: |
+          npm install
+          npm run typecheck
+          npm run lint
+          npm run test:coverage
+          npm run build
+
+      - name: Python tests
+        run: |
+          pip install -r scraper/requirements.txt -r backend/requirements.txt
+          PYTHONPATH=. python3 -m unittest discover -s scraper/tests
+          PYTHONPATH=. python3 scripts/scanner_health.py

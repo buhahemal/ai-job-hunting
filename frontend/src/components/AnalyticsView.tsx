@@ -1,5 +1,4 @@
-import React from 'react';
-import { TrendingUp, BarChart2, Briefcase, CheckCircle, Clock, Globe, ArrowRight, Star } from 'lucide-react';
+import { TrendingUp, BarChart2, Briefcase, CheckCircle, Clock, Globe, Star } from 'lucide-react';
 import { Job, Interview } from '../types';
 
 interface AnalyticsViewProps {
@@ -14,7 +13,6 @@ export default function AnalyticsView({ jobs, interviews }: AnalyticsViewProps) 
   const applied = jobs.filter(j => j.status === 'Applied').length;
   const interviewing = jobs.filter(j => j.status === 'Interviewing').length;
   const offer = jobs.filter(j => j.status === 'Offer' || j.status === 'Accepted').length;
-  const rejected = jobs.filter(j => j.status === 'Rejected').length;
 
   const averageScore = Math.round(
     jobs.filter(j => j.score !== undefined).reduce((acc, curr) => acc + (curr.score || 0), 0) / 
