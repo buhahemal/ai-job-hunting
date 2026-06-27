@@ -1,0 +1,43 @@
+name: Scheduled Job Scan & Score
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger directly from GitHub actions tab
+
+jobs:
+  scan-and-score:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Important to push commits back to the repo
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Job Scraper Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npx tsx scripts/scraper.ts
+
+      - name: Commit & Push Updated Leads
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          if git diff --staged --quiet; then
+            echo "No new jobs fetched in this interval."
+          else
+            git commit -m "chore(data): automated daily job scan updates [skip ci]"
+            git push
+          fi
