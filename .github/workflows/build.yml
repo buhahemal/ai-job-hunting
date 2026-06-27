@@ -11,6 +11,6 @@ jobs:
       HUSKY: 0
       VITE_BASE_PATH: /${{ github.event.repository.name }}/
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node
       - run: npm run build
