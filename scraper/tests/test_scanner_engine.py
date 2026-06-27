@@ -188,6 +188,50 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         self.assertEqual(added, [])
         mock_persist.assert_not_called()
 
+    @patch.object(JsonJobStore, "get_profile")
+    @patch.object(JsonJobStore, "get_dedupe_indexes", return_value=(set(), set()))
+    @patch.object(JsonJobStore, "persist_new_jobs")
+    def test_multi_pass_increases_fetch_limit_until_target_met(
+        self, mock_persist, _mock_dedupe, mock_profile
+    ):
+        mock_profile.return_value = self.profile
+        jobs = [
+            {
+                "id": f"low-{index}",
+                "title": f"Junior Role {index}",
+                "company": "Acme",
+                "url": f"https://example.com/low-{index}",
+            }
+            for index in range(3)
+        ] + [
+            {
+                "id": f"high-{index}",
+                "title": f"Senior Platform Engineer {index}",
+                "company": "Acme",
+                "url": f"https://example.com/high-{index}",
+            }
+            for index in range(3)
+        ]
+        scanners = [FakeScanner("SourceA", jobs)]
+        engine = self._engine(scanners)
+
+        def fake_score(job, profile):
+            score = 90 if job["id"].startswith("high-") else 50
+            return {
+                "score": score,
+                "extractedSkills": [],
+                "seniority": "Senior",
+                "fitExplanation": "test",
+            }
+
+        engine.ai_matcher.score_job = fake_score  # type: ignore[method-assign]
+
+        added = engine.run(min_match_score=75, min_jobs=3, limit_per_source=2)
+
+        self.assertEqual(len(added), 3)
+        self.assertTrue(all(job["score"] > 75 for job in added))
+        mock_persist.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

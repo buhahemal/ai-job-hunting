@@ -12,7 +12,11 @@ from packages.scanner_sdk.python.registry import get_registered_scanners
 DB_FILE = DATA_FILE
 DEFAULT_MIN_MATCH_SCORE = 75
 DEFAULT_MIN_JOBS_PER_RUN = 3
-DEFAULT_LIMIT_PER_SOURCE = 10
+DEFAULT_LIMIT_PER_SOURCE = 15
+DEFAULT_MAX_PASSES = 5
+DEFAULT_LIMIT_STEP = 20
+DEFAULT_MAX_LIMIT_PER_SOURCE = 100
+DEFAULT_MAX_EVALUATIONS = 500
 
 
 class JobStore(Protocol):
@@ -139,21 +143,125 @@ class ScannerEngine:
             return DEFAULT_MIN_JOBS_PER_RUN
 
     @staticmethod
-    def _coerce_score(analysis: Dict) -> int:
-        score = analysis.get("score")
-        if isinstance(score, (int, float)):
-            return int(score)
-        if isinstance(score, str):
-            try:
-                return int(float(score.strip().rstrip("%")))
-            except ValueError:
-                return 0
-        return 0
+    def max_passes() -> int:
+        """Maximum discovery passes across all sources before giving up."""
+        raw = os.environ.get("SCANNER_MAX_PASSES", str(DEFAULT_MAX_PASSES))
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            return DEFAULT_MAX_PASSES
+
+    @staticmethod
+    def limit_step() -> int:
+        """Increase per-source fetch limit by this amount each pass."""
+        raw = os.environ.get("SCANNER_LIMIT_STEP", str(DEFAULT_LIMIT_STEP))
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            return DEFAULT_LIMIT_STEP
+
+    @staticmethod
+    def max_limit_per_source() -> int:
+        """Cap per-source job fetch size during aggressive discovery."""
+        raw = os.environ.get("SCANNER_MAX_LIMIT_PER_SOURCE", str(DEFAULT_MAX_LIMIT_PER_SOURCE))
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            return DEFAULT_MAX_LIMIT_PER_SOURCE
+
+    @staticmethod
+    def max_evaluations() -> int:
+        """Maximum number of unique jobs to score in one run."""
+        raw = os.environ.get("SCANNER_MAX_EVALUATIONS", str(DEFAULT_MAX_EVALUATIONS))
+        try:
+            return max(1, int(raw))
+        except ValueError:
+            return DEFAULT_MAX_EVALUATIONS
+
+    @staticmethod
+    def _job_dedupe_key(canonical: Dict) -> str:
+        url = (canonical.get("url") or "").strip()
+        if url:
+            return url
+        return f"{canonical.get('title')}-{canonical.get('company')}".lower()
+
+    @staticmethod
+    def _evaluate_scraper_batch(
+        scraper: BaseScanner,
+        *,
+        profile: Dict,
+        threshold: int,
+        target_jobs: int,
+        limit: int,
+        existing_urls: set,
+        existing_signatures: set,
+        evaluated_keys: set,
+        added_jobs: List[Dict],
+        stats: Dict[str, int],
+        matcher: Optional[AIMatcher] = None,
+    ) -> int:
+        """Score jobs from one scanner batch. Returns count accepted in this batch."""
+        if not scraper.health_check():
+            print(f"[ScannerEngine] Health Check failed for {scraper.name}. Skipping.")
+            return 0
+
+        print(f"[ScannerEngine] Invoking: {scraper.name} (fetch up to {limit} jobs)...")
+        raw_jobs = scraper.discover_jobs(limit=limit)
+        accepted = 0
+
+        for raw_job in raw_jobs:
+            if len(added_jobs) >= target_jobs:
+                break
+            if stats["evaluated"] >= ScannerEngine.max_evaluations():
+                print("[ScannerEngine] Evaluation budget reached for this run.")
+                break
+
+            canonical = scraper.normalize(raw_job)
+            signature = f"{canonical.get('title')}-{canonical.get('company')}".lower()
+            dedupe_key = ScannerEngine._job_dedupe_key(canonical)
+
+            if dedupe_key in evaluated_keys:
+                stats["skipped_repeat"] += 1
+                continue
+            if canonical.get("url") in existing_urls or signature in existing_signatures:
+                stats["skipped_known"] += 1
+                continue
+
+            evaluated_keys.add(dedupe_key)
+            stats["evaluated"] += 1
+            score = ScannerEngine._apply_match_analysis_static(canonical, profile, matcher)
+
+            if score <= threshold:
+                stats["ignored_low_score"] += 1
+                print(
+                    f"[ScannerEngine] Ignored (match {score}% <= {threshold}%): "
+                    f"{canonical.get('title')} at {canonical.get('company')}"
+                )
+                continue
+
+            print(
+                f"[ScannerEngine] Accepted (match {score}%): "
+                f"{canonical.get('title')} at {canonical.get('company')}"
+            )
+            added_jobs.append(canonical)
+            existing_urls.add(canonical.get("url"))
+            existing_signatures.add(signature)
+            accepted += 1
+
+        return accepted
 
     def _apply_match_analysis(self, canonical: Dict, profile: Dict) -> int:
         """Score a job and attach match metadata. Returns numeric match score."""
-        analysis = self.ai_matcher.score_job(canonical, profile)
-        score = self._coerce_score(analysis)
+        return self._apply_match_analysis_static(canonical, profile, self.ai_matcher)
+
+    @staticmethod
+    def _apply_match_analysis_static(
+        canonical: Dict, profile: Dict, matcher: Optional[AIMatcher] = None
+    ) -> int:
+        """Score a job using the provided matcher (or a fresh one for tests)."""
+        ai = matcher or AIMatcher()
+        analysis = ai.score_job(canonical, profile)
+        score = ScannerEngine._coerce_score(analysis)
         canonical.update(
             {
                 "score": score,
@@ -167,30 +275,85 @@ class ScannerEngine:
         )
         return score
 
+    @staticmethod
+    def _coerce_score(analysis: Dict) -> int:
+        score = analysis.get("score")
+        if isinstance(score, (int, float)):
+            return int(score)
+        if isinstance(score, str):
+            try:
+                return int(float(score.strip().rstrip("%")))
+            except ValueError:
+                return 0
+        return 0
+
     def run(
         self,
         limit_per_source: int = DEFAULT_LIMIT_PER_SOURCE,
         min_match_score: Optional[int] = None,
         min_jobs: Optional[int] = None,
     ) -> List[Dict]:
-        """Run pipeline across scanners until enough high-match jobs are found."""
+        """Run pipeline across scanners with multi-pass discovery until target is met."""
         threshold = self.min_match_score() if min_match_score is None else min_match_score
         target_jobs = self.min_jobs_per_run() if min_jobs is None else max(1, min_jobs)
+        max_passes = self.max_passes()
+        max_limit = self.max_limit_per_source()
+        step = self.limit_step()
 
         print("=== AI Job Hunter: Starting Automated Scraper Pipeline ===")
         print(
             f"[ScannerEngine] Match policy: score must exceed {threshold}% "
             f"(target {target_jobs} job(s) per scan)."
         )
+        print(
+            f"[ScannerEngine] Discovery: up to {max_passes} pass(es), "
+            f"limit {limit_per_source}→{max_limit} (+{step}/pass), "
+            f"max {self.max_evaluations()} evaluations."
+        )
 
         profile = self.store.get_profile()
         existing_urls, existing_signatures = self.store.get_dedupe_indexes()
 
         added_jobs: List[Dict] = []
-        evaluated_count = 0
-        ignored_low_score = 0
+        evaluated_keys: set = set()
+        stats = {
+            "evaluated": 0,
+            "ignored_low_score": 0,
+            "skipped_repeat": 0,
+            "skipped_known": 0,
+        }
 
-        for scraper in self.scrapers:
+        current_limit = min(limit_per_source, max_limit)
+        pass_num = 0
+
+        while len(added_jobs) < target_jobs and pass_num < max_passes:
+            pass_num += 1
+            pass_accepted = 0
+            print(
+                f"[ScannerEngine] --- Discovery pass {pass_num}/{max_passes} "
+                f"(fetch up to {current_limit} jobs per source) ---"
+            )
+
+            for scraper in self.scrapers:
+                if len(added_jobs) >= target_jobs:
+                    break
+                if stats["evaluated"] >= self.max_evaluations():
+                    break
+
+                pass_accepted += self._evaluate_scraper_batch(
+                    scraper,
+                    profile=profile,
+                    threshold=threshold,
+                    target_jobs=target_jobs,
+                    limit=current_limit,
+                    existing_urls=existing_urls,
+                    existing_signatures=existing_signatures,
+                    evaluated_keys=evaluated_keys,
+                    added_jobs=added_jobs,
+                    stats=stats,
+                    matcher=self.ai_matcher,
+                )
+
             if len(added_jobs) >= target_jobs:
                 print(
                     f"[ScannerEngine] Reached target of {target_jobs} qualifying job(s). "
@@ -198,52 +361,37 @@ class ScannerEngine:
                 )
                 break
 
-            print(f"[ScannerEngine] Invoking: {scraper.name} scraper...")
+            if stats["evaluated"] >= self.max_evaluations():
+                print("[ScannerEngine] Evaluation budget exhausted; stopping discovery.")
+                break
 
-            if not scraper.health_check():
-                print(f"[ScannerEngine] Health Check failed for {scraper.name}. Skipping.")
-                continue
+            if pass_num >= max_passes:
+                break
 
-            raw_jobs = scraper.discover_jobs(limit=limit_per_source)
-            for raw_job in raw_jobs:
-                if len(added_jobs) >= target_jobs:
-                    break
-
-                canonical = scraper.normalize(raw_job)
-                signature = f"{canonical.get('title')}-{canonical.get('company')}".lower()
-                if canonical.get("url") in existing_urls or signature in existing_signatures:
-                    continue
-
-                evaluated_count += 1
-                score = self._apply_match_analysis(canonical, profile)
-
-                if score <= threshold:
-                    ignored_low_score += 1
-                    print(
-                        f"[ScannerEngine] Ignored (match {score}% <= {threshold}%): "
-                        f"{canonical.get('title')} at {canonical.get('company')}"
-                    )
-                    continue
-
+            next_limit = min(current_limit + step, max_limit)
+            if next_limit == current_limit and pass_accepted == 0:
                 print(
-                    f"[ScannerEngine] Accepted (match {score}%): "
-                    f"{canonical.get('title')} at {canonical.get('company')}"
+                    "[ScannerEngine] No new candidates at max per-source limit; "
+                    "ending discovery early."
                 )
-                added_jobs.append(canonical)
-                existing_urls.add(canonical.get("url"))
-                existing_signatures.add(signature)
+                break
+
+            current_limit = next_limit
 
         if added_jobs:
             self.store.persist_new_jobs(added_jobs)
             target = "Supabase" if isinstance(self.store, SupabaseJobStore) else "data.json"
             print(
                 f"[ScannerEngine] Sync complete! Registered {len(added_jobs)} job(s) "
-                f"with match score above {threshold}% in {target}."
+                f"with match score above {threshold}% in {target} "
+                f"({pass_num} pass(es), {stats['evaluated']} evaluated)."
             )
         else:
             print(
                 f"[ScannerEngine] Sync complete! No jobs exceeded the {threshold}% match threshold "
-                f"in this cycle (evaluated {evaluated_count}, ignored {ignored_low_score})."
+                f"after {pass_num} pass(es) "
+                f"(evaluated {stats['evaluated']}, ignored {stats['ignored_low_score']}, "
+                f"skipped known {stats['skipped_known']}, skipped repeat {stats['skipped_repeat']})."
             )
 
         if len(added_jobs) < target_jobs:
