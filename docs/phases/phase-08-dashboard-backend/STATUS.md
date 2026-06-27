@@ -1,0 +1,36 @@
+# Phase 8 — Dashboard Backend
+
+```yaml
+status: pending
+started:
+completed:
+```
+
+## Deliverables
+
+- [ ] `apps/api/` or evolve `backend/` → Supabase-backed REST layer
+- [ ] Read jobs, resumes, applications from Supabase (not static JSON)
+- [ ] Profile CRUD, job status updates, interview tracking
+- [ ] Search, filter, pagination
+- [ ] Optional: Supabase Edge Functions for serverless API (still free tier)
+- [ ] OpenAPI documentation in `docs/api/`
+- [ ] Auth (Supabase Auth — free tier) for personal dashboard
+- [ ] Rate limiting on mutations
+
+## Hosting note
+
+Primary UI reads Supabase directly from GitHub Pages (anon key + RLS). Backend API is optional for complex operations or local dev.
+
+## Rules
+
+- No Flask+json file as production datastore (Phase 3 replaces it)
+- Validate all inputs; parameterized queries only
+
+## Quality gate
+
+- [ ] API integration tests against Supabase local or test project
+- [ ] OpenAPI spec published
+
+## Next phase
+
+→ [Phase 9: Dashboard Frontend](../phase-09-dashboard-frontend/)

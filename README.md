@@ -8,7 +8,20 @@ Monorepo for a GitHub-hosted job hunting dashboard: React frontend on GitHub Pag
 frontend/   React + Vite dashboard (GitHub Pages)
 backend/    Local Flask API + data/data.json (source of truth for scraped jobs)
 scraper/    Scheduled job scan pipeline (GitHub Actions)
+docs/       Architecture and phase planning
 ```
+
+## Development phases
+
+Roadmap and completion tracking: [`docs/phases/README.md`](docs/phases/README.md)
+
+| Phase | Status |
+|------:|--------|
+| 0 Research & Architecture | done |
+| 1 Foundation | in_progress |
+| 2–9 | pending |
+
+Mark a phase complete in its folder `STATUS.md` and update the index.
 
 ## GitHub hosting model
 
@@ -16,7 +29,7 @@ scraper/    Scheduled job scan pipeline (GitHub Actions)
 |-----------|------|-------------|
 | Frontend | GitHub Pages | `deploy-pages.yml` builds `frontend/` on every push to `main` |
 | Data | GitHub repo | `backend/data/data.json` updated by the scraper workflow |
-| Scraper | GitHub Actions | `job-scan.yml` runs daily (and on manual dispatch) |
+| Scraper | GitHub Actions | `scanner-cron.yml` runs daily (and on manual dispatch) |
 | Backend API | Local only | Optional Flask server for full AI scan/tailor during development |
 
 On GitHub Pages, the app loads `data/data.json` and stores your edits (profile, statuses, notes) in browser `localStorage`. New jobs arrive when the scraper workflow commits updates.
@@ -68,7 +81,7 @@ PYTHONPATH=. python3 -m unittest discover -s scraper/tests
 2. **Secrets** (optional): Add `GEMINI_API_KEY` for AI scoring in the scraper workflow
 3. **Workflows**:
    - `Deploy Frontend to GitHub Pages` — publishes the dashboard
-   - `Scheduled Job Scan & Score` — fetches and scores new jobs
+   - `Scanner Cron` — fetches and scores new jobs
 
 ## Live URL
 

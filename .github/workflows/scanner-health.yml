@@ -1,10 +1,6 @@
 name: Scanner Health
 
 on:
-  pull_request:
-    paths:
-      - 'scraper/**'
-      - 'scripts/scanner_health.py'
   workflow_dispatch:
   schedule:
     - cron: '0 */6 * * *'

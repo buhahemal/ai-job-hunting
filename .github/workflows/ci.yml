@@ -83,3 +83,54 @@ jobs:
           file: docker/Dockerfile
           push: false
           tags: ai-job-hunter:ci
+
+  docs:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required documentation exists
+        run: |
+          required_files=(
+            README.md
+            AGENTS.md
+            docs/architecture/overview.md
+            docs/phases/README.md
+            docs/phases/RULES.md
+            frontend/README.md
+            backend/README.md
+            scraper/README.md
+          )
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Missing required doc: $file"
+              exit 1
+            fi
+          done
+          echo "All required documentation files present."
+
+  markdown:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          config: .markdownlint.json
+
+  secrets:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
