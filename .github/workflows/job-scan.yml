@@ -16,18 +16,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 24
+          python-version: '3.11'
 
-      - name: Install Dependencies
-        run: npm ci || npm install
+      - name: Install Python Dependencies
+        run: pip install requests google-genai
 
       - name: Run Job Scraper Pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: npx tsx scripts/scraper.ts
+        run: python3 scripts/scraper.py
 
       - name: Commit & Push Updated Leads
         run: |
