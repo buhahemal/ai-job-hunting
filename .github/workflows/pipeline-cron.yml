@@ -1,4 +1,4 @@
-name: Scanner Cron
+name: Pipeline Cron
 
 on:
   schedule:
@@ -41,7 +41,11 @@ jobs:
       - name: Scanner preflight (imports + plugin health)
         env:
           PYTHONPATH: .
-        run: python3 scripts/scanner_health.py
+        run: |
+          START=$(date +%s)
+          python3 scripts/scanner_health.py
+          END=$(date +%s)
+          echo "Preflight elapsed: $((END - START))s"
 
       - name: Configure Supabase storage backend
         run: |
@@ -56,16 +60,30 @@ jobs:
           PYTHONPATH: .
           HF_HOME: ~/.cache/huggingface
           TRANSFORMERS_OFFLINE: '0'
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AI_SCORER: embedding
           GREENHOUSE_BOARD_TOKENS: ${{ secrets.GREENHOUSE_BOARD_TOKENS }}
           GREENHOUSE_BOARD_TOKEN: ${{ secrets.GREENHOUSE_BOARD_TOKEN }}
           LEVER_COMPANY_SITES: ${{ secrets.LEVER_COMPANY_SITES }}
           SMARTRECRUITERS_COMPANIES: ${{ secrets.SMARTRECRUITERS_COMPANIES }}
           TEAMTAILOR_COMPANY_SLUGS: ${{ secrets.TEAMTAILOR_COMPANY_SLUGS }}
           WORKABLE_ACCOUNT_SLUGS: ${{ secrets.WORKABLE_ACCOUNT_SLUGS }}
+          ASHBY_JOB_BOARD_SLUGS: ${{ secrets.ASHBY_JOB_BOARD_SLUGS }}
+          WORKDAY_CAREER_SITES: ${{ secrets.WORKDAY_CAREER_SITES }}
+          WELLFOUND_SEARCH_PATHS: ${{ secrets.WELLFOUND_SEARCH_PATHS }}
           SCANNER_MAX_PASSES: '0'
           SCANNER_LIMIT_STEP: '50'
           SCANNER_MAX_LIMIT_PER_SOURCE: '2000'
           SCANNER_MAX_EVALUATIONS: '3000'
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python3 -m scraper
+        run: |
+          START=$(date +%s)
+          python3 -m scraper
+          END=$(date +%s)
+          ELAPSED=$((END - START))
+          echo "Pipeline elapsed: ${ELAPSED}s"
+          echo "PIPELINE_ELAPSED_SECONDS=${ELAPSED}" >> "$GITHUB_ENV"
+
+      - name: Report pipeline timing
+        run: |
+          echo "Total pipeline step elapsed: ${PIPELINE_ELAPSED_SECONDS:-unknown}s"
+          echo "Quality gate: preflight + scoring should stay under 900s (15 min) when sources are configured."

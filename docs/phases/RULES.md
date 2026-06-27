@@ -83,7 +83,7 @@ A phase is **done** only when:
 | ------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **CI**       | `ci.yml`                                                              | Parallel jobs: frontend, python, docker, docs, markdown, secrets |
 | **Security** | `codeql.yml`, `dependency-review.yml`                                 | PR security                                                      |
-| **Pipeline** | `scanner-cron.yml` (rename to `pipeline-cron.yml` in Phase 6)         | Scheduled ingest + HF AI on runner                               |
+| **Pipeline** | `pipeline-cron.yml`                                                   | Scheduled ingest + HF AI on runner                               |
 | **Deploy**   | `deploy-pages.yml`                                                    | GitHub Pages                                                     |
 | **Ops**      | `nightly-tests.yml`, `scanner-health.yml`, `stale.yml`, `release.yml` | Scheduled maintenance                                            |
 

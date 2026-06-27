@@ -1,12 +1,12 @@
 # Phase 6 — AI Pipeline (Hugging Face)
 
-**Status:** pending
+**Status:** complete
 
 ## Deliverables
 
-- `packages/ai-engine` — job parser, skill extractor, resume matcher
+- `packages/ai_engine/` — job parser/enricher, skill extractor, salary extractor, duplicate detector, resume matcher
 - HF models on GitHub Actions runner (sentence-transformers, MiniLM)
-- No paid LLM APIs
+- No paid LLM APIs in production pipeline
 
 ## Spec
 

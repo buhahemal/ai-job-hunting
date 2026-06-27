@@ -9,11 +9,10 @@ if _REPO_ROOT not in sys.path:
 
 # Automatic dynamic bootstrap of python dependencies for seamless container deployment
 def bootstrap_packages():
-    required = ["flask", "flask-cors", "google-genai", "requests"]
+    required = ["flask", "flask-cors", "requests"]
     missing = []
     for pkg in required:
-        # Map packages to import names if different
-        import_name = "google.genai" if pkg == "google-genai" else pkg.replace("-", "_")
+        import_name = pkg.replace("-", "_")
         try:
             __import__(import_name)
         except ImportError:

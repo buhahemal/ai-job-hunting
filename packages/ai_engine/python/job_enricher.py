@@ -8,6 +8,8 @@ from difflib import SequenceMatcher
 from typing import Dict, List, Optional, Tuple
 
 from packages.ai_engine.python import matcher
+from packages.ai_engine.python.duplicate_detector import find_embedding_duplicate
+from packages.ai_engine.python.salary_extractor import NOT_SPECIFIED, extract_salary
 from packages.ai_engine.python.skill_matcher import compute_skill_match, extract_job_requirements
 from packages.ai_engine.python.text_builder import infer_seniority
 from packages.database.python.constants import (
@@ -197,6 +199,13 @@ def detect_duplicate(
             if _similarity(normalized_title, existing_title) >= semantic_threshold:
                 return True, existing.get('id')
 
+    try:
+        is_embedding_dup, duplicate_id = find_embedding_duplicate(job, existing_jobs)
+        if is_embedding_dup:
+            return True, duplicate_id
+    except Exception as exc:
+        print(f'[JobEnricher] Embedding duplicate check skipped: {exc}')
+
     return False, None
 
 
@@ -344,6 +353,14 @@ def estimate_priority(overall_score: int, company_match: int, is_duplicate: bool
     return PRIORITY_LOW
 
 
+def _resolve_salary_estimate(job: Dict, analysis: Dict) -> str:
+    """Prefer extracted job salary over scorer placeholder values."""
+    for source in (job.get('salaryEstimate'), analysis.get('salaryEstimate')):
+        if source and str(source).strip().lower() not in {'not specified', 'unknown', 'n/a', ''}:
+            return str(source)
+    return NOT_SPECIFIED
+
+
 def enrich_job(
     job: Dict,
     profile: Dict,
@@ -356,6 +373,10 @@ def enrich_job(
 
     Returns the job dict with enrichment fields and nested ``matchInsights``.
     """
+    salary = extract_salary(job)
+    if salary != NOT_SPECIFIED:
+        job = {**job, 'salaryEstimate': salary}
+
     analysis = base_analysis or matcher.score_job(job, profile)
     existing_jobs = existing_jobs or []
 
@@ -407,7 +428,7 @@ def enrich_job(
         **job,
         'seniority': seniority,
         'remoteType': analysis.get('remoteType', job.get('remoteType', 'Hybrid')),
-        'salaryEstimate': analysis.get('salaryEstimate', job.get('salaryEstimate', 'Not Specified')),
+        'salaryEstimate': _resolve_salary_estimate(job, analysis),
         'extractedSkills': analysis.get('extractedSkills') or matched_skills,
         'employmentType': employment_type,
         'requiredSkills': required_skills,

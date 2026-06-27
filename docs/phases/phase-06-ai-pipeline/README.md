@@ -1,5 +1,5 @@
 # Phase 6 — AI Pipeline (Hugging Face)
 
-**Status:** pending
+**Status:** complete
 
 Runs on GitHub Actions runners — no paid APIs. Track in [STATUS.md](./STATUS.md).

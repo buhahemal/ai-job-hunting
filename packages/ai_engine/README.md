@@ -26,20 +26,30 @@ Chosen for GitHub Actions `ubuntu-latest` because it is small, fast on CPU, and 
 ## Fallback order
 
 1. **Embedding scorer** (default, ₹0)
-2. **Gemini** — only when `GEMINI_API_KEY` secret is set
-3. **Heuristic scorer** — always available offline fallback
+2. **Heuristic scorer** — always available offline fallback
+
+Paid LLM APIs (Gemini, OpenAI, etc.) are **not** used in the production pipeline.
+
+## Salary extraction
+
+Deterministic regex/heuristics in `salary_extractor.py` — extracts `$120k`, `35 LPA`, `€80,000`, etc. from job descriptions without LLM hallucination.
+
+## Duplicate detection
+
+1. URL / source+id / title similarity (SequenceMatcher)
+2. Embedding cosine similarity ≥ `AI_DUPLICATE_THRESHOLD` (default 0.92) on title+company+description
 
 ## Environment variables
 
-| Variable                   | Default                                               | Description                                 |
-| -------------------------- | ----------------------------------------------------- | ------------------------------------------- |
-| `HF_HOME`                  | `~/.cache/huggingface`                                | Hugging Face model cache directory          |
-| `AI_EMBEDDING_MODEL`       | `sentence-transformers/all-MiniLM-L6-v2`              | Override embedding model                    |
-| `AI_SCORER`                | `embedding`                                           | Force `embedding`, `gemini`, or `heuristic` |
-| `GEMINI_API_KEY`           | unset                                                 | Optional Gemini fallback / resume tailoring |
-| Variable                   | Default (see `packages/database/python/constants.py`) | Description                                 |
-| `SCANNER_MIN_MATCH_SCORE`  | `90`                                                  | Jobs must score above this to persist       |
-| `SCANNER_MIN_JOBS_PER_RUN` | `3`                                                   | Target qualifying jobs per scan             |
+| Variable                   | Default                                               | Description                               |
+| -------------------------- | ----------------------------------------------------- | ----------------------------------------- |
+| `HF_HOME`                  | `~/.cache/huggingface`                                | Hugging Face model cache directory        |
+| `AI_EMBEDDING_MODEL`       | `sentence-transformers/all-MiniLM-L6-v2`              | Override embedding model                  |
+| `AI_SCORER`                | `embedding`                                           | Force `embedding` or `heuristic`          |
+| `AI_DUPLICATE_THRESHOLD`   | `0.92`                                                | Embedding cosine threshold for duplicates |
+| Variable                   | Default (see `packages/database/python/constants.py`) | Description                               |
+| `SCANNER_MIN_MATCH_SCORE`  | `90`                                                  | Jobs must score above this to persist     |
+| `SCANNER_MIN_JOBS_PER_RUN` | `3`                                                   | Target qualifying jobs per scan           |
 
 ## Tests
 

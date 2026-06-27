@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Dict, List
 
+from packages.ai_engine.python.salary_extractor import extract_salary
+
 
 def score(job: Dict, profile: Dict) -> Dict:
     """Calculate a skill and preference weighted score without external APIs."""
@@ -45,7 +47,7 @@ def score(job: Dict, profile: Dict) -> Dict:
         'score': final_score,
         'extractedSkills': matched_skills,
         'fitExplanation': explanation,
-        'salaryEstimate': 'Not Specified',
+        'salaryEstimate': extract_salary(job),
         'seniority': 'Senior' if 'senior' in str(job.get('title', '')).lower() else 'Mid-level',
         'remoteType': job.get('remoteType', 'Hybrid'),
         'scorer': 'heuristic',

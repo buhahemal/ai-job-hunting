@@ -1,4 +1,8 @@
-"""Optional Gemini-backed job scoring (secret-gated fallback)."""
+"""Deprecated optional Gemini scorer — removed from default pipeline in Phase 6.
+
+The production path uses local Hugging Face embeddings and heuristic scoring only.
+This module is retained for reference; it is not imported by matcher.py.
+"""
 
 from __future__ import annotations
 

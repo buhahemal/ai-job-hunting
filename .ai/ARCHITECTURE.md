@@ -4,9 +4,8 @@
 
 ```text
 GitHub Actions (control plane)
-    ├── scanner-cron.yml → scraper → Supabase (service role)
+    ├── pipeline-cron.yml → scraper → HF embeddings → Supabase (service role)
     ├── deploy-pages.yml → dashboard → Supabase (anon + RLS)
-    └── future: ai-pipeline.yml → HF models on runner
 
 Supabase (data plane)
     └── Postgres + REST + RLS
@@ -47,8 +46,8 @@ Registry: `get_registered_scanners()` in `packages/scanner-sdk/python/registry.p
 ```text
 packages/scanner-sdk/   ✅ Phase 4
 packages/database/      ✅ Phase 3
-packages/ai-engine/     Phase 6
-packages/resume-engine/ Phase 7
+packages/ai-engine/     ✅ Phase 6
+packages/resume-engine/ Phase 7 (in progress)
 packages/logger/        Phase 11
 packages/common/        As needed
 ```

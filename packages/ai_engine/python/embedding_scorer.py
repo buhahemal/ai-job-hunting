@@ -6,6 +6,7 @@ from typing import Dict
 
 from packages.ai_engine.python.cosine import cosine_similarity, similarity_to_percentage
 from packages.ai_engine.python.embedder import encode_texts
+from packages.ai_engine.python.salary_extractor import extract_salary
 from packages.ai_engine.python.text_builder import (
     build_candidate_text,
     build_job_text,
@@ -42,7 +43,7 @@ def score(job: Dict, profile: Dict) -> Dict:
         'score': match_score,
         'extractedSkills': matched_skills,
         'fitExplanation': explanation,
-        'salaryEstimate': 'Not Specified',
+        'salaryEstimate': extract_salary(job),
         'seniority': infer_seniority(job.get('title', '')),
         'remoteType': job.get('remoteType', 'Hybrid'),
         'scorer': 'embedding',

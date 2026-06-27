@@ -54,6 +54,30 @@ class TestJobEnricher(unittest.TestCase):
         self.assertEqual(estimate_priority(50, 40, True), "Low")
 
     @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
+    def test_enrich_job_extracts_salary_from_description(self, mock_score):
+        mock_score.return_value = {
+            "score": 80,
+            "extractedSkills": [],
+            "fitExplanation": "Good fit",
+            "salaryEstimate": "Not Specified",
+            "seniority": "Senior",
+            "remoteType": "Remote",
+            "scorer": "heuristic",
+        }
+        job = {
+            "id": "gh-2",
+            "title": "Engineer",
+            "company": "Acme",
+            "location": "Remote",
+            "remoteType": "Remote",
+            "source": "Greenhouse",
+            "url": "https://example.com/jobs/2",
+            "description": "Salary: $120k – $180k per year. Node.js role.",
+        }
+        enriched = enrich_job(job, PROFILE)
+        self.assertIn("120k", enriched["salaryEstimate"])
+
+    @patch("packages.ai_engine.python.job_enricher.matcher.score_job")
     def test_enrich_job_returns_match_insights(self, mock_score):
         mock_score.return_value = {
             "score": 95,

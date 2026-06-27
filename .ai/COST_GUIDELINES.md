@@ -17,9 +17,9 @@
 - Paid VPS / cloud compute beyond free tiers
 - Paid monitoring SaaS
 
-## Optional opt-in (not default)
+## Optional opt-in (not used in production pipeline)
 
-- **Gemini** — allowed only when `GEMINI_API_KEY` is explicitly configured as a fallback after local embedding scoring fails, or for resume tailoring during development
+- **Gemini** — deprecated from production scoring; retained only in legacy `gemini_scorer.py` for reference (not imported by matcher)
 
 ## GitHub Actions minutes
 

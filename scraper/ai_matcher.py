@@ -10,7 +10,7 @@ class AIMatcher:
     Facade for job scoring and resume tailoring.
 
     Scoring uses the Phase 6 ai_engine fallback chain:
-    local embeddings -> optional Gemini -> heuristic.
+    local embeddings -> heuristic (₹0, no paid LLM APIs).
     """
 
     def calculate_heuristic_score(self, job: Dict, profile: Dict) -> Dict:

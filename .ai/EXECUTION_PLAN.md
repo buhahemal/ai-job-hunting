@@ -9,8 +9,8 @@ Incremental delivery. **Never skip phases.** Each phase is production-ready befo
 |     3 | Supabase schema + integration | done        | [phase-03.md](./phases/phase-03.md) |
 |     4 | Scanner SDK + Greenhouse      | done        | [phase-04.md](./phases/phase-04.md) |
 |     5 | Remaining scanners            | done        | [phase-05.md](./phases/phase-05.md) |
-|     6 | AI pipeline (Hugging Face)    | in_progress | [phase-06.md](./phases/phase-06.md) |
-|     7 | Resume engine (LaTeX → PDF)   | pending     | [phase-07.md](./phases/phase-07.md) |
+|     6 | AI pipeline (Hugging Face)    | done        | [phase-06.md](./phases/phase-06.md) |
+|     7 | Resume engine (LaTeX → PDF)   | in_progress | [phase-07.md](./phases/phase-07.md) |
 |     8 | Dashboard backend             | pending     | [phase-08.md](./phases/phase-08.md) |
 |     9 | Dashboard frontend            | pending     | [phase-09.md](./phases/phase-09.md) |
 |    10 | Learning engine + analytics   | pending     | [phase-10.md](./phases/phase-10.md) |

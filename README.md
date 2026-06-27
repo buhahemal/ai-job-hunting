@@ -38,9 +38,9 @@ Roadmap and completion tracking: [`docs/phases/README.md`](docs/phases/README.md
 | Component       | Host               | How it runs                                                      |
 | --------------- | ------------------ | ---------------------------------------------------------------- |
 | Dashboard       | GitHub Pages       | `deploy-pages.yml` builds `apps/dashboard/` on push to `main`    |
-| Data            | Supabase (primary) | `scanner-cron.yml` upserts jobs; dashboard reads via anon key    |
+| Data            | Supabase (primary) | `pipeline-cron.yml` upserts jobs; dashboard reads via anon key   |
 | Data (fallback) | GitHub repo        | `data.json` when Supabase secrets are not set                    |
-| Scraper         | GitHub Actions     | `scanner-cron.yml` runs daily                                    |
+| Scraper         | GitHub Actions     | `pipeline-cron.yml` runs daily                                   |
 | API             | Local only         | Optional Flask server for full AI scan/tailor during development |
 
 On GitHub Pages with Supabase secrets, the app loads live data from Supabase. Without secrets, it uses bundled `data.json` and `localStorage`.
@@ -100,7 +100,7 @@ Husky runs Prettier via lint-staged on commit and validates commit messages with
 ## GitHub configuration
 
 1. **Pages**: Settings → Pages → Source = **GitHub Actions**
-2. **Secrets** (optional): `GEMINI_API_KEY` for AI scoring until Phase 6 (Hugging Face migration)
+2. **Secrets** (optional): configure scanner board tokens and Supabase keys in GitHub Actions secrets
 3. **Workflows**: Deploy Pages, Scanner Cron, CI
 
 ## Live URL

@@ -18,7 +18,7 @@ Production uses **Supabase** when GitHub Secrets are configured. JSON + localSto
 
 ```mermaid
 sequenceDiagram
-    participant Cron as scanner-cron.yml
+    participant Cron as pipeline-cron.yml
     participant Scraper as scraper/
     participant DB as Supabase
     participant Pages as GitHub Pages
@@ -35,7 +35,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Cron as scanner-cron.yml
+    participant Cron as pipeline-cron.yml
     participant Scraper as scraper/
     participant Data as apps/api/data/data.json
     participant Pages as GitHub Pages
@@ -100,21 +100,22 @@ Current transitional layout migrates into the above without breaking GitHub Page
 
 ## Configuration
 
-| Variable                 | Module           | Purpose                                 |
-| ------------------------ | ---------------- | --------------------------------------- |
-| `VITE_USE_SUPABASE`      | frontend         | Live data from Supabase on Pages        |
-| `VITE_SUPABASE_URL`      | frontend         | Supabase project URL (anon client)      |
-| `VITE_SUPABASE_ANON_KEY` | frontend         | Public anon key (RLS protected)         |
-| `SUPABASE_URL`           | scraper, Actions | Supabase project URL                    |
-| `SUPABASE_SERVICE_KEY`   | Actions          | Pipeline writes (bypasses RLS)          |
-| `USE_JSON_STORE`         | scraper          | Force JSON file instead of Supabase     |
-| `HF_HOME`                | Actions          | Hugging Face model cache                |
-| `VITE_USE_BACKEND`       | frontend         | Enable Flask API in dev                 |
-| `VITE_BASE_PATH`         | frontend         | GitHub Pages base path                  |
-| `PYTHONPATH=.`           | scraper, backend | Python package imports                  |
-| `GEMINI_API_KEY`         | scraper (legacy) | **Remove in Phase 6** — replace with HF |
+| Variable                 | Module           | Purpose                              |
+| ------------------------ | ---------------- | ------------------------------------ |
+| `VITE_USE_SUPABASE`      | frontend         | Live data from Supabase on Pages     |
+| `VITE_SUPABASE_URL`      | frontend         | Supabase project URL (anon client)   |
+| `VITE_SUPABASE_ANON_KEY` | frontend         | Public anon key (RLS protected)      |
+| `SUPABASE_URL`           | scraper, Actions | Supabase project URL                 |
+| `SUPABASE_SERVICE_KEY`   | Actions          | Pipeline writes (bypasses RLS)       |
+| `USE_JSON_STORE`         | scraper          | Force JSON file instead of Supabase  |
+| `HF_HOME`                | Actions          | Hugging Face model cache             |
+| `VITE_USE_BACKEND`       | frontend         | Enable Flask API in dev              |
+| `VITE_BASE_PATH`         | frontend         | GitHub Pages base path               |
+| `PYTHONPATH=.`           | scraper, backend | Python package imports               |
+| `AI_SCORER`              | scraper          | `embedding` (default) or `heuristic` |
+| `AI_DUPLICATE_THRESHOLD` | scraper          | Embedding duplicate threshold (0.92) |
 
-## AI Stack (Target — Phase 6)
+## AI Stack (Phase 6 — complete)
 
 | Task                     | Model                                    | Where             |
 | ------------------------ | ---------------------------------------- | ----------------- |
@@ -161,15 +162,15 @@ flowchart LR
 
 ### Group B — Separate workflows
 
-| Workflow                | Trigger                   | Why separate                                |
-| ----------------------- | ------------------------- | ------------------------------------------- |
-| `dependency-review.yml` | Pull request              | PR-only dependency diff review              |
-| `codeql.yml`            | PR, push, weekly schedule | Security analysis permissions               |
-| `deploy-pages.yml`      | Push to main              | Deploy side effect + Pages environment      |
-| `scanner-cron.yml`      | Daily cron                | Commits `data.json` (→ Supabase in Phase 3) |
-| `scanner-health.yml`    | Every 6h cron             | Production scanner monitoring               |
-| `nightly-tests.yml`     | Daily cron                | Full suite without slowing every PR         |
-| `release.yml`           | Version tags              | Release artifacts                           |
-| `stale.yml`             | Weekly cron               | Issue/PR maintenance                        |
+| Workflow                | Trigger                   | Why separate                           |
+| ----------------------- | ------------------------- | -------------------------------------- |
+| `dependency-review.yml` | Pull request              | PR-only dependency diff review         |
+| `codeql.yml`            | PR, push, weekly schedule | Security analysis permissions          |
+| `deploy-pages.yml`      | Push to main              | Deploy side effect + Pages environment |
+| `pipeline-cron.yml`     | Daily cron                | Scan + HF score → Supabase             |
+| `scanner-health.yml`    | Every 6h cron             | Production scanner monitoring          |
+| `nightly-tests.yml`     | Daily cron                | Full suite without slowing every PR    |
+| `release.yml`           | Version tags              | Release artifacts                      |
+| `stale.yml`             | Weekly cron               | Issue/PR maintenance                   |
 
 PR checks visible to reviewers: **CI**, **Dependency Review**, **CodeQL** (three workflow groups instead of many duplicate checkouts).
