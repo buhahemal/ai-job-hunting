@@ -173,7 +173,6 @@
     "dist",
     "coverage",
     "package-lock.json",
-    "apps/api/data/data.json",
     ".venv",
     "docs/deep-research-report.md",
     "docs/Executive Summary.pdf"

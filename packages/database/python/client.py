@@ -9,15 +9,8 @@ if TYPE_CHECKING:
     from supabase import Client
 
 
-def use_json_store() -> bool:
-    """Return True when pipeline should write to data.json instead of Supabase."""
-    return os.getenv('USE_JSON_STORE', 'false').lower() in ('1', 'true', 'yes')
-
-
 def is_supabase_configured() -> bool:
     """Return True when Supabase URL and service key are available."""
-    if use_json_store():
-        return False
     return bool(os.getenv('SUPABASE_URL') and _service_key())
 
 
@@ -38,7 +31,6 @@ def create_service_client() -> Any:
     key = _service_key()
     if not url or not key:
         raise RuntimeError(
-            'Supabase not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY, '
-            'or USE_JSON_STORE=true for JSON fallback.'
+            'Data not found. Configure Supabase with SUPABASE_URL and SUPABASE_SERVICE_KEY.'
         )
     return create_client(url, key)

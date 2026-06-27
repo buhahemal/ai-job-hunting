@@ -1,4 +1,6 @@
+import json
 import os
+import tempfile
 import unittest
 
 from scanners.arbeitnow.scanner import ArbeitnowScanner
@@ -11,8 +13,22 @@ class TestScraperEngine(unittest.TestCase):
     def setUp(self):
         self.arbeitnow = ArbeitnowScanner()
         self.portal = CompanyPagesScanner()
-        os.environ['USE_JSON_STORE'] = 'true'
-        self.engine = ScannerEngine(store=JsonJobStore())
+        self._temp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        self._temp_path = self._temp.name
+        json.dump(
+            {
+                'profile': {'fullName': 'Test User', 'skills': ['Python']},
+                'jobs': [],
+                'interviews': [],
+            },
+            self._temp,
+        )
+        self._temp.close()
+        self.engine = ScannerEngine(store=JsonJobStore(path=self._temp_path))
+
+    def tearDown(self):
+        if os.path.exists(self._temp_path):
+            os.remove(self._temp_path)
 
     def test_scanner_names(self):
         self.assertEqual(self.arbeitnow.name, 'Arbeitnow')

@@ -1,6 +1,6 @@
 """Supabase database access layer for AI Job Hunter."""
 
-from packages.database.python.client import create_service_client, is_supabase_configured, use_json_store
+from packages.database.python.client import create_service_client, is_supabase_configured
 from packages.database.python.mappers import dedupe_indexes, job_to_row, row_to_interview, row_to_job
 
 
@@ -20,5 +20,4 @@ __all__ = [
     'job_to_row',
     'row_to_interview',
     'row_to_job',
-    'use_json_store',
 ]

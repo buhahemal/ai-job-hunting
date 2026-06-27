@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'apps/dashboard/**'
-      - 'apps/api/data/data.json'
       - 'packages/**'
       - 'supabase/**'
       - '.github/workflows/deploy-pages.yml'
@@ -59,8 +58,8 @@ jobs:
             } >> "$GITHUB_ENV"
             echo "Building dashboard with Supabase data source."
           else
-            echo "VITE_USE_SUPABASE=false" >> "$GITHUB_ENV"
-            echo "Supabase secrets missing — static JSON + localStorage mode."
+            echo "Supabase secrets are required for the dashboard build."
+            exit 1
           fi
 
       - name: Build Dashboard (GitHub Pages)

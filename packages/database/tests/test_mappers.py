@@ -10,7 +10,7 @@ from packages.database.python.mappers import (
     row_to_scanned_job,
     scanned_job_to_row,
 )
-from packages.database.python.client import is_supabase_configured, use_json_store
+from packages.database.python.client import is_supabase_configured
 
 
 class TestJobMappers(unittest.TestCase):
@@ -112,20 +112,14 @@ class TestJobMappers(unittest.TestCase):
 
 class TestClientEnv(unittest.TestCase):
     def setUp(self):
-        self._use_json = os.environ.pop('USE_JSON_STORE', None)
         self._supabase_url = os.environ.pop('SUPABASE_URL', None)
         self._service_key = os.environ.pop('SUPABASE_SERVICE_KEY', None)
 
     def tearDown(self):
-        if self._use_json is not None:
-            os.environ['USE_JSON_STORE'] = self._use_json
         if self._supabase_url is not None:
             os.environ['SUPABASE_URL'] = self._supabase_url
         if self._service_key is not None:
             os.environ['SUPABASE_SERVICE_KEY'] = self._service_key
-
-    def test_use_json_store_default_false(self):
-        self.assertFalse(use_json_store())
 
     def test_supabase_not_configured_without_env(self):
         self.assertFalse(is_supabase_configured())

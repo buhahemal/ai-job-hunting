@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
-      contents: write
+      contents: read
 
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -43,15 +43,13 @@ jobs:
           PYTHONPATH: .
         run: python3 scripts/scanner_health.py
 
-      - name: Configure storage backend
+      - name: Configure Supabase storage backend
         run: |
-          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_KEY" ]; then
-            echo "USE_JSON_STORE=false" >> "$GITHUB_ENV"
-            echo "Using Supabase storage backend."
-          else
-            echo "USE_JSON_STORE=true" >> "$GITHUB_ENV"
-            echo "Supabase secrets missing — using JSON file fallback."
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_KEY" ]; then
+            echo "Supabase secrets are required for the scanner pipeline."
+            exit 1
           fi
+          echo "Using Supabase storage backend."
 
       - name: Run Job Scraper Pipeline
         env:
@@ -71,16 +69,3 @@ jobs:
           SCANNER_MAX_EVALUATIONS: '3000'
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python3 -m scraper
-
-      - name: Commit JSON updates (fallback mode only)
-        if: env.USE_JSON_STORE == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/api/data/data.json
-          if git diff --staged --quiet; then
-            echo "No new jobs fetched in this interval."
-          else
-            git commit -m "chore(data): automated daily job scan updates [skip ci]"
-            git push
-          fi

@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "mkdir -p public/data && cp ../api/data/data.json public/data/data.json && cp ../api/data/HemalBuha-Resume.pdf public/data/HemalBuha-Resume.pdf",
+    "predev": "mkdir -p public/data && cp ../api/data/HemalBuha-Resume.pdf public/data/HemalBuha-Resume.pdf",
     "dev": "vite",
-    "prebuild": "mkdir -p public/data && cp ../api/data/data.json public/data/data.json && cp ../api/data/HemalBuha-Resume.pdf public/data/HemalBuha-Resume.pdf",
+    "prebuild": "mkdir -p public/data && cp ../api/data/HemalBuha-Resume.pdf public/data/HemalBuha-Resume.pdf",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

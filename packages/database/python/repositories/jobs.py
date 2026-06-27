@@ -14,6 +14,7 @@ from packages.database.python.constants import (
 )
 from packages.database.python.mappers import (
     dedupe_indexes,
+    interview_to_row,
     job_to_row,
     match_insights_to_row,
     profile_data_from_row,
@@ -75,6 +76,106 @@ class JobRepository:
         response = self._client.table('interviews').select('*').execute()
         rows = response.data or []
         return [row_to_interview(row) for row in rows]
+
+    def get_job(self, job_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch one job by id with match score components."""
+        response = (
+            self._client.table('jobs')
+            .select('*, job_match_scores(*)')
+            .eq('id', job_id)
+            .maybe_single()
+            .execute()
+        )
+        if not response.data:
+            return None
+        row = response.data
+        match_payload = row.get('job_match_scores')
+        match_row = None
+        if isinstance(match_payload, list) and match_payload:
+            match_row = match_payload[0]
+        elif isinstance(match_payload, dict):
+            match_row = match_payload
+        return row_to_job(row, match_row)
+
+    def update_job_status(self, job_id: str, status: str) -> Dict[str, Any]:
+        """Update job status and return the updated record."""
+        response = (
+            self._client.table('jobs')
+            .update({'status': status})
+            .eq('id', job_id)
+            .execute()
+        )
+        if not response.data:
+            raise ValueError(f'Job not found: {job_id}')
+        job = self.get_job(job_id)
+        if not job:
+            raise ValueError(f'Job not found: {job_id}')
+        return job
+
+    def update_job_notes(self, job_id: str, notes: str) -> Dict[str, Any]:
+        """Update job notes and return the updated record."""
+        response = (
+            self._client.table('jobs')
+            .update({'notes': notes})
+            .eq('id', job_id)
+            .execute()
+        )
+        if not response.data:
+            raise ValueError(f'Job not found: {job_id}')
+        job = self.get_job(job_id)
+        if not job:
+            raise ValueError(f'Job not found: {job_id}')
+        return job
+
+    def update_job_tailored(
+        self,
+        job_id: str,
+        *,
+        tailored_resume_latex: str,
+        tailored_cover_letter: str,
+        ats_score: Optional[int] = None,
+        status: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Persist tailored resume fields for a job."""
+        payload: Dict[str, Any] = {
+            'tailored_resume_latex': tailored_resume_latex,
+            'tailored_cover_letter': tailored_cover_letter,
+        }
+        if ats_score is not None:
+            payload['ats_score'] = ats_score
+        if status is not None:
+            payload['status'] = status
+        response = (
+            self._client.table('jobs')
+            .update(payload)
+            .eq('id', job_id)
+            .execute()
+        )
+        if not response.data:
+            raise ValueError(f'Job not found: {job_id}')
+        job = self.get_job(job_id)
+        if not job:
+            raise ValueError(f'Job not found: {job_id}')
+        return job
+
+    def add_interview(self, interview: Dict[str, Any]) -> Dict[str, Any]:
+        """Insert a new interview record."""
+        row = interview_to_row(interview)
+        self._client.table('interviews').insert(row).execute()
+        return interview
+
+    def update_interview_status(self, interview_id: str, status: str) -> Dict[str, Any]:
+        """Update interview status and return the updated record."""
+        response = (
+            self._client.table('interviews')
+            .update({'status': status})
+            .eq('id', interview_id)
+            .execute()
+        )
+        if not response.data:
+            raise ValueError(f'Interview not found: {interview_id}')
+        rows = response.data or []
+        return row_to_interview(rows[0])
 
     def get_dedupe_indexes(self) -> tuple[set[str], set[str]]:
         """Load deduplication indexes from existing jobs."""

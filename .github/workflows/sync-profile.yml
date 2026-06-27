@@ -23,7 +23,6 @@ jobs:
       - name: Sync default profile to Supabase
         env:
           PYTHONPATH: .
-          USE_JSON_STORE: 'false'
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python3 scripts/sync_profile_to_supabase.py

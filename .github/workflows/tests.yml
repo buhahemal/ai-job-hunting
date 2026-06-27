@@ -24,7 +24,6 @@ jobs:
       - name: Run Python unit tests
         env:
           PYTHONPATH: .
-          USE_JSON_STORE: 'true'
         run: |
           python3 -m unittest discover -s scraper/tests
           python3 -m unittest discover -s packages/database/tests

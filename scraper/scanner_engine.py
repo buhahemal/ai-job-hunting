@@ -2,7 +2,7 @@ import os
 import json
 from typing import Dict, List, Optional, Protocol, Tuple
 
-from apps.api.defaults import DEFAULT_PROFILE, normalize_profile
+from apps.api.defaults import normalize_profile
 from scraper.ai_matcher import AIMatcher
 from scraper.paths import DATA_FILE
 from packages.scanner_sdk.python.base import BaseScanner
@@ -64,26 +64,27 @@ class ScanInsightBuffer:
 
 
 class JsonJobStore:
-    """Legacy JSON file store (USE_JSON_STORE=true or missing Supabase config)."""
+    """JSON file store for unit tests (requires an existing data file)."""
 
     def __init__(self, path: str = DB_FILE):
         self._path = path
 
     def read_db(self) -> Dict:
         if not os.path.exists(self._path):
-            print("[JsonJobStore] Warning: Database file not found. Initializing.")
-            return {"profile": DEFAULT_PROFILE, "jobs": [], "interviews": []}
+            raise FileNotFoundError(f'Data file not found: {self._path}')
         try:
             with open(self._path, "r", encoding="utf-8") as handle:
                 data = json.load(handle)
                 data["profile"] = normalize_profile(data.get("profile"))
                 return data
-        except Exception as exc:
-            print(f"[JsonJobStore] Error reading data.json: {exc}")
-            return {"profile": DEFAULT_PROFILE, "jobs": [], "interviews": []}
+        except json.JSONDecodeError as exc:
+            raise ValueError(f'Invalid JSON in data file: {self._path}') from exc
 
     def get_profile(self) -> Dict:
-        return self.read_db().get("profile", DEFAULT_PROFILE)
+        profile = self.read_db().get("profile")
+        if not profile:
+            raise ValueError(f'Profile not found in data file: {self._path}')
+        return profile
 
     def get_dedupe_indexes(self) -> Tuple[set, set]:
         jobs = self.read_db().get("jobs", [])
@@ -222,15 +223,14 @@ class SupabaseJobStore:
 
 
 def create_job_store() -> JobStore:
-    """Select JSON or Supabase store from environment."""
-    from packages.database.python.client import is_supabase_configured, use_json_store
+    """Create Supabase-backed job store (requires configured credentials)."""
+    from packages.database.python.client import create_service_client, is_supabase_configured
     from packages.database.python.repositories.jobs import JobRepository
-    from packages.database.python.client import create_service_client
 
-    if use_json_store() or not is_supabase_configured():
-        if not use_json_store() and not is_supabase_configured():
-            print("[ScannerEngine] Supabase not configured — falling back to JSON store.")
-        return JsonJobStore()
+    if not is_supabase_configured():
+        raise RuntimeError(
+            'Data not found. Configure Supabase with SUPABASE_URL and SUPABASE_SERVICE_KEY.'
+        )
 
     client = create_service_client()
     return SupabaseJobStore(JobRepository(client))
@@ -344,14 +344,20 @@ class ScannerEngine:
         added_jobs: List[Dict],
         stats: Dict[str, int],
         matcher: Optional[AIMatcher] = None,
-    ) -> Tuple[int, int]:
-        """Score jobs from one scanner batch. Returns (accepted, newly_evaluated)."""
+    ) -> Tuple[int, int, int, bool]:
+        """Score jobs from one scanner batch.
+
+        Returns:
+            (accepted, newly_evaluated, jobs_fetched, hit_fetch_limit)
+        """
         if not scraper.health_check():
             print(f"[ScannerEngine] Health Check failed for {scraper.name}. Skipping.")
-            return 0, 0
+            return 0, 0, 0, False
 
         print(f"[ScannerEngine] Invoking: {scraper.name} (fetch up to {limit} jobs)...")
         raw_jobs = scraper.discover_jobs(limit=limit)
+        jobs_fetched = len(raw_jobs)
+        hit_fetch_limit = jobs_fetched >= limit
         accepted = 0
         newly_evaluated = 0
 
@@ -413,7 +419,7 @@ class ScannerEngine:
             added_jobs.append(enriched)
             accepted += 1
 
-        return accepted, newly_evaluated
+        return accepted, newly_evaluated, jobs_fetched, hit_fetch_limit
 
     def _apply_match_analysis(self, canonical: Dict, profile: Dict) -> int:
         """Score a job and attach match metadata. Returns numeric match score."""
@@ -520,6 +526,8 @@ class ScannerEngine:
 
             pass_num += 1
             pass_new_evaluations = 0
+            pass_jobs_fetched = 0
+            pass_sources_at_limit = 0
             pass_label = f"{pass_num}/{pass_cap}" if max_passes > 0 else str(pass_num)
             print(
                 f"[ScannerEngine] --- Discovery pass {pass_label} "
@@ -532,21 +540,26 @@ class ScannerEngine:
                 if stats["evaluated"] >= self.max_evaluations():
                     break
 
-                _accepted, batch_newly_evaluated = self._evaluate_scraper_batch(
-                    scraper,
-                    scan_insights=scan_insights,
-                    profile=profile,
-                    threshold=threshold,
-                    target_jobs=target_jobs,
-                    limit=current_limit,
-                    scanned_at_start=scanned_at_start,
-                    evaluated_keys=evaluated_keys,
-                    existing_jobs=saved_jobs + added_jobs,
-                    added_jobs=added_jobs,
-                    stats=stats,
-                    matcher=self.ai_matcher,
+                _accepted, batch_newly_evaluated, batch_fetched, batch_at_limit = (
+                    self._evaluate_scraper_batch(
+                        scraper,
+                        scan_insights=scan_insights,
+                        profile=profile,
+                        threshold=threshold,
+                        target_jobs=target_jobs,
+                        limit=current_limit,
+                        scanned_at_start=scanned_at_start,
+                        evaluated_keys=evaluated_keys,
+                        existing_jobs=saved_jobs + added_jobs,
+                        added_jobs=added_jobs,
+                        stats=stats,
+                        matcher=self.ai_matcher,
+                    )
                 )
                 pass_new_evaluations += batch_newly_evaluated
+                pass_jobs_fetched += batch_fetched
+                if batch_at_limit:
+                    pass_sources_at_limit += 1
 
             if len(added_jobs) >= target_jobs:
                 print(
@@ -559,6 +572,21 @@ class ScannerEngine:
                 break
 
             if pass_new_evaluations == 0:
+                if pass_jobs_fetched == 0:
+                    print(
+                        "[ScannerEngine] All sources exhausted — no jobs returned this pass."
+                    )
+                    break
+
+                if pass_sources_at_limit > 0 and current_limit < max_limit:
+                    next_limit = min(current_limit + step, max_limit)
+                    print(
+                        f"[ScannerEngine] Fetched {pass_jobs_fetched} job(s) but all already "
+                        f"scanned — increasing per-source limit to {next_limit}."
+                    )
+                    current_limit = next_limit
+                    continue
+
                 print(
                     "[ScannerEngine] All sources exhausted — no new jobs to evaluate this pass."
                 )
@@ -571,7 +599,7 @@ class ScannerEngine:
 
         if added_jobs:
             self.store.persist_new_jobs(added_jobs)
-            target = "Supabase" if isinstance(self.store, SupabaseJobStore) else "data.json"
+            target = "Supabase"
             print(
                 f"[ScannerEngine] Sync complete! Registered {len(added_jobs)} job(s) "
                 f"with match score above {threshold}% in {target} "

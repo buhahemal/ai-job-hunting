@@ -146,6 +146,20 @@ def row_to_interview(row: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def interview_to_row(interview: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert canonical interview dict to database row."""
+    return {
+        'id': interview['id'],
+        'job_id': interview['jobId'],
+        'role': interview.get('role', ''),
+        'company': interview.get('company', ''),
+        'interview_date': interview.get('date'),
+        'interview_type': interview.get('type'),
+        'notes': interview.get('notes'),
+        'status': interview.get('status', 'Scheduled'),
+    }
+
+
 def profile_data_from_row(row: Dict[str, Any] | None) -> Dict[str, Any]:
     """Extract profile JSON from profiles table row."""
     if not row:

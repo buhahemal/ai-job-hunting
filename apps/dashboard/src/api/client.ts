@@ -1,25 +1,28 @@
 import type { Interview, Job, Profile } from '../types';
 import {
-  buildScanSummary,
   createBrowserClient,
   DashboardRepository,
   MATCH_SCORE_THRESHOLD,
-  SCAN_INSIGHTS_LIST_MAX,
-  SCAN_INSIGHTS_PAGE_SIZE,
-  rowToScannedJob,
   type InterviewRecord,
   type JobRecord,
   type ListScannedJobsParams,
   type ScanSummary,
-  type ScannedJobRecord,
   type ScannedJobsPage,
-  type ScanSummaryRow,
 } from '@ai-job-hunter/database';
-import { normalizeProfile } from './defaultProfile';
-import { SUPABASE_ANON_KEY, SUPABASE_URL, USE_BACKEND, USE_SUPABASE } from './config';
-import { heuristicScore, loadDatabase, saveDatabase, tailorFallback } from './staticStore';
+import {
+  DATA_NOT_CONFIGURED,
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL,
+  USE_BACKEND,
+  USE_SUPABASE,
+} from './config';
+import { heuristicScore, tailorFallback } from './staticStore';
 
 let repository: DashboardRepository | null = null;
+
+function throwDataNotFound(): never {
+  throw new Error(DATA_NOT_CONFIGURED);
+}
 
 function getRepository(): DashboardRepository {
   if (!repository) {
@@ -66,8 +69,7 @@ export async function getProfile(): Promise<Profile> {
   if (USE_SUPABASE) {
     return getRepository().getProfile();
   }
-  const db = await loadDatabase();
-  return normalizeProfile(db.profile);
+  throwDataNotFound();
 }
 
 export async function saveProfile(profile: Profile): Promise<Profile> {
@@ -83,11 +85,7 @@ export async function saveProfile(profile: Profile): Promise<Profile> {
     await getRepository().saveProfile(profile);
     return profile;
   }
-
-  const db = await loadDatabase();
-  db.profile = profile;
-  saveDatabase(db);
-  return profile;
+  throwDataNotFound();
 }
 
 export async function getJobs(): Promise<{ jobs: Job[]; interviews: Interview[] }> {
@@ -99,12 +97,7 @@ export async function getJobs(): Promise<{ jobs: Job[]; interviews: Interview[] 
     const [jobs, interviews] = await Promise.all([repo.listJobs(), repo.listInterviews()]);
     return { jobs: jobs.map(asJob), interviews: interviews.map(asInterview) };
   }
-
-  const db = await loadDatabase();
-  return {
-    jobs: db.jobs,
-    interviews: db.interviews,
-  };
+  throwDataNotFound();
 }
 
 export async function scanJobs(): Promise<{ addedCount: number; addedJobs: Job[] }> {
@@ -131,13 +124,7 @@ export async function updateJobStatus(jobId: string, status: Job['status']): Pro
   if (USE_SUPABASE) {
     return asJob(await getRepository().updateJobStatus(jobId, status));
   }
-
-  const db = await loadDatabase();
-  const job = db.jobs.find((entry) => entry.id === jobId);
-  if (!job) throw new Error('Job not found');
-  job.status = status;
-  saveDatabase(db);
-  return job;
+  throwDataNotFound();
 }
 
 export async function updateJobNotes(jobId: string, notes: string): Promise<Job> {
@@ -152,13 +139,7 @@ export async function updateJobNotes(jobId: string, notes: string): Promise<Job>
   if (USE_SUPABASE) {
     return asJob(await getRepository().updateJobNotes(jobId, notes));
   }
-
-  const db = await loadDatabase();
-  const job = db.jobs.find((entry) => entry.id === jobId);
-  if (!job) throw new Error('Job not found');
-  job.notes = notes;
-  saveDatabase(db);
-  return job;
+  throwDataNotFound();
 }
 
 export async function tailorJob(jobId: string): Promise<Job> {
@@ -177,14 +158,7 @@ export async function tailorJob(jobId: string): Promise<Job> {
     const tailored = { ...job, ...tailorFallback(job as Job, profile) };
     return asJob(await repo.upsertJob(tailored));
   }
-
-  const db = await loadDatabase();
-  const job = db.jobs.find((entry) => entry.id === jobId);
-  if (!job) throw new Error('Job not found');
-
-  Object.assign(job, tailorFallback(job, db.profile));
-  saveDatabase(db);
-  return job;
+  throwDataNotFound();
 }
 
 export async function saveTailoredJob(
@@ -202,16 +176,7 @@ export async function saveTailoredJob(
   if (USE_SUPABASE) {
     return asJob(await getRepository().saveTailoredJob(jobId, payload));
   }
-
-  const db = await loadDatabase();
-  const job = db.jobs.find((entry) => entry.id === jobId);
-  if (!job) throw new Error('Job not found');
-
-  job.tailoredResumeLaTeX = payload.tailoredResumeLaTeX;
-  job.tailoredCoverLetter = payload.tailoredCoverLetter;
-  if (payload.atsScore !== undefined) job.atsScore = payload.atsScore;
-  saveDatabase(db);
-  return job;
+  throwDataNotFound();
 }
 
 export async function addCustomJob(payload: {
@@ -249,11 +214,7 @@ export async function addCustomJob(payload: {
   if (USE_SUPABASE) {
     return asJob(await getRepository().upsertJob(newJob));
   }
-
-  const db = await loadDatabase();
-  db.jobs.unshift(newJob);
-  saveDatabase(db);
-  return newJob;
+  throwDataNotFound();
 }
 
 export async function addInterview(interviewData: Omit<Interview, 'id' | 'status'>): Promise<void> {
@@ -279,12 +240,7 @@ export async function addInterview(interviewData: Omit<Interview, 'id' | 'status
     }
     return;
   }
-
-  const db = await loadDatabase();
-  db.interviews.push(interview);
-  const job = db.jobs.find((entry) => entry.id === interview.jobId);
-  if (job) job.status = 'Interviewing';
-  saveDatabase(db);
+  throwDataNotFound();
 }
 
 export async function updateInterviewStatus(
@@ -313,70 +269,7 @@ export async function updateInterviewStatus(
     }
     return;
   }
-
-  const db = await loadDatabase();
-  const interview = db.interviews.find((entry) => entry.id === id);
-  if (!interview) throw new Error('Interview not found');
-
-  interview.status = status;
-  const job = db.jobs.find((entry) => entry.id === interview.jobId);
-  if (job) {
-    if (status === 'Passed') job.status = 'Offer';
-    if (status === 'Failed') job.status = 'Rejected';
-  }
-  saveDatabase(db);
-}
-
-function mapJsonScannedJob(raw: Record<string, unknown>): ScannedJobRecord {
-  if (raw.dedupeKey) {
-    return raw as unknown as ScannedJobRecord;
-  }
-  return rowToScannedJob({
-    dedupe_key: String(raw.dedupe_key ?? ''),
-    job_id: (raw.job_id as string | null) ?? null,
-    source: (raw.source as string | null) ?? null,
-    score: (raw.score as number | null) ?? null,
-    scanned_at: String(raw.scanned_at ?? ''),
-    title: (raw.title as string | null) ?? null,
-    company: (raw.company as string | null) ?? null,
-    location: (raw.location as string | null) ?? null,
-    remote_type: (raw.remote_type as ScannedJobRecord['remoteType'] | null) ?? null,
-    canonical_role: (raw.canonical_role as string | null) ?? null,
-    primary_stack: (raw.primary_stack as string | null) ?? null,
-    seniority: (raw.seniority as string | null) ?? null,
-    employment_type: (raw.employment_type as string | null) ?? null,
-    application_url: (raw.application_url as string | null) ?? null,
-    required_skills: (raw.required_skills as string[] | null) ?? null,
-    preferred_skills: (raw.preferred_skills as string[] | null) ?? null,
-    extracted_technologies: (raw.extracted_technologies as string[] | null) ?? null,
-    overall_score: (raw.overall_score as number | null) ?? (raw.score as number | null),
-    skill_match_score: (raw.skill_match_score as number | null) ?? null,
-    experience_match_score: (raw.experience_match_score as number | null) ?? null,
-    ats_score: (raw.ats_score as number | null) ?? null,
-    matched_skills: (raw.matched_skills as string[] | null) ?? null,
-    missing_skills: (raw.missing_skills as string[] | null) ?? null,
-    missing_keywords: (raw.missing_keywords as string[] | null) ?? null,
-    match_explanation: (raw.match_explanation as string | null) ?? null,
-    scorer: (raw.scorer as string | null) ?? null,
-    promoted_to_jobs: Boolean(raw.promoted_to_jobs),
-    scan_run_id: (raw.scan_run_id as string | null) ?? null,
-  });
-}
-
-function filterScannedJobs(
-  items: ScannedJobRecord[],
-  params: ListScannedJobsParams,
-): ScannedJobRecord[] {
-  const threshold = params.threshold ?? MATCH_SCORE_THRESHOLD;
-  return items.filter((item) => {
-    if (params.minScore !== undefined && item.overallScore < params.minScore) return false;
-    if (params.maxScore !== undefined && item.overallScore > params.maxScore) return false;
-    if (params.source && item.source !== params.source) return false;
-    if (params.role && item.canonicalRole !== params.role) return false;
-    if (params.missingSkill && !item.missingSkills.includes(params.missingSkill)) return false;
-    if (params.belowThresholdOnly && item.overallScore > threshold) return false;
-    return true;
-  });
+  throwDataNotFound();
 }
 
 export async function listScannedJobs(
@@ -385,43 +278,14 @@ export async function listScannedJobs(
   if (USE_SUPABASE) {
     return getRepository().listScannedJobs(params);
   }
-
-  const db = await loadDatabase();
-  const rawItems = (db as { scannedJobs?: Record<string, unknown>[] }).scannedJobs ?? [];
-  const allItems = rawItems.map(mapJsonScannedJob);
-  const filtered = filterScannedJobs(allItems, params);
-  const page = Math.max(1, params.page ?? 1);
-  const limit = Math.max(
-    1,
-    Math.min(params.limit ?? SCAN_INSIGHTS_PAGE_SIZE, SCAN_INSIGHTS_LIST_MAX),
-  );
-  const offset = (page - 1) * limit;
-
-  return {
-    items: filtered.slice(offset, offset + limit),
-    page,
-    limit,
-    total: filtered.length,
-  };
+  throwDataNotFound();
 }
 
 export async function getScanSummary(threshold = MATCH_SCORE_THRESHOLD): Promise<ScanSummary> {
   if (USE_SUPABASE) {
     return getRepository().getScanSummary(threshold);
   }
-
-  const db = await loadDatabase();
-  const rawItems = (db as { scannedJobs?: Record<string, unknown>[] }).scannedJobs ?? [];
-  const rows: ScanSummaryRow[] = rawItems.map((raw) => ({
-    overall_score: (raw.overall_score as number | null) ?? (raw.score as number | null),
-    score: (raw.score as number | null) ?? null,
-    source: (raw.source as string | null) ?? null,
-    scanned_at: String(raw.scanned_at ?? ''),
-    promoted_to_jobs: Boolean(raw.promoted_to_jobs),
-    missing_skills: (raw.missing_skills as string[] | null) ?? [],
-    scan_run_id: (raw.scan_run_id as string | null) ?? null,
-  }));
-  return buildScanSummary(rows, threshold, normalizeProfile(db.profile));
+  throwDataNotFound();
 }
 
 export async function rescanScanInsights(): Promise<{ rescoredCount: number }> {
@@ -438,11 +302,14 @@ export async function rescanScanInsights(): Promise<{ rescoredCount: number }> {
     }
   }
 
-  const data = await backendFetch<{ success: boolean; rescoredCount: number }>(
-    '/api/scan-insights/rescan',
-    { method: 'POST' },
-  );
-  return { rescoredCount: data.rescoredCount };
+  if (USE_BACKEND) {
+    const data = await backendFetch<{ success: boolean; rescoredCount: number }>(
+      '/api/scan-insights/rescan',
+      { method: 'POST' },
+    );
+    return { rescoredCount: data.rescoredCount };
+  }
+  throwDataNotFound();
 }
 
 export async function promoteScannedJob(dedupeKey: string): Promise<JobRecord> {
@@ -450,10 +317,13 @@ export async function promoteScannedJob(dedupeKey: string): Promise<JobRecord> {
     return getRepository().promoteScannedJobToLead(dedupeKey);
   }
 
-  const encodedKey = encodeURIComponent(dedupeKey);
-  const data = await backendFetch<{ success: boolean; job: JobRecord }>(
-    `/api/scan-insights/${encodedKey}/promote`,
-    { method: 'POST' },
-  );
-  return data.job;
+  if (USE_BACKEND) {
+    const encodedKey = encodeURIComponent(dedupeKey);
+    const data = await backendFetch<{ success: boolean; job: JobRecord }>(
+      `/api/scan-insights/${encodedKey}/promote`,
+      { method: 'POST' },
+    );
+    return data.job;
+  }
+  throwDataNotFound();
 }

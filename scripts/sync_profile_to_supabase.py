@@ -13,8 +13,7 @@ from packages.database.python.repositories.jobs import JobRepository
 def main() -> int:
     if not is_supabase_configured():
         print(
-            'Supabase not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY '
-            '(or USE_JSON_STORE=false with valid secrets).',
+            'Data not found. Configure Supabase with SUPABASE_URL and SUPABASE_SERVICE_KEY.',
             file=sys.stderr,
         )
         return 1

@@ -42,7 +42,6 @@ class FakeScanner(BaseScanner):
 
 class TestScannerEngineMatchPolicy(unittest.TestCase):
     def setUp(self):
-        os.environ["USE_JSON_STORE"] = "true"
         self.profile = {
             "skills": ["Python", "Kubernetes", "Terraform"],
             "preferences": {"remotePreference": "Remote", "targetCompanies": []},
@@ -376,6 +375,91 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         second_engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         self.assertEqual(enrich_calls, [])
+
+    def test_ramps_when_all_fetched_jobs_already_scanned(self):
+        """Increase per-source limit when a pass only returns already-known listings."""
+        os.environ["SCANNER_LIMIT_STEP"] = "2"
+        os.environ["SCANNER_MAX_LIMIT_PER_SOURCE"] = "10"
+        jobs = [
+            {
+                "id": f"job-{index}",
+                "title": f"Platform Engineer {index}",
+                "company": "Acme",
+                "url": f"https://example.com/job-{index}",
+            }
+            for index in range(8)
+        ]
+        scanned_urls = [job["url"] for job in jobs[:5]]
+        db = self.store.read_db()
+        db["scannedJobKeys"] = scanned_urls
+        db["scannedJobs"] = [{"dedupe_key": url} for url in scanned_urls]
+        with open(self._temp_path, "w", encoding="utf-8") as handle:
+            json.dump(db, handle)
+
+        engine = self._engine([FakeScanner("SourceA", jobs)])
+        enrich_calls: List[str] = []
+
+        def fake_score(job, profile):
+            enrich_calls.append(job["id"])
+            return {
+                "score": 95,
+                "extractedSkills": ["Python"],
+                "seniority": "Senior",
+                "fitExplanation": "strong fit",
+            }
+
+        self._bind_enrich(engine, fake_score)
+        added = engine.run(
+            min_match_score=MATCH_SCORE_THRESHOLD,
+            min_jobs=1,
+            limit_per_source=2,
+        )
+
+        self.assertGreaterEqual(len(enrich_calls), 1)
+        self.assertTrue(any(job_id.startswith("job-5") for job_id in enrich_calls))
+        self.assertEqual(len(added), 1)
+
+    def test_stops_when_catalog_fully_scanned_without_hitting_fetch_limit(self):
+        """Stop ramping once every listing from a source is already scanned."""
+        os.environ["SCANNER_LIMIT_STEP"] = "2"
+        os.environ["SCANNER_MAX_LIMIT_PER_SOURCE"] = "10"
+        jobs = [
+            {
+                "id": f"job-{index}",
+                "title": f"Role {index}",
+                "company": "Acme",
+                "url": f"https://example.com/job-{index}",
+            }
+            for index in range(4)
+        ]
+        scanned_urls = [job["url"] for job in jobs]
+        db = self.store.read_db()
+        db["scannedJobKeys"] = scanned_urls
+        db["scannedJobs"] = [{"dedupe_key": url} for url in scanned_urls]
+        with open(self._temp_path, "w", encoding="utf-8") as handle:
+            json.dump(db, handle)
+
+        engine = self._engine([FakeScanner("SourceA", jobs)])
+        enrich_calls: List[str] = []
+
+        def fake_score(job, profile):
+            enrich_calls.append(job["id"])
+            return {
+                "score": 95,
+                "extractedSkills": [],
+                "seniority": "Senior",
+                "fitExplanation": "strong fit",
+            }
+
+        self._bind_enrich(engine, fake_score)
+        added = engine.run(
+            min_match_score=MATCH_SCORE_THRESHOLD,
+            min_jobs=1,
+            limit_per_source=2,
+        )
+
+        self.assertEqual(enrich_calls, [])
+        self.assertEqual(added, [])
 
 
 if __name__ == "__main__":
