@@ -1,0 +1,67 @@
+{
+  "name": "AI Job Hunter — main branch protection",
+  "target": "branch",
+  "source_type": "Repository",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [],
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true,
+        "allowed_merge_methods": ["merge", "squash", "rebase"]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          { "context": "CI / lint" },
+          { "context": "CI / tests" },
+          { "context": "CI / build" },
+          { "context": "CI / docker" },
+          { "context": "CI / docs" },
+          { "context": "CI / markdown" },
+          { "context": "CI / format" },
+          { "context": "CI / gitleaks" },
+          { "context": "CI / duplicate-code" },
+          { "context": "CI / dead-code" },
+          { "context": "CI / architecture" },
+          { "context": "CI / semgrep" },
+          { "context": "CI / spellcheck" },
+          { "context": "CI / actionlint" },
+          { "context": "CodeQL / Analyze (javascript-typescript)" },
+          { "context": "CodeQL / Analyze (python)" },
+          { "context": "Dependency Review / dependency-review" }
+        ]
+      }
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "commit_message_pattern",
+      "parameters": {
+        "name": "Conventional Commits (commitlint)",
+        "negate": false,
+        "operator": "regex",
+        "pattern": "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\\([a-z0-9._/-]+\\))?!?: .{1,72}$"
+      }
+    }
+  ]
+}
