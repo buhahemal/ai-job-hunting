@@ -82,6 +82,7 @@ jobs:
           SCANNER_LIMIT_STEP: '50'
           SCANNER_MAX_LIMIT_PER_SOURCE: '2000'
           SCANNER_MAX_EVALUATIONS: '3000'
+          ATS_DISCOVERY_ENABLED: 'true'
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           START=$(date +%s)

@@ -190,6 +190,11 @@ export interface ProfileRecord {
     companySizes: string[];
     targetCompanies: string[];
     skillsKeywords: string[];
+    companyBlacklist: string[];
+    titleBlacklist: string[];
+    locationBlacklist: string[];
+    experienceLevels: string[];
+    applyOncePerCompany: boolean;
   };
   matchSettings: ProfileMatchSettings;
   masterResumeLaTeX: string;

@@ -7,6 +7,7 @@ from scraper.ai_matcher import AIMatcher
 from scraper.paths import DATA_FILE
 from packages.scanner_sdk.python.base import BaseScanner
 from packages.scanner_sdk.python.dedupe import job_dedupe_key, merge_scanned_keys, scan_run_id, scanned_job_record
+from packages.scanner_sdk.python.filters import evaluate_job_preferences
 from packages.scanner_sdk.python.registry import get_registered_scanners
 
 from packages.database.python.constants import (
@@ -370,6 +371,18 @@ class ScannerEngine:
                 break
 
             canonical = scraper.normalize(raw_job)
+            preference = evaluate_job_preferences(
+                canonical,
+                profile,
+                existing_jobs + added_jobs,
+            )
+            if not preference.allowed:
+                stats["skipped_preference"] += 1
+                print(
+                    f"[ScannerEngine] Skipped by preference ({preference.reason}): "
+                    f"job_id={ScannerEngine._job_log_ref(canonical)}"
+                )
+                continue
             dedupe_key = job_dedupe_key(canonical)
 
             if dedupe_key in evaluated_keys:
@@ -385,8 +398,17 @@ class ScannerEngine:
             enriched = ScannerEngine._enrich_job_static(
                 canonical, profile, matcher, existing_jobs + added_jobs
             )
+            enriched_preference = evaluate_job_preferences(
+                enriched,
+                profile,
+                existing_jobs + added_jobs,
+            )
+            if not enriched_preference.allowed:
+                stats["skipped_preference"] += 1
+                continue
             score = ScannerEngine._coerce_score({"score": enriched.get("score", 0)})
-            promoted = not enriched.get("isDuplicate") and score > threshold
+            stats[ScannerEngine._score_bucket(score)] += 1
+            promoted = not enriched.get("isDuplicate") and score >= threshold
             scan_insights.append(
                 scanned_job_record(
                     enriched,
@@ -403,10 +425,10 @@ class ScannerEngine:
                 )
                 continue
 
-            if score <= threshold:
+            if score < threshold:
                 stats["ignored_low_score"] += 1
                 print(
-                    f"[ScannerEngine] Ignored (match {score}% <= {threshold}%): "
+                    f"[ScannerEngine] Ignored (match {score}% < {threshold}%): "
                     f"job_id={ScannerEngine._job_log_ref(enriched)}"
                 )
                 continue
@@ -452,6 +474,16 @@ class ScannerEngine:
         return str(job.get('id') or job.get('externalId') or job.get('source') or 'unknown')
 
     @staticmethod
+    def _score_bucket(score: int) -> str:
+        if score < 70:
+            return "score_0_69"
+        if score < 80:
+            return "score_70_79"
+        if score < 90:
+            return "score_80_89"
+        return "score_90_100"
+
+    @staticmethod
     def _coerce_score(analysis: Dict) -> int:
         score = analysis.get("score")
         if isinstance(score, (int, float)):
@@ -484,7 +516,7 @@ class ScannerEngine:
 
         print("=== AI Job Hunter: Starting Automated Scraper Pipeline ===")
         print(
-            f"[ScannerEngine] Match policy: score must exceed {threshold}% "
+            f"[ScannerEngine] Match policy: score must be at least {threshold}% "
             f"(target {target_jobs} job(s) per scan)."
         )
         print(
@@ -515,6 +547,11 @@ class ScannerEngine:
             "skipped_repeat": 0,
             "skipped_previously_scanned": 0,
             "skipped_duplicate": 0,
+            "skipped_preference": 0,
+            "score_0_69": 0,
+            "score_70_79": 0,
+            "score_80_89": 0,
+            "score_90_100": 0,
         }
 
         if scanned_at_start:
@@ -612,18 +649,27 @@ class ScannerEngine:
             target = "Supabase"
             print(
                 f"[ScannerEngine] Sync complete! Registered {len(added_jobs)} job(s) "
-                f"with match score above {threshold}% in {target} "
+                f"with match score at least {threshold}% in {target} "
                 f"({pass_num} pass(es), {stats['evaluated']} evaluated)."
             )
         else:
             print(
-                f"[ScannerEngine] Sync complete! No jobs exceeded the {threshold}% match threshold "
+                f"[ScannerEngine] Sync complete! No jobs met the {threshold}% match threshold "
                 f"after {pass_num} pass(es) "
                 f"(evaluated {stats['evaluated']}, ignored {stats['ignored_low_score']}, "
                 f"skipped previously scanned {stats['skipped_previously_scanned']}, "
                 f"skipped duplicate {stats['skipped_duplicate']}, "
+                f"skipped preference {stats['skipped_preference']}, "
                 f"skipped repeat {stats['skipped_repeat']})."
             )
+
+        print(
+            "[ScannerEngine] Score histogram: "
+            f"0-69={stats['score_0_69']}, "
+            f"70-79={stats['score_70_79']}, "
+            f"80-89={stats['score_80_89']}, "
+            f"90-100={stats['score_90_100']}."
+        )
 
         if len(added_jobs) < target_jobs:
             print(

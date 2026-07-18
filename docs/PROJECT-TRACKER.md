@@ -32,14 +32,16 @@ Single view of what is **built**, **in progress**, and **pending** across all 11
 
 ### Job discovery & scanning
 
-| Capability            | Location                                         | Notes                                                     |
-| --------------------- | ------------------------------------------------ | --------------------------------------------------------- |
-| Scanner plugin SDK    | `packages/scanner_sdk/`                          | `discover_jobs`, `normalize`, `health_check`              |
-| 12+ source plugins    | `scanners/*`                                     | Greenhouse, Lever, RemoteOK, Ashby, Workday, Wellfound, … |
-| Scanner cron pipeline | `.github/workflows/pipeline-cron.yml`            | HF embeddings on GitHub runner                            |
-| Scan Insights store   | `scanned_jobs` table + dashboard tab             | Below-threshold jobs retained for review                  |
-| Manual rescan         | `POST /api/scan-insights/rescan`, `RescanEngine` | Re-scores when profile changes                            |
-| Promotion threshold   | `profile.matchSettings.minMatchScore`            | Default 90%; env override still supported                 |
+| Capability            | Location                                         | Notes                                                    |
+| --------------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| Scanner plugin SDK    | `packages/scanner_sdk/`                          | `discover_jobs`, `normalize`, `health_check`             |
+| 14+ source plugins    | `scanners/*`                                     | Adds Remotive + HN Who is Hiring to ATS and remote feeds |
+| Scanner cron pipeline | `.github/workflows/pipeline-cron.yml`            | HF embeddings on GitHub runner                           |
+| Scan Insights store   | `scanned_jobs` table + dashboard tab             | Below-threshold jobs retained for review                 |
+| Manual rescan         | `POST /api/scan-insights/rescan`, `RescanEngine` | Re-scores when profile changes                           |
+| Promotion threshold   | `profile.matchSettings.minMatchScore`            | Inclusive default 80%; env override still supported      |
+| Remote eligibility    | `remote_policy.py`                               | Worldwide boost; geo/clearance restrictions explained    |
+| Preference prefilter  | `scanner_sdk/python/filters.py`                  | Blacklists, experience levels, one lead per company      |
 
 ### AI matching & enrichment
 
@@ -53,14 +55,14 @@ Single view of what is **built**, **in progress**, and **pending** across all 11
 
 ### Profile & match criteria
 
-| Capability             | Location                                            | Notes                                            |
-| ---------------------- | --------------------------------------------------- | ------------------------------------------------ |
-| Unified profile schema | `ProfileRecord` in `packages/database/`             | summary, skillGroups, matchSettings, preferences |
-| Full profile UI        | `apps/dashboard/src/components/profile/`            | Import JSON, all fields editable                 |
-| Profile API            | `GET/POST /api/profile`, `POST /api/profile/import` | Validates + regenerates LaTeX on save            |
-| Seed-if-empty sync     | `scripts/sync_profile_to_supabase.py`               | Does not overwrite dashboard edits               |
-| Match preferences UI   | ProfileView → Match Preferences                     | locations, remote, companies, skill keywords     |
-| Min match score UI     | ProfileView → Advanced                              | Slider 70–95%; scanner reads from profile        |
+| Capability             | Location                                            | Notes                                              |
+| ---------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| Unified profile schema | `ProfileRecord` in `packages/database/`             | summary, skillGroups, matchSettings, preferences   |
+| Full profile UI        | `apps/dashboard/src/components/profile/`            | Import JSON, all fields editable                   |
+| Profile API            | `GET/POST /api/profile`, `POST /api/profile/import` | Validates + regenerates LaTeX on save              |
+| Seed-if-empty sync     | `scripts/sync_profile_to_supabase.py`               | Does not overwrite dashboard edits                 |
+| Match preferences UI   | ProfileView → Match Preferences                     | locations, skills, blacklists, levels, one/company |
+| Min match score UI     | ProfileView → Advanced                              | Slider 70–95%; scanner reads from profile          |
 
 ### Resume generation
 

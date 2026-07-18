@@ -401,6 +401,39 @@ export default function ProfileView({
           placeholder="Microservices, CI/CD"
           onChange={(skillsKeywords) => updatePreferences({ skillsKeywords })}
         />
+        <TagListEditor
+          label="Excluded companies"
+          description="Jobs from these companies are filtered before scoring."
+          items={profile.preferences.companyBlacklist}
+          placeholder="Crossover, Example Corp"
+          onChange={(companyBlacklist) => updatePreferences({ companyBlacklist })}
+        />
+        <TagListEditor
+          label="Excluded job titles"
+          items={profile.preferences.titleBlacklist}
+          placeholder="Intern, Sales Engineer"
+          onChange={(titleBlacklist) => updatePreferences({ titleBlacklist })}
+        />
+        <TagListEditor
+          label="Excluded locations"
+          items={profile.preferences.locationBlacklist}
+          placeholder="US only, On-site"
+          onChange={(locationBlacklist) => updatePreferences({ locationBlacklist })}
+        />
+        <TagListEditor
+          label="Experience levels"
+          items={profile.preferences.experienceLevels}
+          placeholder="Senior, Lead, Staff"
+          onChange={(experienceLevels) => updatePreferences({ experienceLevels })}
+        />
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={profile.preferences.applyOncePerCompany}
+            onChange={(event) => updatePreferences({ applyOncePerCompany: event.target.checked })}
+          />
+          Show only one active lead per company
+        </label>
       </SectionCard>
 
       <SectionCard title="Advanced Match Settings">

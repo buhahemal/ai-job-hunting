@@ -187,7 +187,13 @@
     "QJPW",
     "jsdata",
     "Aiqs",
-    "PCSX"
+    "PCSX",
+    "Remotive",
+    "remotive",
+    "hackernews",
+    "Glassdoor",
+    "Craftr",
+    "prefilter"
   ],
   "ignorePaths": [
     "node_modules",

@@ -6,6 +6,7 @@ import json
 
 from apps.api.paths import MASTER_RESUME_TEX, PROFILE_JSON
 from packages.config.python.paths import MASTER_RESUME_JSON
+from packages.database.python.constants import MATCH_SCORE_THRESHOLD
 
 
 def load_master_resume_json() -> dict:
@@ -39,7 +40,7 @@ def build_default_profile() -> dict:
         **profile_base,
         "summary": master.get("summary", ""),
         "skillGroups": master.get("skillGroups", []),
-        "matchSettings": {"minMatchScore": 90},
+        "matchSettings": {"minMatchScore": MATCH_SCORE_THRESHOLD},
     }
 
     if not merged.get("experience") and master.get("experience"):

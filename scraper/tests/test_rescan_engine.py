@@ -78,6 +78,27 @@ class TestRescanEngine(unittest.TestCase):
         second = profile_hash(PROFILE)
         self.assertEqual(first, second)
 
+    @patch('scraper.rescan_engine.enrich_job')
+    def test_rescan_promotes_job_at_threshold_boundary(self, mock_enrich):
+        mock_enrich.return_value = {
+            'id': 'job-1',
+            'title': 'Backend Engineer',
+            'company': 'Acme',
+            'source': 'Greenhouse',
+            'url': 'https://example.com/job-1',
+            'applicationUrl': 'https://example.com/job-1',
+            'score': MATCH_SCORE_THRESHOLD,
+            'matchInsights': {'skillMatchConfidence': 80},
+        }
+
+        RescanEngine(self.store, batch_size=1).run()
+
+        updated = self.store.list_scanned_job_rows()[0]
+        self.assertTrue(updated['promoted_to_jobs'])
+        self.assertEqual(updated['promotion_type'], 'auto')
+        persisted = self.store.read_db()['jobs']
+        self.assertEqual([job['id'] for job in persisted], ['job-1'])
+
     @patch('packages.ai_engine.python.job_enricher.matcher.score_job')
     def test_rescan_updates_stale_inverted_gaps(self, mock_score):
         mock_score.return_value = {

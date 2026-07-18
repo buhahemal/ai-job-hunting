@@ -187,7 +187,7 @@ export default function ScanInsightsView() {
             <div className="text-[10px] font-bold uppercase text-slate-400 mb-1">Promoted</div>
             <div className="text-2xl font-extrabold text-emerald-700">{summary.promotedCount}</div>
             <p className="text-[10px] text-slate-400 mt-1">
-              Score &gt; {MATCH_SCORE_THRESHOLD}% → Job Leads
+              Score ≥ {MATCH_SCORE_THRESHOLD}% → Job Leads
             </p>
           </div>
 

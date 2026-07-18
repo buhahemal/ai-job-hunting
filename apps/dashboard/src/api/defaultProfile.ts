@@ -11,7 +11,20 @@ export const DEFAULT_PROFILE: Profile = {
   >),
   summary: (masterResume as { summary?: string }).summary ?? '',
   skillGroups: (masterResume as { skillGroups?: Profile['skillGroups'] }).skillGroups ?? [],
-  matchSettings: { minMatchScore: 90 },
+  preferences: {
+    locations: [],
+    remotePreference: 'Any',
+    companySizes: [],
+    targetCompanies: [],
+    skillsKeywords: [],
+    companyBlacklist: [],
+    titleBlacklist: [],
+    locationBlacklist: [],
+    experienceLevels: [],
+    applyOncePerCompany: false,
+    ...((profileBase as Partial<Profile>).preferences ?? {}),
+  },
+  matchSettings: { minMatchScore: 80 },
   masterResumeLaTeX,
 };
 

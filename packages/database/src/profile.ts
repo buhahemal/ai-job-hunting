@@ -30,6 +30,11 @@ const STORED_PROFILE_DEFAULTS: ProfileRecord = {
     companySizes: [],
     targetCompanies: [],
     skillsKeywords: [],
+    companyBlacklist: [],
+    titleBlacklist: [],
+    locationBlacklist: [],
+    experienceLevels: [],
+    applyOncePerCompany: false,
   },
   matchSettings: {
     minMatchScore: MATCH_SCORE_THRESHOLD,

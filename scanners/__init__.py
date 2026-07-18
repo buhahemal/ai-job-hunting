@@ -3,8 +3,10 @@
 from packages.scanner_sdk.python.base import BaseScanner
 from scanners.company_pages import CompanyPagesScanner
 from scanners.greenhouse import GreenhouseScanner
+from scanners.hackernews import HackerNewsScanner
 from scanners.lever import LeverScanner
 from scanners.remoteok import RemoteOkScanner
+from scanners.remotive import RemotiveScanner
 from scanners.smartrecruiters import SmartRecruitersScanner
 from scanners.teamtailor import TeamtailorScanner
 from scanners.weworkremotely import WeWorkRemotelyScanner
@@ -14,8 +16,10 @@ __all__ = [
     'BaseScanner',
     'CompanyPagesScanner',
     'GreenhouseScanner',
+    'HackerNewsScanner',
     'LeverScanner',
     'RemoteOkScanner',
+    'RemotiveScanner',
     'SmartRecruitersScanner',
     'TeamtailorScanner',
     'WeWorkRemotelyScanner',

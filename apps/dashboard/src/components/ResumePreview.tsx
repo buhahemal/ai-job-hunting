@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, FileText, Code, Printer, Award, Download } from 'lucide-react';
+import { AlertCircle, Copy, Check, FileText, Code, Printer, Award, Download } from 'lucide-react';
 import { listJobResumes, type JobResumeVersion } from '../api/client';
 import { Job } from '../types';
 
@@ -275,6 +275,43 @@ export default function ResumePreview({
               </span>
             ),
           )}
+        </div>
+      ) : null}
+
+      {job.matchInsights &&
+      (job.matchInsights.matchedSkills.length > 0 ||
+        job.matchInsights.missingKeywords.length > 0) ? (
+        <div className="grid gap-3 border-b border-slate-100 bg-white px-4 py-3 md:grid-cols-2">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+              Matched ATS keywords
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {job.matchInsights.matchedSkills.slice(0, 10).map((keyword) => (
+                <span
+                  key={keyword}
+                  className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-amber-700">
+              Missing keywords to verify
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {job.matchInsights.missingKeywords.slice(0, 10).map((keyword) => (
+                <span
+                  key={keyword}
+                  className="rounded bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       ) : null}
 

@@ -1,0 +1,6 @@
+{
+  "greenhouse": ["cloudflare", "datadog", "hashicorp", "stripe"],
+  "lever": ["netlify"],
+  "workable": [],
+  "ashby": []
+}

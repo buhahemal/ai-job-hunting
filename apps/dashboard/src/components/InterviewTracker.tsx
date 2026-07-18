@@ -75,6 +75,17 @@ export default function InterviewTracker({
         </button>
       </div>
 
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {(['Shortlisted', 'Applied', 'Interviewing', 'Offer'] as const).map((status) => (
+          <div key={status} className="rounded-xl border border-slate-200 bg-white p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{status}</p>
+            <p className="mt-1 text-xl font-extrabold text-slate-800">
+              {jobs.filter((job) => job.status === status).length}
+            </p>
+          </div>
+        ))}
+      </div>
+
       {/* Add Interview Form Panel */}
       {showAddForm && (
         <form

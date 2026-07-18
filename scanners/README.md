@@ -10,7 +10,9 @@ Each scanner lives in its own folder and implements `discover_jobs()`, `normaliz
 | `teamtailor/`      | Teamtailor jobs.json     | `TEAMTAILOR_COMPANY_SLUGS`                               | None         |
 | `workable/`        | Workable widget API      | `WORKABLE_ACCOUNT_SLUGS`                                 | None         |
 | `remoteok/`        | RemoteOK JSON API        | None (attribution required on dashboard)                 | None         |
+| `remotive/`        | Remotive public API      | None                                                     | None         |
 | `weworkremotely/`  | We Work Remotely RSS     | None                                                     | None         |
+| `hackernews/`      | HN Who is Hiring         | None (Algolia public API)                                | None         |
 | `company_pages/`   | Company career pages     | None (Google, Microsoft, EPAM, Globant, Datadog, Stripe) | None         |
 | `arbeitnow/`       | Arbeitnow JSON API       | None                                                     | None         |
 | `ashby/`           | Ashby posting API        | `ASHBY_JOB_BOARD_SLUGS`                                  | None         |
@@ -18,6 +20,11 @@ Each scanner lives in its own folder and implements `discover_jobs()`, `normaliz
 | `wellfound/`       | Wellfound search Apollo  | `WELLFOUND_SEARCH_PATHS`                                 | None         |
 
 Legacy: `GREENHOUSE_BOARD_TOKEN` (single board) is still supported.
+
+Set `ATS_DISCOVERY_ENABLED=true` to merge reviewed identifiers from
+`scanners/ats-seeds.json` with explicitly configured Greenhouse, Lever, Workable,
+and Ashby values. Explicit environment values always take precedence and are never
+removed.
 
 Orchestration: `scraper/scanner_engine.py` via `get_registered_scanners()`.
 

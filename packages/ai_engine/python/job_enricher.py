@@ -12,9 +12,10 @@ from packages.ai_engine.python.duplicate_detector import find_embedding_duplicat
 from packages.ai_engine.python.salary_extractor import NOT_SPECIFIED, extract_salary
 from packages.ai_engine.python.skill_matcher import compute_skill_match, extract_job_requirements
 from packages.ai_engine.python.text_builder import infer_seniority
+from packages.config.python.remote_policy import analyze_remote_eligibility
 from packages.database.python.constants import (
     FULL_MATCH_SKILL_SCORE_FLOOR,
-    LOW_CONFIDENCE_OVERALL_CAP,
+    LOW_CONFIDENCE_SCORE_PENALTY,
     SKILL_MATCH_CONFIDENCE_MIN,
 )
 
@@ -239,12 +240,17 @@ def _compute_remote_match(job: Dict, profile: Dict) -> int:
     preference = (profile.get('preferences') or {}).get('remotePreference', 'Any')
     remote_type = job.get('remoteType', 'Hybrid')
     if preference == 'Any':
-        return 85
-    if remote_type == preference:
-        return 95
-    if remote_type == 'Hybrid' and preference == 'Remote':
-        return 60
-    return 35
+        base = 85
+    elif remote_type == preference:
+        base = 95
+    elif remote_type == 'Hybrid' and preference == 'Remote':
+        base = 60
+    else:
+        base = 35
+    eligibility = analyze_remote_eligibility(
+        f"{job.get('location', '')} {job.get('description', '')}"
+    )
+    return _clamp(base + eligibility.score_adjustment)
 
 
 def _compute_company_match(job: Dict, profile: Dict) -> int:
@@ -315,7 +321,7 @@ def _compute_overall_score(
         + preferred_coverage * 0.05
     )
     if skill_result.skill_match_confidence < SKILL_MATCH_CONFIDENCE_MIN:
-        overall = min(overall, LOW_CONFIDENCE_OVERALL_CAP)
+        overall = _clamp(overall - LOW_CONFIDENCE_SCORE_PENALTY)
     return overall
 
 
@@ -402,6 +408,9 @@ def enrich_job(
     missing_skills = skill_result.missing_skills
     experience_score = _compute_experience_match(job, profile)
     remote_score = _compute_remote_match(job, profile)
+    remote_eligibility = analyze_remote_eligibility(
+        f"{job.get('location', '')} {job.get('description', '')}"
+    )
     company_score = _compute_company_match(job, profile)
     location_score = _compute_location_match(job, profile)
     salary_score = _compute_salary_match(job)
@@ -437,6 +446,7 @@ def enrich_job(
         **job,
         'seniority': seniority,
         'remoteType': analysis.get('remoteType', job.get('remoteType', 'Hybrid')),
+        'remoteEligibility': remote_eligibility.status,
         'salaryEstimate': _resolve_salary_estimate(job, analysis),
         'extractedSkills': analysis.get('extractedSkills') or matched_skills,
         'employmentType': employment_type,

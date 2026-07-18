@@ -1,7 +1,7 @@
 export { createBrowserClient, readSupabaseEnvFromImportMeta } from './client.js';
 export {
   FULL_MATCH_SKILL_SCORE_FLOOR,
-  LOW_CONFIDENCE_OVERALL_CAP,
+  LOW_CONFIDENCE_SCORE_PENALTY,
   MATCH_SCORE_NEAR_MISS,
   MATCH_SCORE_NEAR_MISS_BAND,
   MATCH_SCORE_THRESHOLD,

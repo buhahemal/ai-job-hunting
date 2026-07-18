@@ -136,7 +136,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         engine = self._engine(scanners)
 
         def fake_score(job, profile):
-            score = 70 if job["id"] == "low-1" else 92
+            score = 70 if job["id"] == "low-1" else MATCH_SCORE_THRESHOLD
             return {"score": score, "extractedSkills": [], "seniority": "Senior", "fitExplanation": "test"}
 
         self._bind_enrich(engine, fake_score)
@@ -144,7 +144,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
 
         self.assertEqual(len(added), 1)
         self.assertEqual(added[0]["id"], "high-1")
-        self.assertGreater(added[0]["score"], MATCH_SCORE_THRESHOLD)
+        self.assertGreaterEqual(added[0]["score"], MATCH_SCORE_THRESHOLD)
         self.assertIn("https://example.com/low-1", self.store.get_scanned_keys())
         self.assertIn("https://example.com/high-1", self.store.get_scanned_keys())
 
@@ -177,7 +177,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=5)
 
         self.assertEqual(len(added), 3)
-        self.assertTrue(all(job["score"] > MATCH_SCORE_THRESHOLD for job in added))
+        self.assertTrue(all(job["score"] >= MATCH_SCORE_THRESHOLD for job in added))
 
     def test_persists_nothing_when_all_scores_too_low(self):
         scanners = [
@@ -273,7 +273,7 @@ class TestScannerEngineMatchPolicy(unittest.TestCase):
         added = engine.run(min_match_score=MATCH_SCORE_THRESHOLD, min_jobs=3, limit_per_source=2)
 
         self.assertEqual(len(added), 3)
-        self.assertTrue(all(job["score"] > MATCH_SCORE_THRESHOLD for job in added))
+        self.assertTrue(all(job["score"] >= MATCH_SCORE_THRESHOLD for job in added))
 
     def test_evaluates_all_source_jobs_before_stopping(self):
         os.environ["SCANNER_MAX_PASSES"] = "0"

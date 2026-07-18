@@ -49,7 +49,7 @@ Deterministic regex/heuristics in `salary_extractor.py` — extracts `$120k`, `3
 | `AI_DUPLICATE_THRESHOLD`   | `0.92`                                                | Embedding cosine threshold for duplicates |
 | Variable                   | Default (see `packages/database/python/constants.py`) | Description                               |
 | `SCANNER_MIN_MATCH_SCORE`  | `90`                                                  | Jobs must score above this to persist     |
-| `SCANNER_MIN_JOBS_PER_RUN` | `3`                                                   | Target qualifying jobs per scan           |
+| `SCANNER_MIN_JOBS_PER_RUN` | `25`                                                  | Target qualifying jobs per scan           |
 
 ## Tests
 

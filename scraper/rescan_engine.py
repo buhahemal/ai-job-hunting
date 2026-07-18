@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Protocol
 from packages.ai_engine.python.job_enricher import enrich_job
 from packages.scanner_sdk.python.dedupe import scanned_job_record
 from packages.database.python.constants import SCANNER_SCAN_INSIGHT_BATCH_SIZE
+from packages.database.python.profile_helpers import resolve_min_match_score
 from scraper.scanner_engine import ScanInsightBuffer, ScannerEngine
 
 
@@ -25,6 +26,7 @@ class RescanStore(Protocol):
     def list_scanned_job_rows(self, *, limit: Optional[int] = None) -> List[Dict]: ...
 
     def record_scanned_jobs(self, records: List[Dict]) -> None: ...
+    def persist_new_jobs(self, jobs: List[Dict]) -> None: ...
 
 
 def scanned_row_to_job(row: Dict) -> Dict:
@@ -75,15 +77,20 @@ class RescanEngine:
         p_hash = profile_hash(profile)
         rows = self._store.list_scanned_job_rows(limit=limit)
         buffer = ScanInsightBuffer(self._store, batch_size=self._batch_size)
-        threshold = ScannerEngine.min_match_score()
+        threshold = resolve_min_match_score(profile)
         rescored = 0
+        newly_promoted: List[Dict] = []
 
         for row in rows:
             job = scanned_row_to_job(row)
             enriched = enrich_job(job, profile, existing_jobs=[])
             score = int(enriched.get('score', 0))
-            promoted = bool(row.get('promoted_to_jobs')) or score > threshold
-            promotion_type = row.get('promotion_type') or ('auto' if promoted and score > threshold else None)
+            was_promoted = bool(row.get('promoted_to_jobs'))
+            qualifies = score >= threshold
+            promoted = was_promoted or qualifies
+            promotion_type = row.get('promotion_type') or ('auto' if qualifies else None)
+            if qualifies and not was_promoted:
+                newly_promoted.append(enriched)
 
             record = scanned_job_record(
                 enriched,
@@ -100,4 +107,6 @@ class RescanEngine:
             rescored += 1
 
         buffer.flush()
+        if newly_promoted:
+            self._store.persist_new_jobs(newly_promoted)
         return rescored

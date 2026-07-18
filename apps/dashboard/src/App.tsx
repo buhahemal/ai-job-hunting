@@ -516,6 +516,19 @@ export default function App() {
                                   {job.primaryStack}
                                 </span>
                               )}
+                              {job.remoteType === 'Remote' && (
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                                    (job.matchInsights?.remoteMatchScore ?? 0) >= 90
+                                      ? 'bg-emerald-50 text-emerald-700'
+                                      : 'bg-amber-50 text-amber-700'
+                                  }`}
+                                >
+                                  {(job.matchInsights?.remoteMatchScore ?? 0) >= 90
+                                    ? 'Worldwide fit'
+                                    : 'Check region'}
+                                </span>
+                              )}
                             </div>
                           </div>
 

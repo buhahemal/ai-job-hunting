@@ -54,8 +54,8 @@ Every evaluated job — including sub-threshold rejects — is persisted as a **
 | `HF_HOME`                         | No       | Hugging Face model cache (default `~/.cache/huggingface`) |
 | `AI_SCORER`                       | No       | `embedding` (default) or `heuristic`                      |
 | `AI_DUPLICATE_THRESHOLD`          | No       | Embedding duplicate cosine threshold (default `0.92`)     |
-| `SCANNER_MIN_MATCH_SCORE`         | No       | Minimum match threshold (default `90`)                    |
-| `SCANNER_MIN_JOBS_PER_RUN`        | No       | Target jobs per scan (default `3`)                        |
+| `SCANNER_MIN_MATCH_SCORE`         | No       | Minimum match threshold (default `80`)                    |
+| `SCANNER_MIN_JOBS_PER_RUN`        | No       | Target jobs per scan (default `25`)                       |
 | `SCANNER_MAX_PASSES`              | No       | Pass safety cap; `0` = scan until exhausted (default `0`) |
 | `SCANNER_LIMIT_STEP`              | No       | Increase per-source fetch limit each pass (default `50`)  |
 | `SCANNER_MAX_LIMIT_PER_SOURCE`    | No       | Cap jobs fetched per source per pass (default `2000`)     |

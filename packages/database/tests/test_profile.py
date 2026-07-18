@@ -16,7 +16,7 @@ class TestStoredProfile(unittest.TestCase):
 
     def test_match_settings_default(self):
         profile = normalize_stored_profile({})
-        self.assertEqual(profile['matchSettings']['minMatchScore'], 90)
+        self.assertEqual(profile['matchSettings']['minMatchScore'], 80)
         self.assertEqual(profile['summary'], '')
 
     def test_does_not_inject_file_defaults_when_skills_missing(self):
