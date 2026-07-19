@@ -1,0 +1,45 @@
+name: Database Migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - '.github/workflows/db-migrate.yml'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (check pending migrations without applying)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: Run Supabase DB Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.4.0
+        with:
+          python-version: '3.11'
+
+      - name: Install DB Migration dependencies
+        run: pip install psycopg2-binary supabase requests
+
+      - name: Execute Database Migrations
+        env:
+          PYTHONPATH: .
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: python3 scripts/db_migrate.py
