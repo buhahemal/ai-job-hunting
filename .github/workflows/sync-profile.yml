@@ -1,30 +1,61 @@
-name: Sync Profile to Supabase
+name: Sync Profile & Reset Data
 
 on:
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Operation to perform'
+        required: true
+        default: 'sync-profile'
+        type: choice
+        options:
+          - 'sync-profile'
+          - 'reset-jobs'
+          - 'reset-all'
+      force_overwrite:
+        description: 'Force overwrite candidate profile in database'
+        required: false
+        default: false
+        type: boolean
+      profile_json:
+        description: 'Optional: Paste inline custom Candidate Profile JSON'
+        required: false
+        default: ''
+        type: string
   push:
     branches: [main]
     paths:
       - 'apps/api/data/profile.json'
-      - 'apps/api/data/resume/master.json'
-      - 'apps/api/data/resume/template.tex'
-      - 'apps/api/data/resume/master.tex'
+      - 'apps/api/data/profile.example.json'
       - 'apps/api/defaults.py'
       - 'scripts/sync_profile_to_supabase.py'
+      - 'scripts/reset_and_sync_profile.py'
       - '.github/workflows/sync-profile.yml'
 
 jobs:
   sync:
-    name: Upsert profile
+    name: Execute Data & Profile Operation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
       - uses: ./.github/actions/setup-python
 
-      - name: Sync default profile to Supabase
+      - name: Run Profile Sync or Data Reset Operation
         env:
           PYTHONPATH: .
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: python3 scripts/sync_profile_to_supabase.py
+          ACTION: ${{ inputs.action || 'sync-profile' }}
+          FORCE_OVERWRITE: ${{ inputs.force_overwrite }}
+          PROFILE_JSON: ${{ inputs.profile_json }}
+        run: |
+          CMD_ARGS="--action $ACTION"
+          if [ "$FORCE_OVERWRITE" = "true" ]; then
+            CMD_ARGS="$CMD_ARGS --force"
+          fi
+          if [ -n "$PROFILE_JSON" ]; then
+            CMD_ARGS="$CMD_ARGS --profile-input '$PROFILE_JSON'"
+          fi
+
+          python3 scripts/reset_and_sync_profile.py $CMD_ARGS
