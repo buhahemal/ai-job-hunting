@@ -4,7 +4,6 @@ import {
   Calendar,
   BarChart2,
   User,
-  FileText,
   Plus,
   RefreshCw,
   ChevronRight,
@@ -12,16 +11,13 @@ import {
   Sparkles,
   MapPin,
   DollarSign,
-  FileCheck,
   Info,
   Radar,
 } from 'lucide-react';
 import * as api from './api/client';
 import { getProfileInitials } from './api/defaultProfile';
 import ProfileView from './components/profile/ProfileView';
-import { isProfileCompleteForMatching } from '@ai-job-hunter/database';
 import { Profile, Job, Interview } from './types';
-import ResumePreview from './components/ResumePreview';
 import AnalyticsView from './components/AnalyticsView';
 import InterviewTracker from './components/InterviewTracker';
 import JobDetailPanel from './components/JobDetailPanel';
@@ -30,7 +26,7 @@ import ScanInsightsView from './components/ScanInsightsView';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'scanInsights' | 'tailor' | 'interviews' | 'analytics' | 'profile'
+    'dashboard' | 'scanInsights' | 'interviews' | 'analytics' | 'profile'
   >('dashboard');
 
   // App States
@@ -39,7 +35,6 @@ export default function App() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [scanning, setScanning] = useState(false);
-  const [tailoringId, setTailoringId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<JobFilterState>({
     searchQuery: '',
@@ -67,9 +62,6 @@ export default function App() {
   // Profile Form States
   const [profileForm, setProfileForm] = useState<Profile | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [tailoredResumeMeta, setTailoredResumeMeta] = useState<
-    api.TailorJobResult['resume'] | null
-  >(null);
 
   // General Notification Log
   const [notif, setNotif] = useState<{
@@ -148,50 +140,6 @@ export default function App() {
       showNotif('Notes saved successfully.', 'success');
     } catch (_e) {
       showNotif('Failed to save notes.', 'error');
-    }
-  };
-
-  // 5. Tailor Resume/Cover Letter with AI
-  const handleTailorJob = async (jobId: string) => {
-    if (profile && !isProfileCompleteForMatching(profile)) {
-      showNotif('Complete your profile before tailoring (Profile tab).', 'error');
-      setActiveTab('profile');
-      return;
-    }
-    setTailoringId(jobId);
-    showNotif('Tailoring resume: reordering skills and bullets for this job...', 'info');
-    try {
-      const result = await api.tailorJob(jobId);
-      setJobs((prev) => prev.map((j) => (j.id === jobId ? result.job : j)));
-      setSelectedJob(result.job);
-      setTailoredResumeMeta(result.resume ?? null);
-      setActiveTab('tailor');
-      showNotif(
-        result.resume?.pdfUrl
-          ? 'Resume tailored and PDF compiled. Preview or download in the Tailor tab.'
-          : 'Resume tailored. LaTeX preview is ready in the Tailor tab.',
-        'success',
-      );
-    } catch (e) {
-      showNotif(e instanceof Error ? e.message : 'Failed to tailor resume.', 'error');
-    } finally {
-      setTailoringId(null);
-    }
-  };
-
-  // 6. Save tailored changes manually (LaTeX editor)
-  const handleSaveTailored = async (latex: string, coverLetter: string) => {
-    if (!selectedJob) return;
-    try {
-      const job = await api.saveTailoredJob(selectedJob.id, {
-        tailoredResumeLaTeX: latex,
-        tailoredCoverLetter: coverLetter,
-      });
-      setJobs((prev) => prev.map((j) => (j.id === selectedJob.id ? job : j)));
-      setSelectedJob(job);
-      showNotif('Tailored resume code modifications saved successfully.', 'success');
-    } catch (_e) {
-      showNotif('Failed to save tailored changes.', 'error');
     }
   };
 
@@ -324,18 +272,6 @@ export default function App() {
             >
               <Radar className="h-4 w-4" />
               Scan Insights
-            </button>
-
-            <button
-              onClick={() => setActiveTab('tailor')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
-                activeTab === 'tailor'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              Tailoring Suite
             </button>
 
             <button
@@ -620,18 +556,6 @@ export default function App() {
                           </div>
 
                           <div className="flex gap-2">
-                            {job.status === 'Shortlisted' && (
-                              <span className="bg-indigo-50 text-indigo-700 text-[10px] px-2 py-1 rounded font-bold uppercase border border-indigo-100 flex items-center gap-1 animate-pulse">
-                                <Sparkles className="h-3 w-3" /> Ready to Tailor
-                              </span>
-                            )}
-
-                            {job.tailoredResumeLaTeX && (
-                              <span className="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-1 rounded font-bold uppercase border border-emerald-100 flex items-center gap-1">
-                                <FileCheck className="h-3 w-3" /> CV Generated
-                              </span>
-                            )}
-
                             <button
                               onClick={() => setSelectedJob(job)}
                               className="text-indigo-600 text-[11px] font-bold hover:underline flex items-center gap-0.5"
@@ -647,10 +571,7 @@ export default function App() {
 
                 <JobDetailPanel
                   job={selectedJob}
-                  tailoring={tailoringId === selectedJob?.id}
-                  profileComplete={profile ? isProfileCompleteForMatching(profile) : false}
                   onClose={() => setSelectedJob(null)}
-                  onTailor={handleTailorJob}
                   onSaveNotes={handleSaveNotes}
                 />
               </div>
@@ -658,45 +579,6 @@ export default function App() {
           )}
 
           {activeTab === 'scanInsights' && <ScanInsightsView />}
-
-          {/* TAB 2: Tailor Suite (Split screen previewer) */}
-          {activeTab === 'tailor' && (
-            <div className="h-full flex flex-col space-y-4">
-              {/* Help message if no job chosen or selected job lacks tailoring */}
-              {!selectedJob ||
-              (!selectedJob.tailoredResumeLaTeX && !selectedJob.tailoredCoverLetter) ? (
-                <div className="bg-white rounded-xl border border-slate-100 p-8 text-center max-w-2xl mx-auto space-y-4">
-                  <Sparkles className="h-12 w-12 text-indigo-400 mx-auto" />
-                  <h3 className="text-base font-bold text-slate-800">
-                    No tailored workspace loaded
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Step 1: Complete your profile. Step 2: Select a job lead and click Tailor. Step
-                    3: Preview the tailored resume here and download the PDF when available.
-                  </p>
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
-                  >
-                    Go back to Job Leads
-                  </button>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-hidden">
-                  <ResumePreview
-                    job={selectedJob}
-                    pdfUrl={tailoredResumeMeta?.pdfUrl ?? undefined}
-                    onSaveTailored={handleSaveTailored}
-                    onApplyDirectly={() => {
-                      if (selectedJob.url) {
-                        window.open(selectedJob.url, '_blank');
-                      }
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          )}
 
           {/* TAB 3: Interview Prep */}
           {activeTab === 'interviews' && (

@@ -477,21 +477,6 @@ export default function ProfileView({
               />
               Re-score Scan Insights after saving match settings
             </label>
-            <div className="space-y-1">
-              <label className={labelClass}>Master LaTeX source (advanced)</label>
-              <textarea
-                value={profile.masterResumeLaTeX}
-                onChange={(event) =>
-                  onChange({ ...profile, masterResumeLaTeX: event.target.value })
-                }
-                rows={8}
-                className="w-full bg-slate-950 text-slate-200 font-mono text-xs p-4 rounded-lg border border-slate-200"
-              />
-              <p className="text-[10px] text-slate-500">
-                Normally regenerated automatically when you save. Edit only if you need manual LaTeX
-                overrides.
-              </p>
-            </div>
           </div>
         ) : null}
       </SectionCard>

@@ -104,6 +104,5 @@
   },
   "matchSettings": {
     "minMatchScore": 75
-  },
-  "masterResumeLaTeX": "\\documentclass[11pt,a4paper]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[margin=0.75in]{geometry}\n\\usepackage{hyperref}\n\\begin{document}\n\\centerline{\\Huge \\bfseries Your Name}\n\\centerline{your.email@example.com | +1-555-0199 | github.com/yourhandle}\n\\vspace{1em}\n\\section*{Summary}\nResults-driven Software Engineer with expertise in building scalable cloud services.\n\\section*{Experience}\n\\textbf{Tech Corp Inc.} --- Senior Software Engineer \\hfill Jan 2022 -- Present\n\\begin{itemize}\n  \\item Architected distributed microservices in Node.js/TypeScript handling 10M daily requests.\n\\end{itemize}\n\\end{document}"
+  }
 }

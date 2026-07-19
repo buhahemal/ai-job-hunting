@@ -44,27 +44,3 @@ export function heuristicScore(
     seniority: (job.title ?? '').toLowerCase().includes('senior') ? 'Senior' : 'Mid-level',
   };
 }
-
-export function tailorFallback(
-  job: Job,
-  profile: Profile,
-): Pick<Job, 'tailoredResumeLaTeX' | 'tailoredCoverLetter' | 'atsScore' | 'status'> {
-  const masterLatex = profile.masterResumeLaTeX ?? '';
-  const tailoredLatex = masterLatex.replace(
-    '\\section*{Target Roles}',
-    `\\section*{Target Roles - Tailored for ${job.title} at ${job.company}}`,
-  );
-  const coverLetter = `Dear Hiring Team at ${job.company},
-
-I am writing to express my strong interest in the ${job.title} position. With my background in DevOps, platform engineering, and AWS systems, I am confident I am a strong fit.
-
-Sincerely,
-${profile.fullName ?? 'Candidate'}`;
-
-  return {
-    tailoredResumeLaTeX: tailoredLatex,
-    tailoredCoverLetter: coverLetter,
-    atsScore: 75,
-    status: 'Shortlisted',
-  };
-}

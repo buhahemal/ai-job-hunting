@@ -16,7 +16,7 @@ import {
   USE_BACKEND,
   USE_SUPABASE,
 } from './config';
-import { heuristicScore, tailorFallback } from './staticStore';
+import { heuristicScore } from './staticStore';
 
 let repository: DashboardRepository | null = null;
 
@@ -103,30 +103,6 @@ export async function importProfile(payload: Partial<Profile>): Promise<Profile>
   throw new Error('Profile import requires the Python API server (set VITE_USE_BACKEND=true).');
 }
 
-export interface TailorJobResult {
-  job: Job;
-  resume?: {
-    version: string;
-    pdfUrl?: string | null;
-    pdfCompiled?: boolean;
-  };
-}
-
-export interface JobResumeVersion {
-  version: string;
-  pdfUrl?: string | null;
-  atsScore?: number | null;
-  createdAt?: string | null;
-}
-
-export async function listJobResumes(jobId: string): Promise<JobResumeVersion[]> {
-  if (USE_BACKEND) {
-    const data = await backendFetch<{ items: JobResumeVersion[] }>(`/api/jobs/${jobId}/resumes`);
-    return data.items;
-  }
-  return [];
-}
-
 export async function getJobs(): Promise<{ jobs: Job[]; interviews: Interview[] }> {
   if (USE_BACKEND) {
     return backendFetch<{ jobs: Job[]; interviews: Interview[] }>('/api/jobs');
@@ -177,45 +153,6 @@ export async function updateJobNotes(jobId: string, notes: string): Promise<Job>
   }
   if (USE_SUPABASE) {
     return asJob(await getRepository().updateJobNotes(jobId, notes));
-  }
-  throwDataNotFound();
-}
-
-export async function tailorJob(jobId: string): Promise<TailorJobResult> {
-  if (USE_BACKEND) {
-    const data = await backendFetch<TailorJobResult>(`/api/jobs/${jobId}/tailor`, {
-      method: 'POST',
-    });
-    return data;
-  }
-
-  const profile = await getProfile();
-
-  if (USE_SUPABASE) {
-    const repo = getRepository();
-    const jobs = await repo.listJobs();
-    const job = jobs.find((entry) => entry.id === jobId);
-    if (!job) throw new Error('Job not found');
-    const tailored = { ...job, ...tailorFallback(job as Job, profile) };
-    return { job: asJob(await repo.upsertJob(tailored)) };
-  }
-  throwDataNotFound();
-}
-
-export async function saveTailoredJob(
-  jobId: string,
-  payload: { tailoredResumeLaTeX: string; tailoredCoverLetter: string; atsScore?: number },
-): Promise<Job> {
-  if (USE_BACKEND) {
-    const data = await backendFetch<{ job: Job }>(`/api/jobs/${jobId}/save-tailored`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    return data.job;
-  }
-  if (USE_SUPABASE) {
-    return asJob(await getRepository().saveTailoredJob(jobId, payload));
   }
   throwDataNotFound();
 }

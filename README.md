@@ -1,26 +1,26 @@
 # 🎯 AI Job Hunter
 
-> **Automated Job Discovery, AI Match Scoring, LaTeX Resume Tailoring, and Application Tracking — Operating at ₹0 Budget.**
+> **Automated Job Discovery, AI Match Scoring, Scan Insights, and Application Tracking — Operating at ₹0 Operational Budget.**
 
 [![CI Pipeline](https://github.com/buhahemal/ai-job-hunting/actions/workflows/ci.yml/badge.svg)](https://github.com/buhahemal/ai-job-hunting/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Zero Cost](https://img.shields.io/badge/Operational%20Cost-%E2%82%B90%20/ %240-brightgreen.svg)](#-zero-cost-architecture)
+[![Zero Cost](https://img.shields.io/badge/Operational%20Cost-%E2%82%B90%20/%20%240-brightgreen.svg)](#-zero-cost-architecture)
 [![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Python%20%7C%20Supabase%20%7C%20GitHub%20Actions-indigo.svg)](#-technology-stack)
 
 ---
 
 ## 🌟 Overview
 
-**AI Job Hunter** is an open-source, self-hosted, zero-cost job hunting platform designed for engineers, developers, and job seekers. It automates the tedious parts of job hunting—discovering relevant listings across direct company ATS boards, scoring job fit using local Hugging Face embedding models, generating tailored ATS-compliant LaTeX resumes, and tracking applications—all hosted for free using GitHub Pages, GitHub Actions, and Supabase.
+**AI Job Hunter** is an open-source, self-hosted, zero-cost job discovery and scoring engine designed for software engineers and job seekers. It automates job search discovery across direct company ATS boards (Greenhouse, Lever, Ashby, Workable, Workday, SmartRecruiters, Teamtailor), computes multi-dimensional match fit using local open-source AI embedding models against your candidate profile, and manages your application pipeline—all operating for free via GitHub Pages, GitHub Actions, and Supabase.
 
 ---
 
 ## 🔥 Key Features
 
-- 🕵️ **Multi-ATS Job Scrapers**: Built-in scraper SDK support for **Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Teamtailor, Workday**, and remote job aggregators (**RemoteOK, We Work Remotely, Arbeitnow**).
-- 🧠 **Zero-Cost AI Scoring**: Uses open-source Hugging Face embedding models (`sentence-transformers/all-MiniLM-L6-v2`) to compute semantic match scores, skill overlap, and missing keywords without paying for OpenAI or proprietary APIs.
-- 📄 **LaTeX Resume Tailoring**: Maintains a single source-of-truth profile and master LaTeX resume, automatically customizing bullets and keywords for target job descriptions and compiling ATS-friendly PDFs.
-- 📊 **Analytics & Job Tracking Dashboard**: High-performance React dashboard featuring Kanban application boards, detailed job fit breakdowns, scan insights, and interview status trackers.
+- 🕵️ **Multi-ATS Job Scrapers**: Built-in plugin SDK support for **Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Teamtailor, Workday**, and remote job aggregators (**RemoteOK, We Work Remotely, Arbeitnow**).
+- 🧠 **Zero-Cost AI Matching**: Uses open-source Hugging Face embedding models (`sentence-transformers/all-MiniLM-L6-v2`) to compute semantic match scores, skill overlap, and missing keywords without paying for OpenAI or proprietary APIs.
+- 🎯 **Automated Job Lead Promotion**: Automatically filters scan insights and promotes jobs meeting your candidate match threshold (default $\ge 75\%$) into **Job Leads**.
+- 📊 **Analytics & Application Tracking**: High-performance React dashboard featuring application stage tracking (New, Shortlisted, Applied, Interviewing, Offer, Rejected), interview scheduling, and skill frequency analytics.
 - 💰 **₹0 Operational Cost**: 100% free operation using GitHub Pages (frontend hosting), GitHub Actions (daily scheduled scraper & AI pipeline), and Supabase (free PostgreSQL data layer).
 
 ---
@@ -52,19 +52,19 @@
 ## 📁 Repository Layout
 
 ```text
-.ai/             AI operating system and agent rules
 apps/
   dashboard/     React + Vite dashboard (GitHub Pages)
-  api/           Local Flask API server (local AI scoring & pdflatex compiling)
+  api/           Flask local API server (profile import & rescan API)
 packages/
   config/        Shared environment and path configurations (TS + Python)
   database/      Supabase database client, SQL repositories & schemas
   scanner_sdk/   Python SDK for custom job board scrapers
+  ai_engine/     Hugging Face embedding scoring & skill matchers
 scanners/        ATS plugin scrapers (Greenhouse, Lever, Ashby, Workable, etc.)
 scraper/         Automated scan pipeline orchestration & deduplication
 supabase/        SQL migrations, table definitions & RLS security policies
 scripts/         Database setup, profile syncing, and utility scripts
-docs/            Detailed architecture guides and user documentation
+docs/            Architecture, setup, and development guides
 ```
 
 ---
@@ -75,91 +75,35 @@ docs/            Detailed architecture guides and user documentation
 
 - **Node.js**: `v20.0.0` or later
 - **Python**: `v3.11` or later
-- **LaTeX** (Optional, for local PDF compilation): `pdflatex` (TeX Live or MacTeX)
 
 ### 1. Installation
-
-Clone the repository and install all Node.js and Python dependencies:
 
 ```bash
 git clone https://github.com/buhahemal/ai-job-hunting.git
 cd ai-job-hunting
 
-# Install Node modules
+# Install Node modules and Python packages
 npm install
-
-# Install Python packages
 pip install -r apps/api/requirements.txt -r scraper/requirements.txt
 ```
 
-### 2. Configure Your Candidate Profile
-
-Copy the starter profile template to create your personal profile:
+### 2. Configure Candidate Profile
 
 ```bash
 cp apps/api/data/profile.example.json apps/api/data/profile.json
 ```
 
-Open `apps/api/data/profile.json` and customize your target job titles, skills, experience, education, locations, and match settings. Alternatively, you can edit your profile directly from the Dashboard UI (**Profile & Settings** tab).
-
-> 📘 **Detailed Guide:** See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for full instructions on configuring ATS scrapers, Supabase credentials, and GitHub Actions secrets.
+Edit `apps/api/data/profile.json` with your target job titles, technical skills, preferred locations, and match settings. Alternatively, manage your profile JSON directly from the Dashboard UI (**Profile & Settings** tab).
 
 ---
 
-## 💻 Running Locally
+## 📖 Documentation Structure
 
-### Dashboard Only (Static / GitHub Pages Mode)
+Documentation is organized into three dedicated sections under `docs/`:
 
-Runs the frontend dashboard connected to local JSON mock data or Supabase:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-### Full Local Stack (Flask API + AI Engine + Resume Tailoring)
-
-To generate tailored resumes, run local embedding AI models, and compile PDFs:
-
-```bash
-# Terminal 1: Launch Flask API Backend
-npm run dev:api
-
-# Terminal 2: Launch Dashboard connected to Local API Backend
-npm run dev:full
-```
-
-### Run Job Scrapers Locally
-
-Trigger job discovery scrapers on demand:
-
-```bash
-npm run scan
-```
-
----
-
-## ⚙️ Configuration & Secrets
-
-Copy `.env.example` to `.env` for local configuration:
-
-```bash
-cp .env.example .env
-```
-
-### Key Environment Variables
-
-| Variable                  | Description                                 | Default / Example                  |
-| :------------------------ | :------------------------------------------ | :--------------------------------- |
-| `SUPABASE_URL`            | Supabase project URL                        | `https://your-project.supabase.co` |
-| `SUPABASE_ANON_KEY`       | Supabase public anon key                    | `your-anon-key`                    |
-| `SUPABASE_SERVICE_KEY`    | Supabase service role key (CI/scraper)      | `your-service-key`                 |
-| `GREENHOUSE_BOARD_TOKENS` | Comma-separated Greenhouse company tokens   | `gitlab,stripe,cloudflare`         |
-| `LEVER_COMPANY_SITES`     | Comma-separated Lever company slugs         | `netflix,spotify`                  |
-| `ASHBY_JOB_BOARD_SLUGS`   | Comma-separated Ashby company slugs         | `linear,vercel`                    |
-| `WORKABLE_ACCOUNT_SLUGS`  | Comma-separated Workable account slugs      | `workable,datadog`                 |
-| `SCANNER_MIN_MATCH_SCORE` | Minimum match score (0-100) to promote lead | `75`                               |
+- 🏗️ **[Architecture Overview](docs/architecture/overview.md)** — System architecture, ₹0 cost model, data flow, and match engine design.
+- ⚙️ **[Quick Start & Setup Guide](docs/setup/quickstart.md)** — Comprehensive setup guide covering profile setup, Supabase database, ATS tokens, and GitHub deployment.
+- 💻 **[Development & Contribution Guide](docs/development/guide.md)** — Monorepo guide, adding custom ATS scanner plugins, and quality assurance workflows.
 
 ---
 
@@ -175,29 +119,14 @@ npm run quality && npm test
 npm run lint          # ESLint & Python Ruff check
 npm run typecheck     # TypeScript strict verification
 npm run format:check  # Prettier formatting check
-npm test              # Vitest & Python Pytest suites
+npm test              # Pytest & Vitest test suites
 ```
-
----
-
-## 📖 Documentation
-
-- 📄 [User Setup & Onboarding Guide](docs/USER_GUIDE.md) — Comprehensive guide to setting up profiles, scrapers, and automation.
-- 📐 [Architecture Documentation](docs/architecture/) — Deep dive into system design and security.
-- 📋 [Development Phases & Roadmap](docs/PROJECT-TRACKER.md) — Project status and execution phases.
-- 🤖 [AI Coding Guidelines](.ai/AGENTS.md) — Guidelines and rules for AI paired coding.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Whether adding new ATS scraper plugins, improving UI components, or enhancing AI scoring algorithms:
-
-1. Fork the project repository.
-2. Create a feature branch (`git checkout -b feature/amazing-feature`).
-3. Commit your changes (`git commit -m 'feat(scanner): add new company plugin'`).
-4. Ensure all quality checks pass (`npm run quality && npm test`).
-5. Push to the branch and open a Pull Request.
+Contributions are welcome! See [docs/development/guide.md](docs/development/guide.md) for guidelines on creating new ATS scanner plugins and submitting PRs.
 
 ---
 

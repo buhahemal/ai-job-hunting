@@ -1,16 +1,11 @@
 import type { Profile } from '../types';
 import profileBase from '../../../api/data/profile.json';
-import masterResume from '../../../api/data/resume/master.json';
-import masterResumeLaTeX from '../../../api/data/resume/master.tex?raw';
 
 /** Offline/demo fallback only — not used when VITE_USE_SUPABASE=true. */
 export const DEFAULT_PROFILE: Profile = {
-  ...(profileBase as Omit<
-    Profile,
-    'masterResumeLaTeX' | 'summary' | 'skillGroups' | 'matchSettings'
-  >),
-  summary: (masterResume as { summary?: string }).summary ?? '',
-  skillGroups: (masterResume as { skillGroups?: Profile['skillGroups'] }).skillGroups ?? [],
+  ...(profileBase as Profile),
+  summary: (profileBase as Partial<Profile>).summary ?? '',
+  skillGroups: (profileBase as Partial<Profile>).skillGroups ?? [],
   preferences: {
     locations: [],
     remotePreference: 'Any',
@@ -25,7 +20,7 @@ export const DEFAULT_PROFILE: Profile = {
     ...((profileBase as Partial<Profile>).preferences ?? {}),
   },
   matchSettings: { minMatchScore: 75 },
-  masterResumeLaTeX,
+  masterResumeLaTeX: '',
 };
 
 export function normalizeProfile(profile?: Partial<Profile> | null): Profile {
@@ -48,7 +43,7 @@ export function normalizeProfile(profile?: Partial<Profile> | null): Profile {
         ...DEFAULT_PROFILE.matchSettings,
         ...profile?.matchSettings,
       },
-      masterResumeLaTeX: profile?.masterResumeLaTeX || DEFAULT_PROFILE.masterResumeLaTeX,
+      masterResumeLaTeX: '',
     };
   }
 
@@ -70,7 +65,7 @@ export function normalizeProfile(profile?: Partial<Profile> | null): Profile {
       ...DEFAULT_PROFILE.matchSettings,
       ...profile.matchSettings,
     },
-    masterResumeLaTeX: profile.masterResumeLaTeX ?? DEFAULT_PROFILE.masterResumeLaTeX,
+    masterResumeLaTeX: '',
   };
 }
 

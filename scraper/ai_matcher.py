@@ -24,25 +24,3 @@ class AIMatcher:
     def enrich_job(self, job: Dict, profile: Dict, existing_jobs=None) -> Dict:
         """Normalize, classify, and enrich a job with full match insights."""
         return engine_enrich_job(job, profile, existing_jobs=existing_jobs or [])
-
-    def tailor_resume_and_cover_letter(self, job: Dict, profile: Dict) -> Tuple[str, str, int]:
-        """
-        Generate tailored LaTeX resume and cover letter for a target job.
-
-        Uses the JSON master → tailor → LaTeX pipeline. Master JSON is never modified.
-        """
-        from packages.resume_engine.python.generator import generate_tailored_resume
-
-        try:
-            result = generate_tailored_resume(job)
-            return result.latex, result.cover_letter, result.ats_score
-        except Exception as exc:
-            print(f"[AIMatcher] Resume engine fallback error: {exc}")
-            master_latex = profile.get('masterResumeLaTeX') or ''
-            cover_letter = f"""Dear Hiring Team at {job.get('company')},
-
-I am writing to express my strong interest in the {job.get('title')} position.
-
-Sincerely,
-{profile.get('fullName', 'Candidate')}"""
-            return master_latex, cover_letter, 70

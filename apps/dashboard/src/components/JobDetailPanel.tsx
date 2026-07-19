@@ -1,12 +1,9 @@
-import { ArrowUpRight, RefreshCw, Sparkles, X } from 'lucide-react';
+import { ArrowUpRight, Sparkles, X } from 'lucide-react';
 import { Job } from '../types';
 
 interface JobDetailPanelProps {
   job: Job | null;
-  tailoring: boolean;
-  profileComplete: boolean;
   onClose: () => void;
-  onTailor: (jobId: string) => void;
   onSaveNotes: (jobId: string, notes: string) => void;
 }
 
@@ -61,14 +58,7 @@ function ChipList({
   );
 }
 
-export default function JobDetailPanel({
-  job,
-  tailoring,
-  profileComplete,
-  onClose,
-  onTailor,
-  onSaveNotes,
-}: JobDetailPanelProps) {
+export default function JobDetailPanel({ job, onClose, onSaveNotes }: JobDetailPanelProps) {
   if (!job) {
     return (
       <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6">
@@ -207,29 +197,6 @@ export default function JobDetailPanel({
       ) : null}
 
       <div className="space-y-2.5">
-        {!profileComplete ? (
-          <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-2">
-            Complete your profile (roles, skills, summary, match keywords) before tailoring.
-          </p>
-        ) : null}
-        <button
-          onClick={() => onTailor(job.id)}
-          disabled={tailoring || !profileComplete}
-          className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white text-xs py-2.5 rounded-lg font-semibold uppercase flex items-center justify-center gap-1.5"
-        >
-          {tailoring ? (
-            <>
-              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              Tailoring...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              Tailor Resume & Cover Letter
-            </>
-          )}
-        </button>
-
         {(job.applicationUrl || job.url) && (
           <a
             href={job.applicationUrl || job.url}

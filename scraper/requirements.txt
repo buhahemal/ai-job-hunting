@@ -1,4 +1,3 @@
 requests>=2.32.0
 supabase>=2.0.0
 -r ../packages/ai_engine/requirements.txt
--r ../packages/resume_engine/requirements.txt

@@ -28,19 +28,10 @@ def merge_import_payload(existing: Dict[str, Any], imported: Dict[str, Any]) -> 
     return merged
 
 
-def regenerate_master_latex(profile: Dict[str, Any]) -> str:
-    """Render master LaTeX from the unified profile document."""
-    from packages.resume_engine.python.generator import render_master_latex
-
-    return render_master_latex(profile=profile)
-
-
-def prepare_profile_for_save(raw: Dict[str, Any], *, regenerate_latex: bool = True) -> Dict[str, Any]:
-    """Normalize, validate, and optionally regenerate LaTeX before persistence."""
+def prepare_profile_for_save(raw: Dict[str, Any], *, regenerate_latex: bool = False) -> Dict[str, Any]:
+    """Normalize and validate profile before persistence."""
     profile = normalize_stored_profile(raw)
     validate_profile_payload(profile)
-    if regenerate_latex:
-        profile['masterResumeLaTeX'] = regenerate_master_latex(profile)
     return profile
 
 
@@ -53,3 +44,4 @@ def import_profile_payload(
     profile = prepare_profile_for_save(merged_raw)
     applied_keys = sorted(key for key in imported.keys() if key in profile)
     return profile, {'appliedKeys': applied_keys, 'fieldCount': len(applied_keys)}
+
