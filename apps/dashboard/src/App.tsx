@@ -23,6 +23,7 @@ import InterviewTracker from './components/InterviewTracker';
 import JobDetailPanel from './components/JobDetailPanel';
 import JobFilters, { filterJobs, type JobFilterState } from './components/JobFilters';
 import ScanInsightsView from './components/ScanInsightsView';
+import ThemeToggle from './components/ThemeToggle';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<
@@ -233,19 +234,23 @@ export default function App() {
   ].sort() as string[];
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 overflow-hidden">
       {/* Mobile Glass Header (< md) */}
-      <header className="md:hidden glass-nav border-b border-slate-200 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-xs">
+      <header className="md:hidden glass-nav border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-indigo-600 rounded-lg text-white">
             <Briefcase className="h-4 w-4" />
           </div>
-          <span className="text-sm font-extrabold tracking-tight text-slate-900">
+          <span className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
             AI Job Hunter
           </span>
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle
+            className="text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            iconClassName="h-4 w-4"
+          />
           <button
             onClick={handleScan}
             disabled={scanning}
@@ -279,6 +284,10 @@ export default function App() {
                 Autonomous Career Agent
               </p>
             </div>
+            <ThemeToggle
+              className="ml-auto text-slate-400 hover:bg-slate-900 hover:text-slate-200"
+              iconClassName="h-4 w-4"
+            />
           </div>
 
           {/* Navigation Links */}
@@ -388,12 +397,12 @@ export default function App() {
           {activeTab === 'dashboard' && (
             <div className="space-y-5 max-w-7xl mx-auto">
               {/* Header block controls */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
                     Career Leads & Discovery
                   </h2>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
                     Discover high-priority engineering openings enriched with AI match insights,
                     score breakdowns, and ATS suggestions.
                   </p>
@@ -402,9 +411,9 @@ export default function App() {
                 <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-2 sm:pt-0">
                   <button
                     onClick={() => setManualImportOpen(true)}
-                    className="flex-1 sm:flex-none bg-slate-50 border border-slate-200 text-slate-700 text-xs px-3.5 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                    className="flex-1 sm:flex-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs px-3.5 py-2.5 rounded-xl font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-1.5 active:scale-95"
                   >
-                    <Plus className="h-4 w-4 text-indigo-600" />
+                    <Plus className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                     <span>Paste Job Description</span>
                   </button>
                   <button
@@ -430,12 +439,12 @@ export default function App() {
                 {/* Leads Feed Column */}
                 <div className="xl:col-span-2 space-y-3.5">
                   {filteredJobs.length === 0 ? (
-                    <div className="bg-white p-12 text-center rounded-2xl border border-dashed border-slate-200 space-y-3">
-                      <Briefcase className="h-10 w-10 text-slate-300 mx-auto" />
-                      <h4 className="text-sm font-bold text-slate-800">
+                    <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 space-y-3">
+                      <Briefcase className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
                         No matching career leads found
                       </h4>
-                      <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                         Try broadening search parameters or click "Scan Career Boards" to discover
                         fresh listings.
                       </p>
@@ -445,20 +454,20 @@ export default function App() {
                       <div
                         key={job.id}
                         onClick={() => setSelectedJob(job)}
-                        className={`bg-white rounded-2xl border p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer ${
+                        className={`bg-white dark:bg-slate-900 rounded-2xl border p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer ${
                           selectedJob && selectedJob.id === job.id
                             ? 'border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm'
-                            : 'border-slate-200/80 hover:border-indigo-200'
+                            : 'border-slate-200/80 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wide font-mono bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide font-mono bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900">
                                 {job.source}
                               </span>
-                              <span className="text-slate-300">&bull;</span>
-                              <span className="text-[10px] text-slate-500 font-semibold">
+                              <span className="text-slate-300 dark:text-slate-600">&bull;</span>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
                                 {new Date(job.postedAt).toLocaleDateString([], {
                                   month: 'short',
                                   day: 'numeric',
@@ -466,23 +475,25 @@ export default function App() {
                               </span>
                             </div>
 
-                            <h3 className="text-base font-extrabold text-slate-900 hover:text-indigo-600 transition-colors">
+                            <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                               {job.title}
                             </h3>
-                            <p className="text-xs font-semibold text-slate-600">{job.company}</p>
+                            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                              {job.company}
+                            </p>
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {job.canonicalRole && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold uppercase">
+                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase">
                                   {job.canonicalRole}
                                 </span>
                               )}
                               {job.priority && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 font-bold uppercase">
+                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800 font-bold uppercase">
                                   {job.priority} Priority
                                 </span>
                               )}
                               {job.primaryStack && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200 text-slate-600 font-medium">
+                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-medium">
                                   {job.primaryStack}
                                 </span>
                               )}
@@ -494,10 +505,10 @@ export default function App() {
                             <div
                               className={`shrink-0 px-3 py-2 rounded-xl text-center shadow-2xs ${
                                 job.score >= 85
-                                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                   : job.score >= 70
-                                    ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                    : 'bg-slate-100 text-slate-700 border border-slate-200'
+                                    ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                               }`}
                             >
                               <div className="text-[9px] font-black uppercase tracking-wider leading-none">
@@ -511,23 +522,23 @@ export default function App() {
                         </div>
 
                         {/* Metadata Row */}
-                        <div className="flex flex-wrap items-center gap-4 mt-3.5 pt-3 border-t border-slate-100 text-[11px] text-slate-500 font-mono">
+                        <div className="flex flex-wrap items-center gap-4 mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           <span className="flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                            <MapPin className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                             {job.location}
                           </span>
 
                           {job.salaryEstimate && (
                             <span className="flex items-center gap-1">
-                              <DollarSign className="h-3.5 w-3.5 text-emerald-600" />
-                              <span className="text-emerald-700 font-bold">
+                              <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                              <span className="text-emerald-700 dark:text-emerald-400 font-bold">
                                 {job.salaryEstimate}
                               </span>
                             </span>
                           )}
 
                           {job.seniority && (
-                            <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold uppercase text-slate-600">
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">
                               {job.seniority}
                             </span>
                           )}
@@ -539,13 +550,13 @@ export default function App() {
                             {job.extractedSkills.slice(0, 5).map((skill) => (
                               <span
                                 key={skill}
-                                className="bg-slate-50 border border-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-md font-semibold"
+                                className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-md font-semibold"
                               >
                                 {skill}
                               </span>
                             ))}
                             {job.extractedSkills.length > 5 && (
-                              <span className="text-[10px] text-slate-400 font-semibold pl-1 self-center">
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold pl-1 self-center">
                                 +{job.extractedSkills.length - 5} more
                               </span>
                             )}
@@ -554,11 +565,11 @@ export default function App() {
 
                         {/* Quick Action Controls */}
                         <div
-                          className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100 mt-3"
+                          className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 mt-3"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
                               Status:
                             </span>
                             <select
@@ -566,7 +577,7 @@ export default function App() {
                               onChange={(e) =>
                                 handleUpdateStatus(job.id, e.target.value as Job['status'])
                               }
-                              className="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1 font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-lg px-2 py-1 font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                             >
                               <option value="New">New Lead</option>
                               <option value="Shortlisted">Shortlisted</option>
@@ -580,7 +591,7 @@ export default function App() {
 
                           <button
                             onClick={() => setSelectedJob(job)}
-                            className="text-indigo-600 text-xs font-bold hover:text-indigo-800 flex items-center gap-1 py-1 px-2.5 rounded-lg hover:bg-indigo-50 transition-colors"
+                            className="text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1 py-1 px-2.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                           >
                             <span>Inspect & Notes</span>
                             <ChevronRight className="h-3.5 w-3.5" />
@@ -643,7 +654,7 @@ export default function App() {
             <div className="flex justify-end pb-2">
               <button
                 onClick={() => setSelectedJob(null)}
-                className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -659,11 +670,13 @@ export default function App() {
       )}
 
       {/* Mobile Bottom Sticky Navigation Bar (< md) */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 glass-nav border-t border-slate-200/80 z-40 px-2 py-1.5 flex items-center justify-around shadow-lg">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 glass-nav border-t border-slate-200/80 dark:border-slate-800 z-40 px-2 py-1.5 flex items-center justify-around shadow-lg">
         <button
           onClick={() => setActiveTab('dashboard')}
           className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all ${
-            activeTab === 'dashboard' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'
+            activeTab === 'dashboard'
+              ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/50'
+              : 'text-slate-500 dark:text-slate-400'
           }`}
         >
           <Briefcase className="h-4 w-4" />
@@ -673,7 +686,9 @@ export default function App() {
         <button
           onClick={() => setActiveTab('scanInsights')}
           className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all ${
-            activeTab === 'scanInsights' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'
+            activeTab === 'scanInsights'
+              ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/50'
+              : 'text-slate-500 dark:text-slate-400'
           }`}
         >
           <Radar className="h-4 w-4" />
@@ -683,7 +698,9 @@ export default function App() {
         <button
           onClick={() => setActiveTab('interviews')}
           className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all ${
-            activeTab === 'interviews' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'
+            activeTab === 'interviews'
+              ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/50'
+              : 'text-slate-500 dark:text-slate-400'
           }`}
         >
           <Calendar className="h-4 w-4" />
@@ -693,7 +710,9 @@ export default function App() {
         <button
           onClick={() => setActiveTab('analytics')}
           className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all ${
-            activeTab === 'analytics' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'
+            activeTab === 'analytics'
+              ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/50'
+              : 'text-slate-500 dark:text-slate-400'
           }`}
         >
           <BarChart2 className="h-4 w-4" />
@@ -703,7 +722,9 @@ export default function App() {
         <button
           onClick={() => setActiveTab('profile')}
           className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all ${
-            activeTab === 'profile' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500'
+            activeTab === 'profile'
+              ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/50'
+              : 'text-slate-500 dark:text-slate-400'
           }`}
         >
           <User className="h-4 w-4" />
@@ -713,18 +734,18 @@ export default function App() {
 
       {/* Manual Import Overlay Form Modal */}
       {manualImportOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xs flex justify-center items-center p-4 z-50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-indigo-600" />
-                <h3 className="text-base font-extrabold text-slate-900">
+                <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
                   Paste External Job Description
                 </h3>
               </div>
               <button
                 onClick={() => setManualImportOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -734,14 +755,14 @@ export default function App() {
               onSubmit={handleManualImport}
               className="p-4 sm:p-6 flex-1 overflow-auto space-y-4"
             >
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 Found a job on LinkedIn, Indeed, or a corporate blog? Paste the requirements here.
                 The AI matcher will analyze skills and score suitability automatically.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">
+                  <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                     Job Title *
                   </label>
                   <input
@@ -750,12 +771,12 @@ export default function App() {
                     value={newManualJob.title}
                     onChange={(e) => setNewManualJob({ ...newManualJob, title: e.target.value })}
                     placeholder="e.g. Senior DevOps Consultant"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">
+                  <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                     Company Name *
                   </label>
                   <input
@@ -764,12 +785,12 @@ export default function App() {
                     value={newManualJob.company}
                     onChange={(e) => setNewManualJob({ ...newManualJob, company: e.target.value })}
                     placeholder="e.g. Globant India"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">
+                  <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                     Geographical Location
                   </label>
                   <input
@@ -777,12 +798,12 @@ export default function App() {
                     value={newManualJob.location}
                     onChange={(e) => setNewManualJob({ ...newManualJob, location: e.target.value })}
                     placeholder="e.g. New York, NY (Hybrid)"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-600 uppercase">
+                  <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                     Working Setting
                   </label>
                   <select
@@ -793,7 +814,7 @@ export default function App() {
                         remoteType: e.target.value as Job['remoteType'],
                       })
                     }
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="Remote">Remote</option>
                     <option value="Hybrid">Hybrid</option>
@@ -803,7 +824,7 @@ export default function App() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-600 uppercase">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                   Job Board / Referral URL
                 </label>
                 <input
@@ -811,12 +832,12 @@ export default function App() {
                   value={newManualJob.url}
                   onChange={(e) => setNewManualJob({ ...newManualJob, url: e.target.value })}
                   placeholder="https://company.com/career/post"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-600 uppercase">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                   Full Job Description Requirements *
                 </label>
                 <textarea
@@ -827,15 +848,15 @@ export default function App() {
                   }
                   placeholder="Paste the complete text from the job board posting here..."
                   rows={6}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none font-sans leading-relaxed"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none font-sans leading-relaxed"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setManualImportOpen(false)}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold transition-colors"
+                  className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold transition-colors"
                 >
                   Discard
                 </button>

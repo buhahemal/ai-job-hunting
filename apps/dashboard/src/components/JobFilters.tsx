@@ -51,22 +51,22 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
   };
 
   return (
-    <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-3">
+    <div className="bg-white dark:bg-slate-900 p-3 md:p-4 rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3">
       {/* Search Input & Mobile Filter Toggle Header */}
       <div className="flex items-center gap-2.5">
         <div className="flex-1 relative">
-          <Search className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="h-4 w-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search roles, companies, skills, tech stack..."
             value={filters.searchQuery}
             onChange={(e) => onChange({ searchQuery: e.target.value })}
-            className="w-full bg-slate-50/80 pl-9 pr-8 py-2 rounded-lg text-xs md:text-sm border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all"
+            className="w-full bg-slate-50/80 dark:bg-slate-800 pl-9 pr-8 py-2 rounded-lg text-xs md:text-sm border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none transition-all"
           />
           {filters.searchQuery && (
             <button
               onClick={() => onChange({ searchQuery: '' })}
-              className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+              className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-400"
             >
               <X className="h-4 w-4" />
             </button>
@@ -77,7 +77,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors border border-slate-200"
+          className="md:hidden flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg transition-colors border border-slate-200 dark:border-slate-700"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
           <span>Filters</span>
@@ -93,7 +93,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
           <button
             type="button"
             onClick={handleReset}
-            className="hidden md:flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-50"
+            className="hidden md:flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             <RotateCcw className="h-3 w-3" />
             <span>Reset</span>
@@ -105,9 +105,9 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
       <div
         className={`${
           mobileOpen ? 'block' : 'hidden'
-        } md:flex flex-wrap items-center gap-2.5 pt-2 md:pt-0 border-t md:border-0 border-slate-100 animate-slide-up`}
+        } md:flex flex-wrap items-center gap-2.5 pt-2 md:pt-0 border-t md:border-0 border-slate-100 dark:border-slate-800 animate-slide-up`}
       >
-        <div className="hidden md:flex items-center gap-1.5 text-slate-400 pr-1">
+        <div className="hidden md:flex items-center gap-1.5 text-slate-400 dark:text-slate-500 pr-1">
           <Filter className="h-3.5 w-3.5" />
           <span className="text-[10px] font-bold uppercase tracking-wider">Filter by:</span>
         </div>
@@ -115,7 +115,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.statusFilter}
           onChange={(e) => onChange({ statusFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Status: All Active Leads</option>
           <option value="New">Status: New</option>
@@ -130,7 +130,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.scoreFilter}
           onChange={(e) => onChange({ scoreFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Match: All Levels</option>
           <option value="Excellent">Match: Excellent (&gt;85%)</option>
@@ -141,7 +141,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.remoteFilter}
           onChange={(e) => onChange({ remoteFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Location: All Remote</option>
           <option value="Remote">Remote</option>
@@ -152,7 +152,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.seniorityFilter}
           onChange={(e) => onChange({ seniorityFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Seniority: All Level</option>
           <option value="Senior">Senior</option>
@@ -163,7 +163,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.sourceFilter}
           onChange={(e) => onChange({ sourceFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Source: All Platforms</option>
           {sources.map((source) => (
@@ -176,7 +176,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.roleFilter}
           onChange={(e) => onChange({ roleFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Role: All Canonical Roles</option>
           {roles.map((role) => (
@@ -189,7 +189,7 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
         <select
           value={filters.priorityFilter}
           onChange={(e) => onChange({ priorityFilter: e.target.value })}
-          className="w-full md:w-auto bg-slate-50/90 border border-slate-200 text-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          className="w-full md:w-auto bg-slate-50/90 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="All">Priority: All</option>
           <option value="High">High</option>
@@ -197,12 +197,12 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
           <option value="Low">Low</option>
         </select>
 
-        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 cursor-pointer pt-1 md:pt-0 select-none">
+        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400 cursor-pointer pt-1 md:pt-0 select-none">
           <input
             type="checkbox"
             checked={filters.hideDuplicates}
             onChange={(e) => onChange({ hideDuplicates: e.target.checked })}
-            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500"
           />
           Hide duplicates
         </label>

@@ -14,11 +14,11 @@ function ScoreBar({ label, value }: { label: string; value?: number }) {
   if (value === undefined) return null;
   return (
     <div>
-      <div className="flex justify-between text-[10px] text-slate-500 mb-1">
+      <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mb-1">
         <span>{label}</span>
         <span className="font-bold">{value}%</span>
       </div>
-      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div
           className="h-full bg-indigo-500 rounded-full"
           style={{ width: `${Math.min(100, value)}%` }}
@@ -40,13 +40,15 @@ function ChipList({
   if (!items?.length) return null;
   const styles =
     tone === 'good'
-      ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+      ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-100 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300'
       : tone === 'warn'
-        ? 'bg-amber-50 border-amber-100 text-amber-700'
-        : 'bg-slate-50 border-slate-200 text-slate-600';
+        ? 'bg-amber-50 dark:bg-amber-950/50 border-amber-100 dark:border-amber-900 text-amber-700 dark:text-amber-300'
+        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400';
   return (
     <div className="space-y-2">
-      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{title}</h4>
+      <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+        {title}
+      </h4>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
           <span
@@ -72,9 +74,9 @@ export default function ScanInsightDetailPanel({
 
   if (!insight) {
     return (
-      <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6">
-        <div className="text-center py-12 text-slate-400 space-y-3">
-          <Search className="h-8 w-8 text-slate-300 mx-auto" />
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm sticky top-6">
+        <div className="text-center py-12 text-slate-400 dark:text-slate-500 space-y-3">
+          <Search className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto" />
           <p className="text-xs">
             Select a scanned job to view match breakdown, missing skills, and posting link.
           </p>
@@ -99,30 +101,35 @@ export default function ScanInsightDetailPanel({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6 space-y-6 max-h-[calc(100vh-8rem)] overflow-auto">
-      <div className="flex justify-between items-start gap-3 border-b border-slate-50 pb-4">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm sticky top-6 space-y-6 max-h-[calc(100vh-8rem)] overflow-auto">
+      <div className="flex justify-between items-start gap-3 border-b border-slate-50 dark:border-slate-800 pb-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-mono font-bold uppercase text-slate-400">
+            <span className="text-[10px] font-mono font-bold uppercase text-slate-400 dark:text-slate-500">
               {insight.source}
             </span>
             {insight.canonicalRole && (
-              <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold uppercase">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold uppercase">
                 {insight.canonicalRole}
               </span>
             )}
             {insight.promotedToJobs && (
-              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold uppercase">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold uppercase">
                 Promoted to Leads
               </span>
             )}
           </div>
-          <h3 className="text-base font-bold text-slate-800 mt-1">{insight.title}</h3>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mt-1">
+            {insight.title}
+          </h3>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
             {insight.company} • {insight.location} • {insight.remoteType}
           </p>
         </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+        <button
+          onClick={onClose}
+          className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 p-1 rounded-lg"
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -131,10 +138,10 @@ export default function ScanInsightDetailPanel({
         <div
           className={`px-4 py-2 rounded-lg text-center ${
             insight.overallScore >= MATCH_SCORE_THRESHOLD
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+              ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900'
               : insight.overallScore >= MATCH_SCORE_NEAR_MISS
-                ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                : 'bg-slate-100 text-slate-600'
+                ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
           }`}
         >
           <div className="text-[10px] font-bold uppercase tracking-wider">Overall Match</div>
@@ -142,11 +149,11 @@ export default function ScanInsightDetailPanel({
         </div>
         <div className="text-right space-y-1">
           {insight.scannedAt && (
-            <p className="text-[10px] text-slate-400 font-mono">
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
               Scanned {new Date(insight.createdAt || insight.scannedAt).toLocaleString()}
             </p>
           )}
-          <p className="text-[10px] text-indigo-500 font-mono">
+          <p className="text-[10px] text-indigo-500 dark:text-indigo-400 font-mono">
             Modified{' '}
             {insight.updatedAt
               ? new Date(insight.updatedAt).toLocaleString()
@@ -158,18 +165,25 @@ export default function ScanInsightDetailPanel({
       </div>
 
       {insight.actionHistory && insight.actionHistory.length > 0 && (
-        <div className="space-y-2 border-t border-b border-slate-50 py-3">
-          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+        <div className="space-y-2 border-t border-b border-slate-50 dark:border-slate-800 py-3">
+          <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
             Action History & Notes
           </h4>
           <div className="space-y-1.5 max-h-36 overflow-auto">
             {insight.actionHistory.map((entry, idx) => (
-              <div key={idx} className="bg-slate-50 p-2 rounded text-[11px] space-y-0.5">
-                <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                  <span className="font-semibold text-slate-600">{entry.action}</span>
+              <div
+                key={idx}
+                className="bg-slate-50 dark:bg-slate-800 p-2 rounded text-[11px] space-y-0.5"
+              >
+                <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                  <span className="font-semibold text-slate-600 dark:text-slate-400">
+                    {entry.action}
+                  </span>
                   <span>{new Date(entry.timestamp).toLocaleString()}</span>
                 </div>
-                {entry.note && <p className="text-slate-600 italic">"{entry.note}"</p>}
+                {entry.note && (
+                  <p className="text-slate-600 dark:text-slate-400 italic">"{entry.note}"</p>
+                )}
               </div>
             ))}
           </div>
@@ -186,9 +200,13 @@ export default function ScanInsightDetailPanel({
       </div>
 
       {insight.matchExplanation && (
-        <div className="bg-slate-50 border border-slate-100 rounded-lg p-3">
-          <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-1">Match Summary</h4>
-          <p className="text-xs text-slate-600 leading-relaxed">{insight.matchExplanation}</p>
+        <div className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg p-3">
+          <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">
+            Match Summary
+          </h4>
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            {insight.matchExplanation}
+          </p>
         </div>
       )}
 
@@ -203,8 +221,8 @@ export default function ScanInsightDetailPanel({
       {!insight.promotedToJobs && (
         <div className="space-y-2">
           {showConfirm ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-3">
-              <p className="text-xs text-amber-900">
+            <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-3 space-y-3">
+              <p className="text-xs text-amber-900 dark:text-amber-300">
                 Add to your apply/tailor pipeline regardless of auto score?
               </p>
               <div className="flex gap-2">
@@ -219,7 +237,7 @@ export default function ScanInsightDetailPanel({
                 <button
                   type="button"
                   onClick={() => setShowConfirm(false)}
-                  className="px-3 text-xs py-2 rounded-lg border border-slate-200 text-slate-600"
+                  className="px-3 text-xs py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
                 >
                   Cancel
                 </button>
@@ -229,7 +247,7 @@ export default function ScanInsightDetailPanel({
             <button
               type="button"
               onClick={() => setShowConfirm(true)}
-              className="flex items-center justify-center gap-2 w-full border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs py-2.5 rounded-lg font-semibold transition-colors"
+              className="flex items-center justify-center gap-2 w-full border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs py-2.5 rounded-lg font-semibold transition-colors"
             >
               <Sparkles className="h-4 w-4" />
               Promote to Job Leads
@@ -239,7 +257,7 @@ export default function ScanInsightDetailPanel({
       )}
 
       {promoteMessage && (
-        <p className="text-[10px] text-slate-600 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
+        <p className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg px-3 py-2">
           {promoteMessage}
         </p>
       )}

@@ -134,8 +134,10 @@ export default function ScanInsightsView() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Scan Insights</h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+            Scan Insights
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Every job evaluated by the scanner — including sub-threshold rejects — with match scores
             and verified skill gaps. Separate from promoted Job Leads.
           </p>
@@ -144,7 +146,7 @@ export default function ScanInsightsView() {
           type="button"
           onClick={() => void handleRescan()}
           disabled={rescanning || loading}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100 disabled:opacity-50 shrink-0"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-950/60 disabled:opacity-50 shrink-0"
         >
           <RefreshCw className={`h-4 w-4 ${rescanning ? 'animate-spin' : ''}`} />
           {rescanning ? 'Rescanning…' : 'Rescan with current profile'}
@@ -152,48 +154,60 @@ export default function ScanInsightsView() {
       </div>
 
       {rescanMessage && (
-        <div className="text-xs px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
+        <div className="text-xs px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
           {rescanMessage}
         </div>
       )}
 
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4 shadow-sm">
+            <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-1">
               <Radar className="h-4 w-4" />
               <span className="text-[10px] font-bold uppercase">Total Scanned</span>
             </div>
-            <div className="text-2xl font-extrabold text-slate-800">{summary.totalScanned}</div>
+            <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-200">
+              {summary.totalScanned}
+            </div>
             {summary.lastRunScanned > 0 && (
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
                 {summary.lastRunScanned} in last run
               </p>
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
-            <div className="flex items-center gap-2 text-slate-400 mb-1">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4 shadow-sm">
+            <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-1">
               <TrendingUp className="h-4 w-4" />
               <span className="text-[10px] font-bold uppercase">Avg Match</span>
             </div>
-            <div className="text-2xl font-extrabold text-slate-800">{summary.averageScore}%</div>
+            <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-200">
+              {summary.averageScore}%
+            </div>
             {summary.topSource && (
-              <p className="text-[10px] text-slate-400 mt-1">Top source: {summary.topSource}</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                Top source: {summary.topSource}
+              </p>
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
-            <div className="text-[10px] font-bold uppercase text-slate-400 mb-1">Promoted</div>
-            <div className="text-2xl font-extrabold text-emerald-700">{summary.promotedCount}</div>
-            <p className="text-[10px] text-slate-400 mt-1">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4 shadow-sm">
+            <div className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 mb-1">
+              Promoted
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300">
+              {summary.promotedCount}
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
               Score ≥ {MATCH_SCORE_THRESHOLD}% → Job Leads
             </p>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
-            <div className="text-[10px] font-bold uppercase text-slate-400 mb-1">Last Scan</div>
-            <div className="text-sm font-bold text-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4 shadow-sm">
+            <div className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 mb-1">
+              Last Scan
+            </div>
+            <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {summary.lastScanAt
                 ? new Date(summary.lastScanAt).toLocaleString([], {
                     month: 'short',
@@ -208,12 +222,12 @@ export default function ScanInsightsView() {
       )}
 
       {summary && summary.topMissingSkills.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm space-y-4">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               Top Market Skill Gaps
             </h3>
-            <p className="text-[10px] text-slate-500 mt-1">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
               Skills demanded by scanned jobs that are not demonstrated in your profile or resume.
             </p>
           </div>
@@ -221,17 +235,19 @@ export default function ScanInsightsView() {
             {summary.topMissingSkills.map((entry) => (
               <div
                 key={entry.skill}
-                className="flex items-center justify-between gap-3 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2"
+                className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-lg px-3 py-2"
               >
                 <div>
-                  <div className="text-xs font-bold text-slate-800">{entry.skill}</div>
-                  <div className="text-[10px] text-slate-500">
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {entry.skill}
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">
                     Missing in {entry.count} posting{entry.count === 1 ? '' : 's'} • avg{' '}
                     {entry.averageScoreWhenMissing}% when missing
                   </div>
                 </div>
                 {entry.estimatedBandBoost > 0 && (
-                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded whitespace-nowrap">
+                  <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-1 rounded whitespace-nowrap">
                     +{entry.estimatedBandBoost} near {MATCH_SCORE_THRESHOLD}%
                   </span>
                 )}
@@ -252,14 +268,16 @@ export default function ScanInsightsView() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         <div className="xl:col-span-2 space-y-4">
           {loading ? (
-            <div className="bg-white p-12 text-center rounded-xl border border-slate-100 text-xs text-slate-400">
+            <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-xl border border-slate-100 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-500">
               Loading scan insights…
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-xl border border-dashed border-slate-200 space-y-3">
-              <Radar className="h-10 w-10 text-slate-300 mx-auto" />
-              <h4 className="text-sm font-bold text-slate-700">No scanned jobs match filters</h4>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            <div className="bg-white dark:bg-slate-900 p-12 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-700 space-y-3">
+              <Radar className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
+              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                No scanned jobs match filters
+              </h4>
+              <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto">
                 Run a career board scan to populate insights. Jobs below {MATCH_SCORE_THRESHOLD}%
                 appear here only.
               </p>
@@ -269,28 +287,32 @@ export default function ScanInsightsView() {
               <div
                 key={insight.dedupeKey}
                 onClick={() => setSelected(insight)}
-                className={`bg-white rounded-xl border p-5 hover:shadow-md transition-all cursor-pointer ${
+                className={`bg-white dark:bg-slate-900 rounded-xl border p-5 hover:shadow-md transition-all cursor-pointer ${
                   selected?.dedupeKey === insight.dedupeKey
                     ? 'border-indigo-500 ring-1 ring-indigo-500/10 shadow-sm'
-                    : 'border-slate-100'
+                    : 'border-slate-100 dark:border-slate-800'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide font-mono">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide font-mono">
                         {insight.source}
                       </span>
                       {insight.promotedToJobs && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold uppercase">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold uppercase">
                           Promoted
                         </span>
                       )}
                     </div>
-                    <h3 className="text-sm font-bold text-slate-800 mt-1">{insight.title}</h3>
-                    <p className="text-xs font-semibold text-slate-500 mt-0.5">{insight.company}</p>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">
+                      {insight.title}
+                    </h3>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                      {insight.company}
+                    </p>
                     {insight.canonicalRole && (
-                      <span className="inline-block mt-2 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold uppercase">
+                      <span className="inline-block mt-2 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold uppercase">
                         {insight.canonicalRole}
                       </span>
                     )}
@@ -298,10 +320,10 @@ export default function ScanInsightsView() {
                   <div
                     className={`shrink-0 px-3 py-1.5 rounded-lg text-center ${
                       insight.overallScore >= MATCH_SCORE_THRESHOLD
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900'
                         : insight.overallScore >= MATCH_SCORE_NEAR_MISS
-                          ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                          : 'bg-slate-100 text-slate-600'
+                          ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                     }`}
                   >
                     <div className="text-[10px] font-bold uppercase tracking-wider leading-none">
@@ -317,7 +339,7 @@ export default function ScanInsightsView() {
                     {insight.missingSkills.slice(0, 3).map((skill) => (
                       <span
                         key={skill}
-                        className="bg-amber-50 border border-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-md font-medium"
+                        className="bg-amber-50 dark:bg-amber-950/50 border border-amber-100 dark:border-amber-900 text-amber-700 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-md font-medium"
                       >
                         −{skill}
                       </span>
@@ -329,22 +351,22 @@ export default function ScanInsightsView() {
           )}
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between bg-white rounded-xl border border-slate-100 px-4 py-3">
-              <span className="text-xs text-slate-500">
+            <div className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 px-4 py-3">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 Page {page} of {totalPages} ({total} scanned)
               </span>
               <div className="flex gap-2">
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40"
+                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40"
                 >
                   <ChevronLeft className="h-4 w-4" /> Prev
                 </button>
                 <button
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-slate-200 disabled:opacity-40"
+                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40"
                 >
                   Next <ChevronRight className="h-4 w-4" />
                 </button>
@@ -380,13 +402,13 @@ export default function ScanInsightsView() {
         </div>
       )}
 
-      <p className="mt-6 text-[11px] text-slate-400 text-center pb-12 md:pb-0">
+      <p className="mt-6 text-[11px] text-slate-400 dark:text-slate-500 text-center pb-12 md:pb-0">
         Job listings may include data from{' '}
         <a
           href="https://remoteok.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline hover:text-slate-600"
+          className="underline hover:text-slate-600 dark:hover:text-slate-400"
         >
           RemoteOK
         </a>

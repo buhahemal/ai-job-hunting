@@ -26,16 +26,18 @@ export default function ScanInsightsFilters({
   onChange,
 }: ScanInsightsFiltersProps) {
   return (
-    <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-wrap gap-4 items-center">
+    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-wrap gap-4 items-center">
       <div className="flex items-center gap-1.5">
-        <Filter className="h-3.5 w-3.5 text-slate-400" />
-        <span className="text-[11px] font-bold text-slate-500 uppercase">Filters:</span>
+        <Filter className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+          Filters:
+        </span>
       </div>
 
       <select
         value={filters.scoreBand}
         onChange={(e) => onChange({ scoreBand: e.target.value })}
-        className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs"
+        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1.5 text-xs"
       >
         <option value="All">All Score Bands</option>
         <option value="0-50">0–50%</option>
@@ -49,7 +51,7 @@ export default function ScanInsightsFilters({
       <select
         value={filters.sourceFilter}
         onChange={(e) => onChange({ sourceFilter: e.target.value })}
-        className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs"
+        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1.5 text-xs"
       >
         <option value="All">All Sources</option>
         {sources.map((source) => (
@@ -62,7 +64,7 @@ export default function ScanInsightsFilters({
       <select
         value={filters.roleFilter}
         onChange={(e) => onChange({ roleFilter: e.target.value })}
-        className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs"
+        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1.5 text-xs"
       >
         <option value="All">All Roles</option>
         {roles.map((role) => (
@@ -75,7 +77,7 @@ export default function ScanInsightsFilters({
       <select
         value={filters.seniorityFilter}
         onChange={(e) => onChange({ seniorityFilter: e.target.value })}
-        className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs"
+        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1.5 text-xs"
       >
         <option value="All">All Seniority</option>
         <option value="Junior">Junior</option>
@@ -87,7 +89,7 @@ export default function ScanInsightsFilters({
       <select
         value={filters.missingSkillFilter}
         onChange={(e) => onChange({ missingSkillFilter: e.target.value })}
-        className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs min-w-[140px]"
+        className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1.5 text-xs min-w-[140px]"
       >
         <option value="All">Any Missing Skill</option>
         {missingSkills.map((skill) => (
@@ -97,7 +99,7 @@ export default function ScanInsightsFilters({
         ))}
       </select>
 
-      <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+      <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
         <input
           type="checkbox"
           checked={filters.belowThresholdOnly}

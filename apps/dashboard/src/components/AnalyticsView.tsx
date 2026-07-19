@@ -47,43 +47,59 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
     <div className="space-y-6">
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-lg">
             <Briefcase className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-xs text-slate-500 font-medium">Discovered Jobs</div>
-            <div className="text-2xl font-bold text-slate-800 mt-0.5">{totalDiscovered}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Discovered Jobs
+            </div>
+            <div className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+              {totalDiscovered}
+            </div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg">
             <CheckCircle className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-xs text-slate-500 font-medium">Active Applications</div>
-            <div className="text-2xl font-bold text-slate-800 mt-0.5">{applied + interviewing}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Active Applications
+            </div>
+            <div className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+              {applied + interviewing}
+            </div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-amber-50 text-amber-600 rounded-lg">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-lg">
             <Clock className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-xs text-slate-500 font-medium">Interviews Booked</div>
-            <div className="text-2xl font-bold text-slate-800 mt-0.5">{interviews.length}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Interviews Booked
+            </div>
+            <div className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+              {interviews.length}
+            </div>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-lg">
             <Star className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-xs text-slate-500 font-medium">Avg AI Fit Score</div>
-            <div className="text-2xl font-bold text-emerald-600 mt-0.5">{averageScore}%</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Avg AI Fit Score
+            </div>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {averageScore}%
+            </div>
           </div>
         </div>
       </div>
@@ -91,13 +107,13 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Funnel Conversion */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm lg:col-span-2 space-y-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm lg:col-span-2 space-y-6">
           <div>
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-500" />
               Application Funnel & Conversion
             </h3>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Tracks your progression rates from initial lead discovery to official offer received.
             </p>
           </div>
@@ -105,26 +121,26 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
           <div className="space-y-4">
             {/* Funnel bars */}
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-semibold text-slate-700">
+              <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <span>Discovered Leads</span>
                 <span>
                   {totalDiscovered} ({totalDiscovered > 0 ? '100%' : '0%'})
                 </span>
               </div>
-              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full bg-slate-400 rounded-full" style={{ width: '100%' }} />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-semibold text-slate-700">
+              <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <span>Shortlisted / Tailored</span>
                 <span>
                   {shortlisted} (
                   {totalDiscovered > 0 ? Math.round((shortlisted / totalDiscovered) * 100) : 0}%)
                 </span>
               </div>
-              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-sky-500 rounded-full"
                   style={{
@@ -135,14 +151,14 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-semibold text-slate-700">
+              <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <span>Submitted Applications</span>
                 <span>
                   {applied} (
                   {totalDiscovered > 0 ? Math.round((applied / totalDiscovered) * 100) : 0}%)
                 </span>
               </div>
-              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-indigo-500 rounded-full"
                   style={{
@@ -153,14 +169,14 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-semibold text-slate-700">
+              <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <span>Interviews Conducted</span>
                 <span>
                   {interviewing} (
                   {totalDiscovered > 0 ? Math.round((interviewing / totalDiscovered) * 100) : 0}%)
                 </span>
               </div>
-              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-amber-500 rounded-full"
                   style={{
@@ -171,13 +187,13 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-semibold text-slate-700">
+              <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <span>Job Offers Received</span>
                 <span>
                   {offer} ({totalDiscovered > 0 ? Math.round((offer / totalDiscovered) * 100) : 0}%)
                 </span>
               </div>
-              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-emerald-500 rounded-full"
                   style={{ width: `${totalDiscovered > 0 ? (offer / totalDiscovered) * 100 : 0}%` }}
@@ -186,14 +202,20 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-            <div className="bg-slate-50 p-4 rounded-xl text-center">
-              <div className="text-2xl font-black text-slate-800">{applyConversion}%</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">Discovery to Submission</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl text-center">
+              <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
+                {applyConversion}%
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                Discovery to Submission
+              </div>
             </div>
-            <div className="bg-slate-50 p-4 rounded-xl text-center">
-              <div className="text-2xl font-black text-slate-800">{interviewConversion}%</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">
+            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl text-center">
+              <div className="text-2xl font-black text-slate-800 dark:text-slate-200">
+                {interviewConversion}%
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
                 Application to Interview
               </div>
             </div>
@@ -203,19 +225,19 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
         {/* Right Column: Work Style & Locations */}
         <div className="space-y-6">
           {/* Work Setting */}
-          <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Globe className="h-5 w-5 text-indigo-500" />
               Work Environment
             </h3>
 
             <div className="space-y-3">
               <div>
-                <div className="flex justify-between text-xs text-slate-600 mb-1.5">
+                <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1.5">
                   <span>Remote roles</span>
                   <span className="font-semibold">{remoteCount} jobs</span>
                 </div>
-                <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full"
                     style={{ width: `${(remoteCount / totalRemoteMapped) * 100}%` }}
@@ -224,11 +246,11 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
               </div>
 
               <div>
-                <div className="flex justify-between text-xs text-slate-600 mb-1.5">
+                <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1.5">
                   <span>Hybrid roles</span>
                   <span className="font-semibold">{hybridCount} jobs</span>
                 </div>
-                <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-indigo-500 rounded-full"
                     style={{ width: `${(hybridCount / totalRemoteMapped) * 100}%` }}
@@ -237,11 +259,11 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
               </div>
 
               <div>
-                <div className="flex justify-between text-xs text-slate-600 mb-1.5">
+                <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mb-1.5">
                   <span>On-site roles</span>
                   <span className="font-semibold">{onsiteCount} jobs</span>
                 </div>
-                <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-amber-500 rounded-full"
                     style={{ width: `${(onsiteCount / totalRemoteMapped) * 100}%` }}
@@ -252,15 +274,15 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
           </div>
 
           {/* Frequently Demanded Skills */}
-          <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <BarChart2 className="h-5 w-5 text-indigo-500" />
               In-Demand Technologies
             </h3>
 
             <div className="space-y-3">
               {sortedSkills.length === 0 ? (
-                <p className="text-xs text-slate-400 italic py-2 text-center">
+                <p className="text-xs text-slate-400 dark:text-slate-500 italic py-2 text-center">
                   Analyze more jobs to map keyword frequencies.
                 </p>
               ) : (
@@ -268,17 +290,17 @@ export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsV
                   const percent = Math.round((count / totalDiscovered) * 100);
                   return (
                     <div key={skill} className="flex items-center justify-between text-xs">
-                      <span className="bg-slate-100 text-slate-800 font-mono px-2 py-0.5 rounded text-[11px] font-medium">
+                      <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono px-2 py-0.5 rounded text-[11px] font-medium">
                         {skill}
                       </span>
                       <div className="flex items-center gap-2 w-1/2">
-                        <div className="h-2 bg-slate-100 rounded-full flex-1 overflow-hidden">
+                        <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full flex-1 overflow-hidden">
                           <div
-                            className="h-full bg-slate-700 rounded-full"
+                            className="h-full bg-slate-700 dark:bg-slate-300 rounded-full"
                             style={{ width: `${percent}%` }}
                           />
                         </div>
-                        <span className="text-slate-500 font-semibold font-mono text-[10px] min-w-[24px] text-right">
+                        <span className="text-slate-500 dark:text-slate-400 font-semibold font-mono text-[10px] min-w-[24px] text-right">
                           {percent}%
                         </span>
                       </div>

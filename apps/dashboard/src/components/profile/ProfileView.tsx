@@ -15,8 +15,8 @@ const REMOTE_OPTIONS: Array<ProfileRecord['preferences']['remotePreference']> = 
 ];
 
 const inputClass =
-  'w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none';
-const labelClass = 'text-[10px] font-bold text-slate-600 uppercase';
+  'w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none';
+const labelClass = 'text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase';
 
 interface ProfileViewProps {
   profile: ProfileRecord;
@@ -28,8 +28,10 @@ interface ProfileViewProps {
 
 function SectionCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{title}</h3>
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        {title}
+      </h3>
       {children}
     </div>
   );
@@ -76,20 +78,22 @@ export default function ProfileView({
       }}
     >
       <div>
-        <h2 className="text-xl font-bold text-slate-900">Profile & Match Settings</h2>
-        <p className="text-xs text-slate-500 mt-1">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+          Profile & Match Settings
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Your profile drives job matching and resume generation. Import JSON, edit fields, then
           save to regenerate your master resume.
         </p>
       </div>
 
       {completenessIssues.length > 0 ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-amber-800 text-xs font-semibold">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 text-xs font-semibold">
             <AlertCircle className="h-4 w-4" />
             Complete your profile for better matches and tailoring
           </div>
-          <ul className="text-[11px] text-amber-900 list-disc pl-5 space-y-1">
+          <ul className="text-[11px] text-amber-900 dark:text-amber-200 list-disc pl-5 space-y-1">
             {completenessIssues.map((issue) => (
               <li key={issue.field}>{issue.message}</li>
             ))}
@@ -98,7 +102,7 @@ export default function ProfileView({
       ) : null}
 
       <SectionCard title="Import Resume / Profile JSON">
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Upload a structured JSON file (`profile.json` or `master.json` format). You can edit every
           field after import.
         </p>
@@ -185,7 +189,10 @@ export default function ProfileView({
       <SectionCard title="Work Experience">
         <div className="space-y-4">
           {profile.experience.map((entry, index) => (
-            <div key={`exp-${index}`} className="border border-slate-100 rounded-lg p-4 space-y-3">
+            <div
+              key={`exp-${index}`}
+              className="border border-slate-100 dark:border-slate-800 rounded-lg p-4 space-y-3"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {(
                   [
@@ -225,7 +232,7 @@ export default function ProfileView({
               />
               <button
                 type="button"
-                className="text-[10px] text-red-600 font-semibold"
+                className="text-[10px] text-red-600 dark:text-red-400 font-semibold"
                 onClick={() =>
                   onChange({
                     ...profile,
@@ -239,7 +246,7 @@ export default function ProfileView({
           ))}
           <button
             type="button"
-            className="text-xs font-semibold text-indigo-600"
+            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400"
             onClick={() =>
               onChange({
                 ...profile,
@@ -284,7 +291,7 @@ export default function ProfileView({
           ))}
           <button
             type="button"
-            className="text-xs font-semibold text-indigo-600"
+            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400"
             onClick={() =>
               onChange({
                 ...profile,
@@ -300,7 +307,10 @@ export default function ProfileView({
       <SectionCard title="Projects">
         <div className="space-y-4">
           {profile.projects.map((entry, index) => (
-            <div key={`proj-${index}`} className="border border-slate-100 rounded-lg p-4 space-y-3">
+            <div
+              key={`proj-${index}`}
+              className="border border-slate-100 dark:border-slate-800 rounded-lg p-4 space-y-3"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className={labelClass}>Title</label>
@@ -342,7 +352,7 @@ export default function ProfileView({
           ))}
           <button
             type="button"
-            className="text-xs font-semibold text-indigo-600"
+            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400"
             onClick={() =>
               onChange({
                 ...profile,
@@ -426,7 +436,7 @@ export default function ProfileView({
           placeholder="Senior, Lead, Staff"
           onChange={(experienceLevels) => updatePreferences({ experienceLevels })}
         />
-        <label className="flex items-center gap-2 text-sm text-slate-700">
+        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={profile.preferences.applyOncePerCompany}
@@ -439,7 +449,7 @@ export default function ProfileView({
       <SectionCard title="Advanced Match Settings">
         <button
           type="button"
-          className="flex items-center gap-2 text-xs font-semibold text-slate-600"
+          className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400"
           onClick={() => setShowAdvanced((value) => !value)}
         >
           {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -450,7 +460,7 @@ export default function ProfileView({
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
                 <label className={labelClass}>Minimum match score for promotion</label>
-                <span className="font-bold text-indigo-600">
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">
                   {profile.matchSettings.minMatchScore}%
                 </span>
               </div>
@@ -464,12 +474,12 @@ export default function ProfileView({
                 }
                 className="w-full"
               />
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
                 Jobs must score above this threshold to promote into Job Leads. Scanner reads this
                 value from your saved profile.
               </p>
             </div>
-            <label className="flex items-center gap-2 text-xs text-slate-600">
+            <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
               <input
                 type="checkbox"
                 checked={rescanOnSave}
