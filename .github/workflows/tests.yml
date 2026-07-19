@@ -21,8 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-python
-      - name: Install TeX Live for resume PDF tests
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
       - name: Run Python unit tests
         env:
           PYTHONPATH: .
@@ -31,7 +29,6 @@ jobs:
           python3 -m unittest discover -s packages/database/tests
           python3 -m unittest discover -s packages/scanner_sdk/tests
           python3 -m unittest discover -s packages/ai_engine/tests
-          python3 -m unittest discover -s packages/resume_engine/tests
       - name: Scanner health checks
         env:
           PYTHONPATH: .

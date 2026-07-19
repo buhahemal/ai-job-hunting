@@ -4,8 +4,8 @@
 
 [![CI Pipeline](https://github.com/buhahemal/ai-job-hunting/actions/workflows/ci.yml/badge.svg)](https://github.com/buhahemal/ai-job-hunting/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Zero Cost](https://img.shields.io/badge/Operational%20Cost-%E2%82%B90%20/%20%240-brightgreen.svg)](#-zero-cost-architecture)
-[![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Python%20%7C%20Supabase%20%7C%20GitHub%20Actions-indigo.svg)](#-technology-stack)
+[![Zero Cost](https://img.shields.io/badge/Operational%20Cost-%E2%82%B90%20/%20%240-brightgreen.svg)](#zero-cost-architecture)
+[![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Python%20%7C%20Supabase%20%7C%20GitHub%20Actions-indigo.svg)](#overview)
 
 ---
 

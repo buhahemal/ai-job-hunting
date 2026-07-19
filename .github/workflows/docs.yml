@@ -18,14 +18,13 @@ jobs:
             .ai/PROJECT.md
             .ai/EXECUTION_PLAN.md
             docs/architecture/overview.md
-            docs/phases/README.md
-            docs/phases/RULES.md
+            docs/setup/quickstart.md
+            docs/development/guide.md
             packages/config/README.md
             packages/database/README.md
             packages/scanner_sdk/README.md
             supabase/README.md
             supabase/migrations/0001_init_schema.sql
-            docs/phases/phase-03-database-supabase/SETUP.md
             apps/dashboard/README.md
             apps/api/README.md
             scraper/README.md

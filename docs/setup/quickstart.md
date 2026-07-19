@@ -52,13 +52,13 @@ cp .env.example .env
 
 Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_KEY` in `.env`.
 
-4. Apply database schema migrations:
+1. Apply database schema migrations:
 
 ```bash
 bash scripts/apply_migrations.sh
 ```
 
-5. Seed your candidate profile to Supabase:
+1. Seed your candidate profile to Supabase:
 
 ```bash
 python3 scripts/sync_profile_to_supabase.py
