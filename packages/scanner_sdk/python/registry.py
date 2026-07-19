@@ -10,7 +10,6 @@ from packages.scanner_sdk.python.base import BaseScanner
 def get_registered_scanners() -> List[BaseScanner]:
     """Return all scanner plugins available to the pipeline."""
     from packages.scanner_sdk.python.ats_seeds import apply_ats_seed_environment
-    from scanners.arbeitnow.scanner import ArbeitnowScanner
     from scanners.ashby.scanner import AshbyScanner
     from scanners.company_pages.scanner import CompanyPagesScanner
     from scanners.greenhouse.scanner import GreenhouseScanner
@@ -38,7 +37,6 @@ def get_registered_scanners() -> List[BaseScanner]:
         WeWorkRemotelyScanner(),
         HackerNewsScanner(),
         CompanyPagesScanner(),
-        ArbeitnowScanner(),
         AshbyScanner(),
         WorkdayScanner(),
         WellfoundScanner(),

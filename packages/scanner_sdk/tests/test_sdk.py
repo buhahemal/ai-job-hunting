@@ -9,7 +9,6 @@ from packages.scanner_sdk.python.config import parse_workday_site, parse_workday
 from packages.scanner_sdk.python.normalize import build_canonical_job, infer_remote_type, strip_html
 from packages.scanner_sdk.python.registry import get_registered_scanners
 from scanners.ashby.scanner import AshbyScanner
-from scanners.arbeitnow.scanner import ArbeitnowScanner
 from scanners.greenhouse.scanner import GreenhouseScanner
 from scanners.lever.scanner import LeverScanner
 from scanners.remoteok.scanner import RemoteOkScanner
@@ -36,7 +35,6 @@ class TestScannerSdk(unittest.TestCase):
     }
 
     PHASE_5_SCANNERS = PHASE_4_SCANNERS | {
-        'Arbeitnow',
         'Ashby',
         'Workday',
         'Wellfound',
@@ -143,22 +141,6 @@ class TestScannerSdk(unittest.TestCase):
             }
         )
         self.assertTrue(job['id'].startswith('tt-acme-corp-'))
-
-    def test_arbeitnow_normalize(self):
-        scanner = ArbeitnowScanner()
-        job = scanner.normalize(
-            {
-                'slug': 'backend-berlin-123',
-                'title': 'Backend Engineer',
-                'company_name': 'Acme GmbH',
-                'location': 'Berlin',
-                'remote': True,
-                'url': 'https://www.arbeitnow.com/jobs/backend-berlin-123',
-                'description': '<p>Python role</p>',
-            }
-        )
-        self.assertEqual(job['id'], 'arbeit-backend-berlin-123')
-        self.assertEqual(job['remoteType'], 'Remote')
 
     def test_ashby_normalize(self):
         scanner = AshbyScanner()

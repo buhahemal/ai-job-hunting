@@ -17,12 +17,12 @@ from packages.database.python.client import is_supabase_configured
 class TestJobMappers(unittest.TestCase):
     def test_job_to_row_maps_camel_case(self):
         job = {
-            'id': 'arbeit-test',
+            'id': 'remoteok-test',
             'title': 'Engineer',
             'company': 'Acme',
             'location': 'Remote',
             'remoteType': 'Remote',
-            'source': 'Arbeitnow',
+            'source': 'RemoteOK',
             'url': 'https://example.com/jobs/1',
             'description': 'Build things',
             'postedAt': '2026-01-01T00:00:00Z',
@@ -32,16 +32,16 @@ class TestJobMappers(unittest.TestCase):
             'fitExplanation': 'Strong match',
         }
         row = job_to_row(job)
-        self.assertEqual(row['id'], 'arbeit-test')
+        self.assertEqual(row['id'], 'remoteok-test')
         self.assertEqual(row['remote_type'], 'Remote')
         self.assertEqual(row['extracted_skills'], ['Python'])
         self.assertEqual(row['fit_explanation'], 'Strong match')
 
     def test_row_to_job_round_trip(self):
         row = {
-            'id': 'arbeit-test',
-            'source': 'Arbeitnow',
-            'external_id': 'arbeit-test',
+            'id': 'remoteok-test',
+            'source': 'RemoteOK',
+            'external_id': 'remoteok-test',
             'title': 'Engineer',
             'company': 'Acme',
             'location': 'Remote',

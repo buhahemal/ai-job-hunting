@@ -3,7 +3,6 @@ import os
 import tempfile
 import unittest
 
-from scanners.arbeitnow.scanner import ArbeitnowScanner
 from scanners.company_pages.scanner import CompanyPagesScanner
 from scanners.hackernews.scanner import HackerNewsScanner
 from scanners.remotive.scanner import RemotiveScanner
@@ -13,7 +12,6 @@ from scraper.scanner_engine import JsonJobStore, ScannerEngine
 class TestScraperEngine(unittest.TestCase):
 
     def setUp(self):
-        self.arbeitnow = ArbeitnowScanner()
         self.portal = CompanyPagesScanner()
         self._temp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
         self._temp_path = self._temp.name
@@ -33,7 +31,6 @@ class TestScraperEngine(unittest.TestCase):
             os.remove(self._temp_path)
 
     def test_scanner_names(self):
-        self.assertEqual(self.arbeitnow.name, 'Arbeitnow')
         self.assertEqual(self.portal.name, 'Company Career Pages')
 
     def test_company_pages_discovery_and_normalization(self):

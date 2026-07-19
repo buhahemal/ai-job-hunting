@@ -14,7 +14,6 @@ Each scanner lives in its own folder and implements `discover_jobs()`, `normaliz
 | `weworkremotely/`  | We Work Remotely RSS     | None                                                     | None         |
 | `hackernews/`      | HN Who is Hiring         | None (Algolia public API)                                | None         |
 | `company_pages/`   | Company career pages     | None (Google, Microsoft, EPAM, Globant, Datadog, Stripe) | None         |
-| `arbeitnow/`       | Arbeitnow JSON API       | None                                                     | None         |
 | `ashby/`           | Ashby posting API        | `ASHBY_JOB_BOARD_SLUGS`                                  | None         |
 | `workday/`         | Workday CXS jobs API     | `WORKDAY_CAREER_SITES`                                   | None         |
 | `wellfound/`       | Wellfound search Apollo  | `WELLFOUND_SEARCH_PATHS`                                 | None         |

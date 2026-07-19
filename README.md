@@ -17,7 +17,7 @@
 
 ## 🔥 Key Features
 
-- 🕵️ **Multi-ATS Job Scrapers**: Built-in plugin SDK support for **Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Teamtailor, Workday**, and remote job aggregators (**RemoteOK, We Work Remotely, Arbeitnow**).
+- 🕵️ **Multi-ATS Job Scrapers**: Built-in plugin SDK support for **Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Teamtailor, Workday**, and remote job aggregators (**RemoteOK, We Work Remotely**).
 - 🧠 **Zero-Cost AI Matching**: Uses open-source Hugging Face embedding models (`sentence-transformers/all-MiniLM-L6-v2`) to compute semantic match scores, skill overlap, and missing keywords without paying for OpenAI or proprietary APIs.
 - 🎯 **Automated Job Lead Promotion**: Automatically filters scan insights and promotes jobs meeting your candidate match threshold (default $\ge 75\%$) into **Job Leads**.
 - 📊 **Analytics & Application Tracking**: High-performance React dashboard featuring application stage tracking (New, Shortlisted, Applied, Interviewing, Offer, Rejected), interview scheduling, and skill frequency analytics.
