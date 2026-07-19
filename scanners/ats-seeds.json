@@ -1,18 +1,16 @@
 {
   "greenhouse": [
-    "twilio",
     "gitlab",
+    "stripe",
+    "cloudflare",
+    "hashicorp",
+    "datadog",
+    "twilio",
     "okta",
     "elastic",
-    "newrelic",
-    "datadog",
-    "coinbase",
     "mongodb",
     "rubrik",
     "sumologic",
-    "cloudflare",
-    "stripe",
-    "cockroachlabs",
     "samsara",
     "airbnb",
     "dropbox",
@@ -21,7 +19,7 @@
     "affirm",
     "grafanalabs"
   ],
-  "lever": ["netlify"],
-  "workable": [],
-  "ashby": []
+  "lever": ["spotify", "netflix", "figma", "palantir", "postman", "netlify"],
+  "workable": ["workable", "samsara"],
+  "ashby": ["linear", "notion", "vercel", "supabase", "replit"]
 }
