@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS jobs (
   salary_estimate TEXT,
   seniority TEXT,
   notes TEXT,
+  action_history JSONB NOT NULL DEFAULT '[]'::jsonb,
   tailored_resume_latex TEXT,
   tailored_cover_letter TEXT,
   ats_score DOUBLE PRECISION,
