@@ -6,7 +6,7 @@ interface AnalyticsViewProps {
   interviews: Interview[];
 }
 
-export default function AnalyticsView({ jobs, interviews }: AnalyticsViewProps) {
+export default function AnalyticsView({ jobs = [], interviews = [] }: AnalyticsViewProps) {
   // 1. Pipeline Funnel stats
   const totalDiscovered = jobs.length;
   const shortlisted = jobs.filter((j) => j.status === 'Shortlisted').length;

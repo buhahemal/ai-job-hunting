@@ -135,6 +135,15 @@ class TestJobMappers(unittest.TestCase):
         self.assertEqual(row['preferred_skills'], [])
         self.assertEqual(row['extracted_technologies'], [])
 
+    def test_timestamps_never_none_for_db_not_null_constraints(self):
+        scanned_row = scanned_job_to_row({'dedupe_key': 'key-1'})
+        self.assertIsNotNone(scanned_row.get('created_at'))
+        self.assertIsNotNone(scanned_row.get('updated_at'))
+
+        job_row = job_to_row({'id': 'job-1'})
+        self.assertIsNotNone(job_row.get('created_at'))
+        self.assertIsNotNone(job_row.get('updated_at'))
+
 
 class TestClientEnv(unittest.TestCase):
     def setUp(self):

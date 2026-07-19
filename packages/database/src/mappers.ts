@@ -299,8 +299,8 @@ export function jobToRow(job: JobRecord): JobRow {
     is_duplicate: job.isDuplicate ?? false,
     duplicate_of: job.duplicateOf ?? null,
     match_scorer: job.matchScorer ?? insights?.scorer ?? null,
-    created_at: job.createdAt ?? job.postedAt ?? null,
-    updated_at: job.updatedAt ?? job.scannedAt ?? null,
+    created_at: job.createdAt ?? job.postedAt ?? new Date().toISOString(),
+    updated_at: job.updatedAt ?? job.scannedAt ?? new Date().toISOString(),
     action_history: job.actionHistory ?? null,
   };
 }

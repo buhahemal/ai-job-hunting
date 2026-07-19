@@ -12,6 +12,18 @@ export interface JobFilterState {
   hideDuplicates: boolean;
 }
 
+export const DEFAULT_JOB_FILTERS: JobFilterState = {
+  searchQuery: '',
+  statusFilter: 'All',
+  scoreFilter: 'All',
+  remoteFilter: 'All',
+  seniorityFilter: 'All',
+  sourceFilter: 'All',
+  roleFilter: 'All',
+  priorityFilter: 'All',
+  hideDuplicates: false,
+};
+
 interface JobFiltersProps {
   filters: JobFilterState;
   sources: string[];

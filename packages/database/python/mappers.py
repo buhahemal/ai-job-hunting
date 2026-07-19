@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 
@@ -88,8 +89,8 @@ def job_to_row(job: Dict[str, Any]) -> Dict[str, Any]:
         'is_duplicate': bool(job.get('isDuplicate')),
         'duplicate_of': job.get('duplicateOf'),
         'match_scorer': job.get('matchScorer') or insights.get('scorer'),
-        'created_at': job.get('createdAt') or job.get('created_at'),
-        'updated_at': job.get('updatedAt') or job.get('updated_at'),
+        'created_at': job.get('createdAt') or job.get('created_at') or job.get('postedAt') or datetime.now(timezone.utc).isoformat(),
+        'updated_at': job.get('updatedAt') or job.get('updated_at') or datetime.now(timezone.utc).isoformat(),
         'action_history': job.get('actionHistory') or job.get('action_history') or [],
     }
 
@@ -216,8 +217,8 @@ def scanned_job_to_row(record: Dict[str, Any]) -> Dict[str, Any]:
         'profile_hash': record.get('profile_hash'),
         'skill_match_confidence': record.get('skill_match_confidence'),
         'rescored_at': record.get('rescored_at'),
-        'created_at': record.get('createdAt') or record.get('created_at') or record.get('scanned_at'),
-        'updated_at': record.get('updatedAt') or record.get('updated_at'),
+        'created_at': record.get('createdAt') or record.get('created_at') or record.get('scanned_at') or datetime.now(timezone.utc).isoformat(),
+        'updated_at': record.get('updatedAt') or record.get('updated_at') or datetime.now(timezone.utc).isoformat(),
         'status': record.get('status'),
         'notes': record.get('notes'),
         'action_history': record.get('actionHistory') or record.get('action_history') or [],
