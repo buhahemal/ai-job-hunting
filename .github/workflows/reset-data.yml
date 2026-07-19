@@ -1,0 +1,44 @@
+name: Reset All Data & Jobs
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target data to clear'
+        required: true
+        default: 'reset-jobs'
+        type: choice
+        options:
+          - 'reset-jobs'
+          - 'reset-all'
+      force_profile_update:
+        description: 'Force re-sync candidate profile after reset'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  reset:
+    name: Reset Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-python
+
+      - name: Run Reset Script
+        env:
+          PYTHONPATH: .
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TARGET: ${{ inputs.target || 'reset-jobs' }}
+          FORCE_PROFILE: ${{ inputs.force_profile_update }}
+        run: |
+          CMD_ARGS="--action $TARGET"
+          if [ "$FORCE_PROFILE" = "true" ]; then
+            CMD_ARGS="$CMD_ARGS --force"
+          fi
+          python3 scripts/reset_and_sync_profile.py $CMD_ARGS
