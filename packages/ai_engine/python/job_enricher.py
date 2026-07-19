@@ -13,6 +13,7 @@ from packages.ai_engine.python.salary_extractor import NOT_SPECIFIED, extract_sa
 from packages.ai_engine.python.skill_matcher import compute_skill_match, extract_job_requirements
 from packages.ai_engine.python.text_builder import infer_seniority
 from packages.config.python.remote_policy import analyze_remote_eligibility
+from packages.scanner_sdk.python.normalize import is_engineering_job_title
 from packages.database.python.constants import (
     FULL_MATCH_SKILL_SCORE_FLOOR,
     LOW_CONFIDENCE_SCORE_PENALTY,
@@ -100,6 +101,8 @@ def classify_canonical_role(title: str, description: str = '') -> str:
     for role, patterns in ROLE_PATTERNS:
         if any(pattern in text for pattern in patterns):
             return role
+    if not is_engineering_job_title(title, description):
+        return 'Other / Non-Engineering'
     return 'Software Engineer'
 
 

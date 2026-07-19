@@ -2,7 +2,12 @@ from typing import Dict, List
 
 from packages.scanner_sdk.python.base import BaseScanner
 from packages.scanner_sdk.python.http import fetch_ok, get_json_any
-from packages.scanner_sdk.python.normalize import build_canonical_job, infer_remote_type, strip_html
+from packages.scanner_sdk.python.normalize import (
+    build_canonical_job,
+    infer_remote_type,
+    is_engineering_job_title,
+    strip_html,
+)
 
 API_URL = 'https://remoteok.com/api'
 
@@ -22,6 +27,9 @@ class RemoteOkScanner(BaseScanner):
         jobs: List[Dict] = []
         for item in data:
             if not isinstance(item, dict) or not item.get('position'):
+                continue
+            position = str(item.get('position', ''))
+            if not is_engineering_job_title(position):
                 continue
             jobs.append(item)
             if len(jobs) >= limit:

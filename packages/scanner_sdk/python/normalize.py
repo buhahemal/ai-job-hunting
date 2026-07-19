@@ -49,3 +49,84 @@ def infer_remote_type(raw_remote: Optional[bool], location: str) -> str:
     if raw_remote is False:
         return 'On-site'
     return 'Hybrid'
+
+
+NON_ENGINEERING_TITLE_TERMS = (
+    'hr ',
+    'human resource',
+    'recruiter',
+    'talent acquisition',
+    'sales',
+    'account executive',
+    'business development',
+    'marketing',
+    'seo ',
+    'content writer',
+    'copywriter',
+    'customer support',
+    'customer success',
+    'customer service',
+    'call center',
+    'asesor de atenci',
+    'graphic designer',
+    'ui/ux designer',
+    'illustrator',
+    'creative director',
+    'administrative assistant',
+    'virtual assistant',
+    'office manager',
+    'receptionist',
+    'courier',
+    'driver',
+    'warehouse',
+    'docente',
+    'teacher',
+    'professor',
+    'accountant',
+    'payroll',
+    'legal assistant',
+    'paralegal',
+    'nurse',
+)
+
+ENGINEERING_TITLE_TERMS = (
+    'engineer',
+    'developer',
+    'software',
+    'programmer',
+    'coder',
+    'architect',
+    'backend',
+    'frontend',
+    'fullstack',
+    'full-stack',
+    'full stack',
+    'devops',
+    'sre',
+    'site reliability',
+    'platform',
+    'cloud',
+    'data',
+    'infra',
+    'infrastructure',
+    'qa ',
+    'test engineer',
+    'automation',
+    'tech lead',
+    'technical lead',
+    'cto',
+    'engineering',
+)
+
+
+def is_engineering_job_title(title: str, description: str = '') -> bool:
+    """Return True if title represents a software/engineering role."""
+    title_lower = (title or '').lower()
+    if not title_lower or title_lower in {'unknown role', 'open position', 'replace with job title'}:
+        return False
+    if any(term in title_lower for term in ENGINEERING_TITLE_TERMS):
+        return True
+    if any(term in title_lower for term in NON_ENGINEERING_TITLE_TERMS):
+        return False
+    return True
+
