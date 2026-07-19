@@ -6,7 +6,7 @@
  */
 
 // --- Match scoring & promotion ---
-export const MATCH_SCORE_THRESHOLD = 80;
+export const MATCH_SCORE_THRESHOLD = 75;
 export const MATCH_SCORE_NEAR_MISS_BAND = 10;
 export const MATCH_SCORE_NEAR_MISS = MATCH_SCORE_THRESHOLD - MATCH_SCORE_NEAR_MISS_BAND;
 

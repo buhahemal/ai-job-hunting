@@ -7,7 +7,7 @@ from packages.database.python import constants as c
 
 class TestPolicyConstants(unittest.TestCase):
     def test_default_match_threshold_populates_useful_feed(self):
-        self.assertEqual(c.MATCH_SCORE_THRESHOLD, 80)
+        self.assertEqual(c.MATCH_SCORE_THRESHOLD, 75)
 
     def test_near_miss_is_threshold_minus_band(self):
         self.assertEqual(c.MATCH_SCORE_NEAR_MISS, c.MATCH_SCORE_THRESHOLD - c.MATCH_SCORE_NEAR_MISS_BAND)

@@ -78,10 +78,11 @@ jobs:
           ASHBY_JOB_BOARD_SLUGS: ${{ secrets.ASHBY_JOB_BOARD_SLUGS }}
           WORKDAY_CAREER_SITES: ${{ secrets.WORKDAY_CAREER_SITES }}
           WELLFOUND_SEARCH_PATHS: ${{ secrets.WELLFOUND_SEARCH_PATHS }}
-          SCANNER_MAX_PASSES: '0'
+          SCANNER_MIN_MATCH_SCORE: '75'
+          SCANNER_MAX_PASSES: '4'
           SCANNER_LIMIT_STEP: '50'
-          SCANNER_MAX_LIMIT_PER_SOURCE: '2000'
-          SCANNER_MAX_EVALUATIONS: '3000'
+          SCANNER_MAX_LIMIT_PER_SOURCE: '200'
+          SCANNER_MAX_EVALUATIONS: '500'
           ATS_DISCOVERY_ENABLED: 'true'
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |

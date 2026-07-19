@@ -24,7 +24,7 @@ export const DEFAULT_PROFILE: Profile = {
     applyOncePerCompany: false,
     ...((profileBase as Partial<Profile>).preferences ?? {}),
   },
-  matchSettings: { minMatchScore: 80 },
+  matchSettings: { minMatchScore: 75 },
   masterResumeLaTeX,
 };
 

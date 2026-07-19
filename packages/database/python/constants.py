@@ -5,7 +5,7 @@ Scanner env vars (see ``.env.example``) override these defaults at runtime.
 """
 
 # --- Match scoring & promotion ---
-MATCH_SCORE_THRESHOLD = 80
+MATCH_SCORE_THRESHOLD = 75
 MATCH_SCORE_NEAR_MISS_BAND = 10
 MATCH_SCORE_NEAR_MISS = MATCH_SCORE_THRESHOLD - MATCH_SCORE_NEAR_MISS_BAND
 

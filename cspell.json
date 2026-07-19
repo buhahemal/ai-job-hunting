@@ -193,7 +193,14 @@
     "hackernews",
     "Glassdoor",
     "Craftr",
-    "prefilter"
+    "prefilter",
+    "dotenv",
+    "Rubrik",
+    "rubrik",
+    "sumologic",
+    "cockroachlabs",
+    "grafanalabs",
+    "exampleco"
   ],
   "ignorePaths": [
     "node_modules",

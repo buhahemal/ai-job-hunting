@@ -1,5 +1,26 @@
 {
-  "greenhouse": ["cloudflare", "datadog", "hashicorp", "stripe"],
+  "greenhouse": [
+    "twilio",
+    "gitlab",
+    "okta",
+    "elastic",
+    "newrelic",
+    "datadog",
+    "coinbase",
+    "mongodb",
+    "rubrik",
+    "sumologic",
+    "cloudflare",
+    "stripe",
+    "cockroachlabs",
+    "samsara",
+    "airbnb",
+    "dropbox",
+    "reddit",
+    "pinterest",
+    "affirm",
+    "grafanalabs"
+  ],
   "lever": ["netlify"],
   "workable": [],
   "ashby": []
