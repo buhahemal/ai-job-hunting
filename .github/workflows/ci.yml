@@ -19,30 +19,30 @@ env:
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yml
+    uses: ./.github/workflows/internal/lint.yml
   tests:
-    uses: ./.github/workflows/tests.yml
+    uses: ./.github/workflows/internal/tests.yml
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/internal/build.yml
   docker:
-    uses: ./.github/workflows/docker.yml
+    uses: ./.github/workflows/internal/docker.yml
   docs:
-    uses: ./.github/workflows/docs.yml
+    uses: ./.github/workflows/internal/docs.yml
   markdown:
-    uses: ./.github/workflows/markdown.yml
+    uses: ./.github/workflows/internal/markdown.yml
   format:
-    uses: ./.github/workflows/format.yml
+    uses: ./.github/workflows/internal/format.yml
   gitleaks:
-    uses: ./.github/workflows/gitleaks.yml
+    uses: ./.github/workflows/internal/gitleaks.yml
   duplicate-code:
-    uses: ./.github/workflows/duplicate-code.yml
+    uses: ./.github/workflows/internal/duplicate-code.yml
   dead-code:
-    uses: ./.github/workflows/dead-code.yml
+    uses: ./.github/workflows/internal/dead-code.yml
   architecture:
-    uses: ./.github/workflows/architecture.yml
+    uses: ./.github/workflows/internal/architecture.yml
   semgrep:
-    uses: ./.github/workflows/semgrep.yml
+    uses: ./.github/workflows/internal/semgrep.yml
   spellcheck:
-    uses: ./.github/workflows/spellcheck.yml
+    uses: ./.github/workflows/internal/spellcheck.yml
   actionlint:
-    uses: ./.github/workflows/actionlint.yml
+    uses: ./.github/workflows/internal/actionlint.yml
