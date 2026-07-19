@@ -1,0 +1,109 @@
+{
+  "fullName": "Your Name",
+  "email": "your.email@example.com",
+  "phone": "+1-555-0199",
+  "website": "https://yourportfolio.dev",
+  "github": "https://github.com/yourhandle",
+  "linkedin": "https://www.linkedin.com/in/yourprofile",
+  "location": "San Francisco, CA (Open to Remote)",
+  "summary": "Results-driven Software Engineer with expertise in building scalable cloud services, microservices, and modern frontend applications. Passionate about automated testing, performance optimization, and AI integration.",
+  "targetRoles": [
+    "Senior Software Engineer",
+    "Backend Engineer",
+    "Full Stack Engineer",
+    "Platform Engineer",
+    "DevOps Engineer"
+  ],
+  "skills": [
+    "Node.js",
+    "TypeScript",
+    "JavaScript",
+    "Python",
+    "Go",
+    "React",
+    "PostgreSQL",
+    "Redis",
+    "Docker",
+    "Kubernetes",
+    "AWS",
+    "GitHub Actions",
+    "REST APIs",
+    "GraphQL",
+    "System Design"
+  ],
+  "skillGroups": [
+    {
+      "label": "Languages",
+      "items": ["TypeScript", "JavaScript", "Python", "Go", "SQL"]
+    },
+    {
+      "label": "Backend & Cloud",
+      "items": ["Node.js", "Express", "PostgreSQL", "Redis", "Docker", "AWS (EC2, S3, Lambda)"]
+    },
+    {
+      "label": "Frontend & Tools",
+      "items": ["React", "Next.js", "Tailwind CSS", "Git", "GitHub Actions", "Jest"]
+    }
+  ],
+  "experience": [
+    {
+      "role": "Senior Software Engineer",
+      "company": "Tech Corp Inc.",
+      "period": "Jan 2022 -- Present",
+      "location": "San Francisco, CA",
+      "bullets": [
+        "Architected distributed microservices in Node.js/TypeScript handling over 10M daily requests with 99.99% availability.",
+        "Optimized database indexing and query performance in PostgreSQL, reducing average API latency by 45%.",
+        "Automated CI/CD workflows using GitHub Actions and Docker, reducing deployment cycle times from 30 minutes to 5 minutes."
+      ]
+    },
+    {
+      "role": "Software Engineer",
+      "company": "Innovate Software",
+      "period": "Jun 2019 -- Dec 2021",
+      "location": "Austin, TX",
+      "bullets": [
+        "Developed core payment processing microservice integrating Stripe API, processing $50M+ in annual transaction volume.",
+        "Designed and published RESTful APIs consumed by Web and Mobile client applications with sub-200ms response times."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.S. in Computer Science",
+      "school": "University of Technology",
+      "period": "Sep 2015 -- May 2019",
+      "location": "Austin, TX"
+    }
+  ],
+  "projects": [
+    {
+      "title": "Cloud Scale Task Engine",
+      "description": "High-throughput asynchronous background job scheduler using Redis and Go, capable of processing 50,000 tasks/second.",
+      "tech": ["Go", "Redis", "Docker", "Prometheus"]
+    }
+  ],
+  "preferences": {
+    "locations": ["Remote", "San Francisco, CA", "Austin, TX", "United States"],
+    "remotePreference": "Remote",
+    "companySizes": ["50-200", "200-1,000", "1,000+"],
+    "targetCompanies": ["Stripe", "GitHub", "Vercel", "Datadog", "Cloudflare"],
+    "skillsKeywords": [
+      "TypeScript",
+      "Node.js",
+      "Distributed Systems",
+      "AWS",
+      "PostgreSQL",
+      "Docker"
+    ],
+    "companyBlacklist": [],
+    "titleBlacklist": ["Intern", "Junior"],
+    "locationBlacklist": [],
+    "experienceLevels": ["Mid", "Senior", "Lead"],
+    "applyOncePerCompany": false
+  },
+  "matchSettings": {
+    "minMatchScore": 75
+  },
+  "masterResumeLaTeX": "\\documentclass[11pt,a4paper]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[margin=0.75in]{geometry}\n\\usepackage{hyperref}\n\\begin{document}\n\\centerline{\\Huge \\bfseries Your Name}\n\\centerline{your.email@example.com | +1-555-0199 | github.com/yourhandle}\n\\vspace{1em}\n\\section*{Summary}\nResults-driven Software Engineer with expertise in building scalable cloud services.\n\\section*{Experience}\n\\textbf{Tech Corp Inc.} --- Senior Software Engineer \\hfill Jan 2022 -- Present\n\\begin{itemize}\n  \\item Architected distributed microservices in Node.js/TypeScript handling 10M daily requests.\n\\end{itemize}\n\\end{document}"
+}
