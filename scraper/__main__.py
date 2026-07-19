@@ -1,6 +1,10 @@
 import sys
 import traceback
 
+from packages.config.python.dotenv import load_dotenv
+
+load_dotenv()
+
 from scraper.scanner_engine import ScannerEngine
 
 

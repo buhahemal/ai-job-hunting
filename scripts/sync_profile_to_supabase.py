@@ -5,6 +5,10 @@ from __future__ import annotations
 
 import sys
 
+from packages.config.python.dotenv import load_dotenv
+
+load_dotenv()
+
 from apps.api.defaults import DEFAULT_PROFILE
 from packages.database.python.client import create_service_client, is_supabase_configured
 from packages.database.python.profile import normalize_stored_profile

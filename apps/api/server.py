@@ -8,6 +8,10 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
+from packages.config.python.dotenv import load_dotenv
+
+load_dotenv(os.path.join(_REPO_ROOT, '.env'))
+
 # Automatic dynamic bootstrap of python dependencies for seamless container deployment
 def bootstrap_packages():
     required = ["flask", "flask-cors", "requests"]
