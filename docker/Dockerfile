@@ -15,5 +15,6 @@ COPY apps/ apps/
 COPY packages/ packages/
 COPY scraper/ scraper/
 COPY scanners/ scanners/
-EXPOSE 3000
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 CMD ["python3", "apps/api/server.py"]

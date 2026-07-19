@@ -13,14 +13,14 @@ jobs:
   full-suite:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@39370e3970a6d050c08001712a20409028fa5261 # v4.1.0
         with:
           node-version: '24'
           cache: npm
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@39cd149518dd237346121341cf9f2abe1376f9d6 # v5.4.0
         with:
           python-version: '3.11'
 

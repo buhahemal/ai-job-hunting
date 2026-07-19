@@ -166,16 +166,26 @@ def get_jobs():
 
 @app.route("/api/jobs/<string:job_id>/status", methods=["POST"])
 def update_job_status(job_id):
-    status = request.json.get("status")
-    note = request.json.get("note")
-    job = get_repository().update_job_status(job_id, status, note=note)
-    return jsonify({"success": True, "job": job})
+    try:
+        body = request.get_json(silent=True) or {}
+        status = body.get("status")
+        note = body.get("note")
+        if not status:
+            return jsonify({"error": "Missing status"}), 400
+        job = get_repository().update_job_status(job_id, status, note=note)
+        return jsonify({"success": True, "job": job})
+    except Exception:
+        return _internal_error('update_job_status')
 
 @app.route("/api/jobs/<string:job_id>/notes", methods=["POST"])
 def update_job_notes(job_id):
-    notes = request.json.get("notes")
-    job = get_repository().update_job_notes(job_id, notes)
-    return jsonify({"success": True, "job": job})
+    try:
+        body = request.get_json(silent=True) or {}
+        notes = body.get("notes", "")
+        job = get_repository().update_job_notes(job_id, notes)
+        return jsonify({"success": True, "job": job})
+    except Exception:
+        return _internal_error('update_job_notes')
 
 @app.route("/api/jobs/add-custom", methods=["POST"])
 def add_custom_job():
@@ -310,4 +320,5 @@ def serve_frontend(path):
     return send_from_directory(dist_dir, "index.html")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT, debug=FLASK_DEBUG)
+    host = os.getenv("FLASK_HOST", "127.0.0.1")
+    app.run(host=host, port=PORT, debug=FLASK_DEBUG)

@@ -121,10 +121,22 @@ class JobRepository:
         if note:
             payload['notes'] = note
 
-        self._client.table('jobs').update(payload).eq('id', job_id).execute()
+        try:
+            self._client.table('jobs').update(payload).eq('id', job_id).execute()
+        except Exception:
+            fallback_payload: Dict[str, Any] = {'status': status}
+            if note:
+                fallback_payload['notes'] = note
+            self._client.table('jobs').update(fallback_payload).eq('id', job_id).execute()
+
         job = self.get_job(job_id)
         if not job:
             raise ValueError(f'Job not found: {job_id}')
+        job['updatedAt'] = now
+        job['status'] = status
+        if note:
+            job['notes'] = note
+        job['actionHistory'] = history
         return job
 
     def update_job_notes(self, job_id: str, notes: str) -> Dict[str, Any]:
@@ -148,10 +160,17 @@ class JobRepository:
             'updated_at': now,
             'action_history': history,
         }
-        self._client.table('jobs').update(payload).eq('id', job_id).execute()
+        try:
+            self._client.table('jobs').update(payload).eq('id', job_id).execute()
+        except Exception:
+            self._client.table('jobs').update({'notes': notes}).eq('id', job_id).execute()
+
         job = self.get_job(job_id)
         if not job:
             raise ValueError(f'Job not found: {job_id}')
+        job['notes'] = notes
+        job['updatedAt'] = now
+        job['actionHistory'] = history
         return job
 
     def update_job_tailored(

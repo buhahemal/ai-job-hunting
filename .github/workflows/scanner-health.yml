@@ -9,9 +9,9 @@ jobs:
   health:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@39cd149518dd237346121341cf9f2abe1376f9d6 # v5.4.0
         with:
           python-version: '3.11'
 

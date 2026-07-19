@@ -16,11 +16,18 @@ PIPELINE_MODULES = (
 )
 
 
+ALLOWED_IMPORT_MODULES = frozenset(PIPELINE_MODULES)
+
+
 def verify_pipeline_imports(modules: Iterable[str] = PIPELINE_MODULES) -> list[str]:
     """Import scanner modules to catch definition/order errors before a scan run."""
     failed: list[str] = []
 
     for module_name in modules:
+        if module_name not in ALLOWED_IMPORT_MODULES:
+            print(f'[FAIL] import {module_name}: Unauthorized module name', file=sys.stderr)
+            failed.append(module_name)
+            continue
         try:
             importlib.import_module(module_name)
             print(f'[OK] import {module_name}')

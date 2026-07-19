@@ -37,7 +37,7 @@ jobs:
     name: Execute Data & Profile Operation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: ./.github/actions/setup-python
 
@@ -50,12 +50,12 @@ jobs:
           FORCE_OVERWRITE: ${{ inputs.force_overwrite }}
           PROFILE_JSON: ${{ inputs.profile_json }}
         run: |
-          CMD_ARGS="--action $ACTION"
+          ARGS=("--action" "$ACTION")
           if [ "$FORCE_OVERWRITE" = "true" ]; then
-            CMD_ARGS="$CMD_ARGS --force"
+            ARGS+=("--force")
           fi
           if [ -n "$PROFILE_JSON" ]; then
-            CMD_ARGS="$CMD_ARGS --profile-input '$PROFILE_JSON'"
+            ARGS+=("--profile-input" "$PROFILE_JSON")
           fi
 
-          python3 scripts/reset_and_sync_profile.py $CMD_ARGS
+          python3 scripts/reset_and_sync_profile.py "${ARGS[@]}"

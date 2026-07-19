@@ -25,7 +25,7 @@ jobs:
     name: Reset Supabase Database
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: ./.github/actions/setup-python
 
@@ -37,8 +37,8 @@ jobs:
           TARGET: ${{ inputs.target || 'reset-jobs' }}
           FORCE_PROFILE: ${{ inputs.force_profile_update }}
         run: |
-          CMD_ARGS="--action $TARGET"
           if [ "$FORCE_PROFILE" = "true" ]; then
-            CMD_ARGS="$CMD_ARGS --force"
+            python3 scripts/reset_and_sync_profile.py --action "$TARGET" --force
+          else
+            python3 scripts/reset_and_sync_profile.py --action "$TARGET"
           fi
-          python3 scripts/reset_and_sync_profile.py $CMD_ARGS

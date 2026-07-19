@@ -4,7 +4,7 @@ description: Install Node.js 24, run npm ci, and remove nested dashboard node_mo
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@39370e3970a6d050c08001712a20409028fa5261 # v4.1.0
       with:
         node-version: '24'
         cache: npm
