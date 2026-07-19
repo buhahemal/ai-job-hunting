@@ -353,14 +353,34 @@ export default function ScanInsightsView() {
           )}
         </div>
 
-        <ScanInsightDetailPanel
-          insight={selected}
-          onClose={() => setSelected(null)}
-          onPromoted={handlePromoted}
-        />
+        {/* Desktop Detail Panel (>= xl) */}
+        <div className="hidden xl:block">
+          <ScanInsightDetailPanel
+            insight={selected}
+            onClose={() => setSelected(null)}
+            onPromoted={handlePromoted}
+          />
+        </div>
       </div>
 
-      <p className="mt-6 text-[11px] text-slate-400 text-center">
+      {/* Mobile / Tablet Slide-over Modal Drawer (< xl) */}
+      {selected && (
+        <div className="xl:hidden fixed inset-0 z-50 flex justify-end">
+          <div
+            className="mobile-drawer-overlay animate-fade-in"
+            onClick={() => setSelected(null)}
+          />
+          <div className="mobile-drawer-content animate-slide-up p-4 sm:p-6 overflow-auto">
+            <ScanInsightDetailPanel
+              insight={selected}
+              onClose={() => setSelected(null)}
+              onPromoted={handlePromoted}
+            />
+          </div>
+        </div>
+      )}
+
+      <p className="mt-6 text-[11px] text-slate-400 text-center pb-12 md:pb-0">
         Job listings may include data from{' '}
         <a
           href="https://remoteok.com"
