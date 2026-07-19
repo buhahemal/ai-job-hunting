@@ -1,6 +1,6 @@
 {
   "name": "AI Job Hunter",
-  "description": "Continuous automated job discovery, AI matching, LaTeX resume tailoring, and cover letter generator designed to streamline your career search.",
+  "description": "Continuous automated job discovery, AI match scoring, and application pipeline tracking designed to streamline your career search.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

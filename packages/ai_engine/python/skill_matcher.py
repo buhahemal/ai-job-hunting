@@ -153,10 +153,6 @@ def build_candidate_skill_corpus(profile: Dict) -> Tuple[Set[str], str]:
                 tokens.update(_alias_variants(norm))
 
     corpus_text = build_candidate_text(profile).lower()
-    latex = (profile.get('masterResumeLaTeX') or '').lower()
-    if latex:
-        corpus_text = f'{corpus_text}\n{latex}'
-
     return tokens, corpus_text
 
 

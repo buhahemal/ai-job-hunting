@@ -1,7 +1,6 @@
 """Tests for profile save/import service."""
 
 import unittest
-from unittest.mock import patch
 
 from apps.api.profile_service import import_profile_payload, prepare_profile_for_save
 from packages.database.python.profile import normalize_stored_profile
@@ -28,13 +27,11 @@ SAMPLE_PROFILE = normalize_stored_profile(
 
 
 class TestProfileService(unittest.TestCase):
-    @patch('apps.api.profile_service.regenerate_master_latex', return_value='\\documentclass{}')
-    def test_prepare_profile_for_save_regenerates_latex(self, _mock_render):
+    def test_prepare_profile_for_save(self):
         saved = prepare_profile_for_save(SAMPLE_PROFILE)
-        self.assertEqual(saved['masterResumeLaTeX'], '\\documentclass{}')
+        self.assertEqual(saved['fullName'], 'Jane Doe')
 
-    @patch('apps.api.profile_service.regenerate_master_latex', return_value='\\documentclass{}')
-    def test_import_profile_payload_merges_fields(self, _mock_render):
+    def test_import_profile_payload_merges_fields(self):
         existing = normalize_stored_profile({'fullName': 'Jane Doe', 'email': 'jane@example.com'})
         imported = {'summary': 'Updated summary', 'skills': ['Go', 'Rust']}
         profile, summary = import_profile_payload(existing, imported)

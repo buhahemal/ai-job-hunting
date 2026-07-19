@@ -1,4 +1,4 @@
-"""Profile validation, import merge, and LaTeX regeneration."""
+"""Profile validation and import merge."""
 
 from __future__ import annotations
 
