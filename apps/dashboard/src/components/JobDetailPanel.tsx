@@ -1,10 +1,12 @@
-import { ArrowUpRight, Sparkles, X } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUpRight, Clock, History, Sparkles, X } from 'lucide-react';
 import { Job } from '../types';
 
 interface JobDetailPanelProps {
   job: Job | null;
   onClose: () => void;
   onSaveNotes: (jobId: string, notes: string) => void;
+  onUpdateStatus?: (jobId: string, status: Job['status'], note?: string) => void;
 }
 
 function ScoreBar({ label, value }: { label: string; value?: number }) {
@@ -58,15 +60,23 @@ function ChipList({
   );
 }
 
-export default function JobDetailPanel({ job, onClose, onSaveNotes }: JobDetailPanelProps) {
+export default function JobDetailPanel({
+  job,
+  onClose,
+  onSaveNotes,
+  onUpdateStatus,
+}: JobDetailPanelProps) {
+  const [selectedStatus, setSelectedStatus] = useState<Job['status'] | ''>('');
+  const [statusNote, setStatusNote] = useState('');
+  const [updating, setUpdating] = useState(false);
+
   if (!job) {
     return (
       <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6">
         <div className="text-center py-12 text-slate-400 space-y-3">
           <Sparkles className="h-8 w-8 text-slate-300 mx-auto" />
           <p className="text-xs">
-            Select a job to view enriched metadata, score breakdown, missing skills, and resume
-            suggestions.
+            Select a job to view enriched metadata, score breakdown, missing skills, and history.
           </p>
         </div>
       </div>
@@ -74,6 +84,24 @@ export default function JobDetailPanel({ job, onClose, onSaveNotes }: JobDetailP
   }
 
   const insights = job.matchInsights;
+  const currentStatus = job.status;
+
+  const handleStatusSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newStatus = selectedStatus || currentStatus;
+    if (!onUpdateStatus) return;
+    setUpdating(true);
+    try {
+      await onUpdateStatus(job.id, newStatus, statusNote.trim() || undefined);
+      setStatusNote('');
+      setSelectedStatus('');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const createdDate = job.createdAt || job.scannedAt || job.postedAt;
+  const updatedDate = job.updatedAt || job.scannedAt || job.createdAt;
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm sticky top-6 space-y-6 max-h-[calc(100vh-8rem)] overflow-auto">
@@ -112,6 +140,7 @@ export default function JobDetailPanel({ job, onClose, onSaveNotes }: JobDetailP
         </button>
       </div>
 
+      {/* Metadata Grid */}
       <div className="grid grid-cols-2 gap-3 text-[11px]">
         <div className="bg-slate-50 rounded-lg p-3">
           <div className="text-slate-400 uppercase font-bold text-[10px]">Stack</div>
@@ -120,22 +149,105 @@ export default function JobDetailPanel({ job, onClose, onSaveNotes }: JobDetailP
           </div>
         </div>
         <div className="bg-slate-50 rounded-lg p-3">
-          <div className="text-slate-400 uppercase font-bold text-[10px]">Employment</div>
-          <div className="font-semibold text-slate-700 mt-1">
-            {job.employmentType || 'Full-time'}
-          </div>
-        </div>
-        <div className="bg-slate-50 rounded-lg p-3">
           <div className="text-slate-400 uppercase font-bold text-[10px]">Seniority</div>
           <div className="font-semibold text-slate-700 mt-1">{job.seniority || 'Unknown'}</div>
         </div>
         <div className="bg-slate-50 rounded-lg p-3">
-          <div className="text-slate-400 uppercase font-bold text-[10px]">Scanned</div>
+          <div className="text-slate-400 uppercase font-bold text-[10px] flex items-center gap-1">
+            <Clock className="h-3 w-3 text-slate-400" />
+            Created / Scanned
+          </div>
           <div className="font-semibold text-slate-700 mt-1">
-            {job.scannedAt ? new Date(job.scannedAt).toLocaleString() : '—'}
+            {createdDate ? new Date(createdDate).toLocaleString() : '—'}
+          </div>
+        </div>
+        <div className="bg-slate-50 rounded-lg p-3">
+          <div className="text-slate-400 uppercase font-bold text-[10px] flex items-center gap-1">
+            <Clock className="h-3 w-3 text-indigo-400" />
+            Last Modified
+          </div>
+          <div className="font-semibold text-slate-700 mt-1">
+            {updatedDate ? new Date(updatedDate).toLocaleString() : 'Just now'}
           </div>
         </div>
       </div>
+
+      {/* Update Status & Reason Form */}
+      {onUpdateStatus && (
+        <form
+          onSubmit={handleStatusSubmit}
+          className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+              Update Status & Add Reason Note
+            </label>
+            <span className="text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-indigo-50 text-indigo-700">
+              Current: {currentStatus}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <select
+              value={selectedStatus || currentStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as Job['status'])}
+              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="New">New Lead</option>
+              <option value="Shortlisted">Shortlisted</option>
+              <option value="Applied">Applied</option>
+              <option value="Interviewing">Interviewing</option>
+              <option value="Offer">Offer</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Ignored">Ignored</option>
+            </select>
+
+            <button
+              type="submit"
+              disabled={updating}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {updating ? 'Updating…' : 'Save Status & Note'}
+            </button>
+          </div>
+
+          <input
+            type="text"
+            placeholder="Optional reason note (e.g. Relocation required, Applied on portal, Referral set)..."
+            value={statusNote}
+            onChange={(e) => setStatusNote(e.target.value)}
+            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          />
+        </form>
+      )}
+
+      {/* Action History / Change Log */}
+      {job.actionHistory && job.actionHistory.length > 0 && (
+        <div className="space-y-3 border-t border-slate-100 pt-4">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wide">
+            <History className="h-4 w-4 text-indigo-500" />
+            <span>Action History & Notes Timeline</span>
+          </div>
+          <div className="space-y-2 max-h-48 overflow-auto pr-1">
+            {job.actionHistory.map((entry, idx) => (
+              <div
+                key={idx}
+                className="bg-slate-50 border border-slate-100 rounded-lg p-2.5 text-xs space-y-1"
+              >
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span className="font-bold text-slate-600">{entry.action}</span>
+                  <span>{new Date(entry.timestamp).toLocaleString()}</span>
+                </div>
+                {entry.note && (
+                  <p className="text-xs text-slate-700 bg-white border border-slate-100 p-2 rounded italic">
+                    "{entry.note}"
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-gradient-to-br from-indigo-50 to-sky-50/50 rounded-xl border border-indigo-100/30 p-4.5 space-y-4">
         <div className="flex items-center justify-between gap-2">
@@ -212,7 +324,7 @@ export default function JobDetailPanel({ job, onClose, onSaveNotes }: JobDetailP
 
       <div className="space-y-2">
         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
-          Notes
+          General Notes
         </label>
         <textarea
           placeholder="Track referrals, interviews, salary notes..."

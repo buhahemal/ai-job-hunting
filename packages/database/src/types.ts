@@ -11,6 +11,14 @@ export type JobStatus =
 export type RemoteType = 'Remote' | 'Hybrid' | 'On-site';
 export type JobPriority = 'High' | 'Medium' | 'Low';
 
+export interface JobActionHistoryEntry {
+  id?: string;
+  timestamp: string;
+  status?: JobStatus | string;
+  action: string;
+  note?: string;
+}
+
 export interface JobMatchInsights {
   overallScore: number;
   skillMatchScore: number;
@@ -83,6 +91,9 @@ export interface JobRow {
   is_duplicate: boolean | null;
   duplicate_of: string | null;
   match_scorer: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  action_history?: JobActionHistoryEntry[] | null;
   job_match_scores?: JobMatchScoreRow | JobMatchScoreRow[] | null;
 }
 
@@ -97,6 +108,8 @@ export interface JobRecord {
   url: string;
   description: string;
   postedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   status: JobStatus;
   score?: number;
   fitExplanation?: string;
@@ -104,6 +117,7 @@ export interface JobRecord {
   salaryEstimate?: string;
   seniority?: string;
   notes?: string;
+  actionHistory?: JobActionHistoryEntry[];
   tailoredResumeLaTeX?: string;
   tailoredCoverLetter?: string;
   atsScore?: number;
@@ -233,6 +247,11 @@ export interface ScannedJobRow {
   profile_hash?: string | null;
   skill_match_confidence?: number | null;
   rescored_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  status?: JobStatus | null;
+  notes?: string | null;
+  action_history?: JobActionHistoryEntry[] | null;
 }
 
 export interface ScannedJobRecord {
@@ -267,6 +286,11 @@ export interface ScannedJobRecord {
   skillMatchConfidence?: number;
   rescoredAt?: string;
   scannedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: JobStatus;
+  notes?: string;
+  actionHistory?: JobActionHistoryEntry[];
 }
 
 export interface ScanSummaryRow {

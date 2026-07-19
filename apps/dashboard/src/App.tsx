@@ -119,9 +119,9 @@ export default function App() {
   };
 
   // 3. Update Status
-  const handleUpdateStatus = async (jobId: string, status: Job['status']) => {
+  const handleUpdateStatus = async (jobId: string, status: Job['status'], note?: string) => {
     try {
-      const job = await api.updateJobStatus(jobId, status);
+      const job = await api.updateJobStatus(jobId, status, note);
       setJobs((prev) => prev.map((j) => (j.id === jobId ? job : j)));
       if (selectedJob && selectedJob.id === jobId) {
         setSelectedJob(job);
@@ -573,6 +573,7 @@ export default function App() {
                   job={selectedJob}
                   onClose={() => setSelectedJob(null)}
                   onSaveNotes={handleSaveNotes}
+                  onUpdateStatus={handleUpdateStatus}
                 />
               </div>
             </div>

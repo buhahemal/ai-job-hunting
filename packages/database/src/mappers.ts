@@ -232,6 +232,8 @@ export function rowToJob(row: JobRow): JobRecord {
     url: row.url ?? '',
     description: row.description ?? '',
     postedAt: row.posted_at ?? '',
+    createdAt: row.created_at ?? row.posted_at ?? '',
+    updatedAt: row.updated_at ?? row.scanned_at ?? row.posted_at ?? '',
     status: row.status,
     score: row.score ?? insights?.overallScore,
     fitExplanation: row.fit_explanation ?? insights?.matchExplanation,
@@ -239,6 +241,7 @@ export function rowToJob(row: JobRow): JobRecord {
     salaryEstimate: row.salary_estimate ?? undefined,
     seniority: row.seniority ?? undefined,
     notes: row.notes ?? undefined,
+    actionHistory: row.action_history ?? undefined,
     tailoredResumeLaTeX: row.tailored_resume_latex ?? undefined,
     tailoredCoverLetter: row.tailored_cover_letter ?? undefined,
     atsScore: row.ats_score ?? insights?.atsScore,
@@ -296,6 +299,9 @@ export function jobToRow(job: JobRecord): JobRow {
     is_duplicate: job.isDuplicate ?? false,
     duplicate_of: job.duplicateOf ?? null,
     match_scorer: job.matchScorer ?? insights?.scorer ?? null,
+    created_at: job.createdAt ?? job.postedAt ?? null,
+    updated_at: job.updatedAt ?? job.scannedAt ?? null,
+    action_history: job.actionHistory ?? null,
   };
 }
 
@@ -371,6 +377,11 @@ export function rowToScannedJob(row: ScannedJobRow): ScannedJobRecord {
     skillMatchConfidence: row.skill_match_confidence ?? undefined,
     rescoredAt: row.rescored_at ?? undefined,
     scannedAt: row.scanned_at ?? '',
+    createdAt: row.created_at ?? row.scanned_at ?? '',
+    updatedAt: row.updated_at ?? row.rescored_at ?? row.scanned_at ?? '',
+    status: row.status ?? undefined,
+    notes: row.notes ?? undefined,
+    actionHistory: row.action_history ?? undefined,
   };
 }
 

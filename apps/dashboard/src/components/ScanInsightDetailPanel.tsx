@@ -143,16 +143,38 @@ export default function ScanInsightDetailPanel({
         <div className="text-right space-y-1">
           {insight.scannedAt && (
             <p className="text-[10px] text-slate-400 font-mono">
-              Scanned {new Date(insight.scannedAt).toLocaleString()}
+              Scanned {new Date(insight.createdAt || insight.scannedAt).toLocaleString()}
             </p>
           )}
-          {insight.rescoredAt && (
-            <p className="text-[10px] text-indigo-500 font-mono">
-              Rescored {new Date(insight.rescoredAt).toLocaleString()}
-            </p>
-          )}
+          <p className="text-[10px] text-indigo-500 font-mono">
+            Modified{' '}
+            {insight.updatedAt
+              ? new Date(insight.updatedAt).toLocaleString()
+              : insight.rescoredAt
+                ? new Date(insight.rescoredAt).toLocaleString()
+                : 'Just now'}
+          </p>
         </div>
       </div>
+
+      {insight.actionHistory && insight.actionHistory.length > 0 && (
+        <div className="space-y-2 border-t border-b border-slate-50 py-3">
+          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+            Action History & Notes
+          </h4>
+          <div className="space-y-1.5 max-h-36 overflow-auto">
+            {insight.actionHistory.map((entry, idx) => (
+              <div key={idx} className="bg-slate-50 p-2 rounded text-[11px] space-y-0.5">
+                <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                  <span className="font-semibold text-slate-600">{entry.action}</span>
+                  <span>{new Date(entry.timestamp).toLocaleString()}</span>
+                </div>
+                {entry.note && <p className="text-slate-600 italic">"{entry.note}"</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         <ScoreBar label="Skill Match" value={insight.skillMatchScore} />

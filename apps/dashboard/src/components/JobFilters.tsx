@@ -44,13 +44,14 @@ export default function JobFilters({ filters, sources, roles, onChange }: JobFil
           onChange={(e) => onChange({ statusFilter: e.target.value })}
           className="bg-slate-50 border border-slate-200 text-slate-600 rounded-lg px-2 py-1.5 text-xs"
         >
-          <option value="All">All Statuses</option>
+          <option value="All">All Active Leads</option>
           <option value="New">New</option>
           <option value="Shortlisted">Shortlisted</option>
           <option value="Applied">Applied</option>
           <option value="Interviewing">Interviewing</option>
           <option value="Offer">Offer</option>
           <option value="Rejected">Rejected</option>
+          <option value="Ignored">Ignored</option>
         </select>
 
         <select
@@ -171,7 +172,10 @@ export function filterJobs<
       job.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
       job.company.toLowerCase().includes(filters.searchQuery.toLowerCase());
 
-    const matchesStatus = filters.statusFilter === 'All' || job.status === filters.statusFilter;
+    const matchesStatus =
+      filters.statusFilter === 'All'
+        ? job.status !== 'Ignored' && job.status !== 'Rejected'
+        : job.status === filters.statusFilter;
 
     let matchesScore = true;
     if (filters.scoreFilter === 'Excellent') matchesScore = (job.score || 0) >= 85;

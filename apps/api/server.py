@@ -167,7 +167,8 @@ def get_jobs():
 @app.route("/api/jobs/<string:job_id>/status", methods=["POST"])
 def update_job_status(job_id):
     status = request.json.get("status")
-    job = get_repository().update_job_status(job_id, status)
+    note = request.json.get("note")
+    job = get_repository().update_job_status(job_id, status, note=note)
     return jsonify({"success": True, "job": job})
 
 @app.route("/api/jobs/<string:job_id>/notes", methods=["POST"])

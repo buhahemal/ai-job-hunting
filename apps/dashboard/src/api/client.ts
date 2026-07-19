@@ -127,17 +127,21 @@ export async function scanJobs(): Promise<{ addedCount: number; addedJobs: Job[]
   );
 }
 
-export async function updateJobStatus(jobId: string, status: Job['status']): Promise<Job> {
+export async function updateJobStatus(
+  jobId: string,
+  status: Job['status'],
+  note?: string,
+): Promise<Job> {
   if (USE_BACKEND) {
     const data = await backendFetch<{ job: Job }>(`/api/jobs/${jobId}/status`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, note }),
     });
     return data.job;
   }
   if (USE_SUPABASE) {
-    return asJob(await getRepository().updateJobStatus(jobId, status));
+    return asJob(await getRepository().updateJobStatus(jobId, status, note));
   }
   throwDataNotFound();
 }

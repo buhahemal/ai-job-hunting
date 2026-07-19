@@ -59,16 +59,49 @@ export class DashboardRepository {
     return ((data ?? []) as JobRow[]).map(rowToJob);
   }
 
+  async getJob(jobId: string): Promise<JobRecord | null> {
+    const { data, error } = await this.client
+      .from('jobs')
+      .select('*, job_match_scores(*)')
+      .eq('id', jobId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return rowToJob(data as JobRow);
+  }
+
   async listInterviews(): Promise<InterviewRecord[]> {
     const { data, error } = await this.client.from('interviews').select('*');
     if (error) throw error;
     return ((data ?? []) as Parameters<typeof rowToInterview>[0][]).map(rowToInterview);
   }
 
-  async updateJobStatus(jobId: string, status: JobRecord['status']): Promise<JobRecord> {
+  async updateJobStatus(
+    jobId: string,
+    status: JobRecord['status'],
+    note?: string,
+  ): Promise<JobRecord> {
+    const existing = await this.getJob(jobId);
+    const now = new Date().toISOString();
+    const history = [
+      {
+        timestamp: now,
+        status,
+        action: `Status changed to ${status}`,
+        note: note || '',
+      },
+      ...(existing?.actionHistory ?? []),
+    ];
+
+    const patch: Record<string, unknown> = {
+      status,
+      updated_at: now,
+      action_history: history,
+    };
+    if (note) patch.notes = note;
+
     const { data, error } = await this.client
       .from('jobs')
-      .update({ status })
+      .update(patch)
       .eq('id', jobId)
       .select('*')
       .single();
@@ -77,9 +110,21 @@ export class DashboardRepository {
   }
 
   async updateJobNotes(jobId: string, notes: string): Promise<JobRecord> {
+    const existing = await this.getJob(jobId);
+    const now = new Date().toISOString();
+    const history = [
+      {
+        timestamp: now,
+        status: existing?.status ?? 'New',
+        action: 'Notes updated',
+        note: notes,
+      },
+      ...(existing?.actionHistory ?? []),
+    ];
+
     const { data, error } = await this.client
       .from('jobs')
-      .update({ notes })
+      .update({ notes, updated_at: now, action_history: history })
       .eq('id', jobId)
       .select('*')
       .single();

@@ -97,16 +97,31 @@ class JobRepository:
             match_row = match_payload
         return row_to_job(row, match_row)
 
-    def update_job_status(self, job_id: str, status: str) -> Dict[str, Any]:
+    def update_job_status(self, job_id: str, status: str, note: Optional[str] = None) -> Dict[str, Any]:
         """Update job status and return the updated record."""
-        response = (
-            self._client.table('jobs')
-            .update({'status': status})
-            .eq('id', job_id)
-            .execute()
-        )
-        if not response.data:
+        existing = self.get_job(job_id)
+        if not existing:
             raise ValueError(f'Job not found: {job_id}')
+
+        now = datetime.now(timezone.utc).isoformat()
+        history = list(existing.get('actionHistory') or existing.get('action_history') or [])
+        history_entry = {
+            'timestamp': now,
+            'status': status,
+            'action': f'Status changed to {status}',
+            'note': note or '',
+        }
+        history.insert(0, history_entry)
+
+        payload: Dict[str, Any] = {
+            'status': status,
+            'updated_at': now,
+            'action_history': history,
+        }
+        if note:
+            payload['notes'] = note
+
+        self._client.table('jobs').update(payload).eq('id', job_id).execute()
         job = self.get_job(job_id)
         if not job:
             raise ValueError(f'Job not found: {job_id}')
@@ -114,14 +129,26 @@ class JobRepository:
 
     def update_job_notes(self, job_id: str, notes: str) -> Dict[str, Any]:
         """Update job notes and return the updated record."""
-        response = (
-            self._client.table('jobs')
-            .update({'notes': notes})
-            .eq('id', job_id)
-            .execute()
-        )
-        if not response.data:
+        existing = self.get_job(job_id)
+        if not existing:
             raise ValueError(f'Job not found: {job_id}')
+
+        now = datetime.now(timezone.utc).isoformat()
+        history = list(existing.get('actionHistory') or existing.get('action_history') or [])
+        history_entry = {
+            'timestamp': now,
+            'status': existing.get('status', 'New'),
+            'action': 'Notes updated',
+            'note': notes,
+        }
+        history.insert(0, history_entry)
+
+        payload: Dict[str, Any] = {
+            'notes': notes,
+            'updated_at': now,
+            'action_history': history,
+        }
+        self._client.table('jobs').update(payload).eq('id', job_id).execute()
         job = self.get_job(job_id)
         if not job:
             raise ValueError(f'Job not found: {job_id}')

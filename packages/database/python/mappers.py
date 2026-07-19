@@ -88,6 +88,9 @@ def job_to_row(job: Dict[str, Any]) -> Dict[str, Any]:
         'is_duplicate': bool(job.get('isDuplicate')),
         'duplicate_of': job.get('duplicateOf'),
         'match_scorer': job.get('matchScorer') or insights.get('scorer'),
+        'created_at': job.get('createdAt') or job.get('created_at'),
+        'updated_at': job.get('updatedAt') or job.get('updated_at'),
+        'action_history': job.get('actionHistory') or job.get('action_history') or [],
     }
 
 
@@ -105,6 +108,8 @@ def row_to_job(row: Dict[str, Any], match_row: Dict[str, Any] | None = None) -> 
         'url': row.get('url') or '',
         'description': row.get('description') or '',
         'postedAt': row.get('posted_at') or '',
+        'createdAt': row.get('created_at') or row.get('posted_at') or '',
+        'updatedAt': row.get('updated_at') or row.get('scanned_at') or row.get('posted_at') or '',
         'status': row.get('status') or 'New',
         'score': row.get('score'),
         'fitExplanation': row.get('fit_explanation'),
@@ -112,6 +117,7 @@ def row_to_job(row: Dict[str, Any], match_row: Dict[str, Any] | None = None) -> 
         'salaryEstimate': row.get('salary_estimate'),
         'seniority': row.get('seniority'),
         'notes': row.get('notes'),
+        'actionHistory': row.get('action_history') or [],
         'tailoredResumeLaTeX': row.get('tailored_resume_latex'),
         'tailoredCoverLetter': row.get('tailored_cover_letter'),
         'atsScore': row.get('ats_score'),
@@ -210,6 +216,11 @@ def scanned_job_to_row(record: Dict[str, Any]) -> Dict[str, Any]:
         'profile_hash': record.get('profile_hash'),
         'skill_match_confidence': record.get('skill_match_confidence'),
         'rescored_at': record.get('rescored_at'),
+        'created_at': record.get('createdAt') or record.get('created_at') or record.get('scanned_at'),
+        'updated_at': record.get('updatedAt') or record.get('updated_at'),
+        'status': record.get('status'),
+        'notes': record.get('notes'),
+        'action_history': record.get('actionHistory') or record.get('action_history') or [],
     }
 
 
@@ -248,6 +259,11 @@ def row_to_scanned_job(row: Dict[str, Any]) -> Dict[str, Any]:
         'skillMatchConfidence': row.get('skill_match_confidence'),
         'rescoredAt': row.get('rescored_at') or '',
         'scannedAt': row.get('scanned_at') or '',
+        'createdAt': row.get('created_at') or row.get('scanned_at') or '',
+        'updatedAt': row.get('updated_at') or row.get('rescored_at') or row.get('scanned_at') or '',
+        'status': row.get('status') or 'New',
+        'notes': row.get('notes') or '',
+        'actionHistory': row.get('action_history') or [],
     }
 
 
