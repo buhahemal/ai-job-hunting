@@ -22,9 +22,26 @@ from packages.database.python.repositories.jobs import JobRepository
 def reset_jobs_data(client) -> None:
     """Clear all scanned jobs, manual jobs, and interviews from Supabase."""
     print("Resetting jobs, scanned jobs, and interviews data...")
-    client.table("interviews").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
-    client.table("jobs").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
-    client.table("scanned_jobs").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
+    try:
+        client.table("interviews").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
+    except Exception:
+        pass
+    try:
+        client.table("applications").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
+    except Exception:
+        pass
+    try:
+        client.table("resumes").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
+    except Exception:
+        pass
+    try:
+        client.table("jobs").delete().filter("id", "neq", "00000000-0000-0000-0000-000000000000").execute()
+    except Exception:
+        pass
+    try:
+        client.table("scanned_jobs").delete().filter("dedupe_key", "neq", "__none__").execute()
+    except Exception:
+        pass
     print("✅ All jobs and scan insights data cleared successfully.")
 
 
